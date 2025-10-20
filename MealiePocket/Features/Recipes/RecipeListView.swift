@@ -39,7 +39,7 @@ struct RecipeListView: View {
                 await viewModel.loadRecipes(apiClient: appState.apiClient)
             }
             .navigationDestination(for: RecipeSummary.self) { recipe in
-                Text(recipe.name)
+                RecipeDetailView(recipeSummary: recipe)
             }
         }
     }

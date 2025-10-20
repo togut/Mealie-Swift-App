@@ -39,7 +39,7 @@ struct RecipeCardView: View {
 
                 if let rating = recipe.rating, rating > 0 {
                     Label(String(format: "%.1f", rating), systemImage: "star.fill")
-                        .foregroundColor(.yellow)
+                        .foregroundColor(.orange)
                 }
             }
             .font(.caption)
