@@ -1,17 +1,13 @@
-//
-//  MealiePocketApp.swift
-//  MealiePocket
-//
-//  Created by Loriage on 20/10/2025.
-//
-
 import SwiftUI
 
 @main
 struct MealiePocketApp: App {
+    @State private var appState = AppState()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(appState)
         }
     }
 }
