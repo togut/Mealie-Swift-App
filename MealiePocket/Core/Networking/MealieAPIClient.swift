@@ -52,7 +52,27 @@ class MealieAPIClient {
             throw APIError.invalidResponse
         }
         
-        let paginatedResponse = try JSONDecoder().decode(PaginatedRecipes.self, from: data)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let paginatedResponse = try decoder.decode(PaginatedRecipes.self, from: data)
         return paginatedResponse.items
     }
+    
+    func fetchRecipeDetail(slug: String) async throws -> RecipeDetail {
+        let url = baseURL.appendingPathComponent("api/recipes/\(slug)")
+        var request = URLRequest(url: url)
+
+        guard let token = token else { throw APIError.unauthorized }
+        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw APIError.invalidResponse
+        }
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode(RecipeDetail.self, from: data)
+    }
 }
+
