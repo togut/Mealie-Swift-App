@@ -91,6 +91,7 @@ class MealieAPIClient {
     
     func fetchFavorites(userID: String) async throws -> [UserRating] {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites")
+        print(url)
         var request = URLRequest(url: url)
         
         guard let token = token else { throw APIError.unauthorized }
