@@ -5,11 +5,9 @@ struct RecipeListView: View {
     @Environment(AppState.self) private var appState
     @State private var searchText = ""
 
-    private var filteredRecipes: [RecipeSummary] {
-        if searchText.isEmpty {
-            return viewModel.recipes
-        } else {
-            return viewModel.recipes.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    private var recipeBindings: [Binding<RecipeSummary>] {
+        $viewModel.recipes.filter {
+            searchText.isEmpty || $0.wrappedValue.name.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -20,7 +18,7 @@ struct RecipeListView: View {
                     ProgressView()
                 } else if let errorMessage = viewModel.errorMessage {
                     contentUnavailable(title: "Error", message: errorMessage)
-                } else if filteredRecipes.isEmpty && !searchText.isEmpty {
+                } else if recipeBindings.isEmpty && !searchText.isEmpty {
                     contentUnavailable(title: "No Results", message: "No recipes found for \"\(searchText)\".", systemImage: "magnifyingglass")
                 } else if viewModel.recipes.isEmpty {
                     contentUnavailable(title: "No Recipes", message: "Your recipe book is empty.", systemImage: "book")
@@ -30,13 +28,18 @@ struct RecipeListView: View {
             }
             .navigationTitle("Recipes")
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    sortMenu
+                }
+            }
             .task {
                 if viewModel.recipes.isEmpty {
-                    await viewModel.loadRecipes(apiClient: appState.apiClient)
+                    await viewModel.loadInitialRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
                 }
             }
             .refreshable {
-                await viewModel.loadRecipes(apiClient: appState.apiClient)
+                await viewModel.loadInitialRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
             }
             .navigationDestination(for: RecipeSummary.self) { recipe in
                 RecipeDetailView(recipeSummary: recipe)
@@ -47,14 +50,54 @@ struct RecipeListView: View {
     private var recipeGrid: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
-                ForEach(filteredRecipes) { recipe in
+                ForEach(recipeBindings, id: \.id) { $recipe in
                     NavigationLink(value: recipe) {
-                        RecipeCardView(recipe: recipe, baseURL: appState.apiClient?.baseURL)
+                        RecipeCardView(recipe: $recipe, baseURL: appState.apiClient?.baseURL) {
+                            Task {
+                                await viewModel.toggleFavorite(for: recipe.id, userID: appState.currentUserID, apiClient: appState.apiClient)
+                            }
+                        }
+                        .task {
+                            if recipe.id == viewModel.recipes.last?.id {
+                                await viewModel.loadMoreRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
+                            }
+                        }
                     }
                     .buttonStyle(.plain)
                 }
             }
             .padding()
+            
+            if viewModel.isLoadingMore {
+                ProgressView()
+            }
+        }
+    }
+    
+    private var sortMenu: some View {
+        Menu {
+            Picker("Sort By", selection: $viewModel.sortOption) {
+                ForEach(SortOption.allCases) { option in
+                    Text(option.displayName).tag(option)
+                }
+            }
+            
+            if viewModel.sortOption != .random {
+                Picker("Direction", selection: $viewModel.sortDirection) {
+                    Text("Ascending").tag(SortDirection.asc)
+                    Text("Descending").tag(SortDirection.desc)
+                }
+            }
+            
+        } label: {
+            Image(systemName: "arrow.up.arrow.down.circle")
+        }
+        .onChange(of: viewModel.sortOption) {
+            viewModel.setSortOption(viewModel.sortOption)
+            Task { await viewModel.loadInitialRecipes(apiClient: appState.apiClient, userID: appState.currentUserID) }
+        }
+        .onChange(of: viewModel.sortDirection) {
+            Task { await viewModel.loadInitialRecipes(apiClient: appState.apiClient, userID: appState.currentUserID) }
         }
     }
     

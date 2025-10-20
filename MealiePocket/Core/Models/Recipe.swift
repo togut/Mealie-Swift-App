@@ -8,10 +8,12 @@ struct RecipeSummary: Decodable, Identifiable, Hashable {
     let recipeYield: String?
     let totalTime: String?
     let rating: Double?
+    var isFavorite: Bool = false
 }
 
 struct PaginatedRecipes: Decodable {
     let items: [RecipeSummary]
+    let totalPages: Int
 }
 
 struct RecipeDetail: Decodable, Identifiable {

@@ -31,9 +31,7 @@ class LoginViewModel {
 
         do {
             let token = try await client.login(username: username, password: password)
-            await MainActor.run {
-                appState.login(baseURL: baseURL, token: token)
-            }
+            await appState.login(baseURL: baseURL, token: token)
         } catch {
             errorMessage = "Login failed. Check your credentials and server URL."
         }
