@@ -6,9 +6,9 @@ class HomeViewModel {
     var isLoading = false
     var errorMessage: String?
     
-    func loadFavorites(apiClient: MealieAPIClient?, userID: String?) async {
-        guard let apiClient, let userID else {
-            errorMessage = "API client or User ID not available."
+    func loadFavorites(apiClient: MealieAPIClient?) async {
+        guard let apiClient = apiClient else {
+            errorMessage = "API client not available."
             return
         }
         
@@ -16,34 +16,24 @@ class HomeViewModel {
         errorMessage = nil
         
         do {
-            let favoriteRatings = try await apiClient.fetchFavorites(userID: userID)
-            let favoriteIDs = favoriteRatings.map { $0.recipeId.uuidString }
+            let response = try await apiClient.fetchRecipes(
+                page: 1,
+                orderBy: "name",
+                orderDirection: "asc",
+                paginationSeed: nil,
+                queryFilter: "isFavorite IS true"
+            )
             
-            if favoriteIDs.isEmpty {
-                await MainActor.run { favoriteRecipes = [] }
-            } else {
-                let filter = "id IN [\"\(favoriteIDs.joined(separator: "\",\""))\"]"
-                let response = try await apiClient.fetchRecipes(
-                    page: 1,
-                    orderBy: "name",
-                    orderDirection: "asc",
-                    paginationSeed: nil,
-                    queryFilter: filter
-                )
-                
-                var favorites = response.items
-                for i in favorites.indices {
-                    favorites[i].isFavorite = true
-                }
-                
-                await MainActor.run { favoriteRecipes = favorites }
+            var favorites = response.items
+            for i in favorites.indices {
+                favorites[i].isFavorite = true
             }
+            favoriteRecipes = favorites
+            
         } catch {
-            await MainActor.run {
-                errorMessage = "Failed to load favorite recipes: \(error.localizedDescription)"
-            }
+            errorMessage = "Failed to load favorite recipes: \(error.localizedDescription)"
         }
         
-        await MainActor.run { isLoading = false }
+        isLoading = false
     }
 }

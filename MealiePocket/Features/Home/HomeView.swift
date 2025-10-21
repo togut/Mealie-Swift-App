@@ -31,10 +31,10 @@ struct HomeView: View {
             }
             .navigationTitle("Home")
             .task {
-                await viewModel.loadFavorites(apiClient: appState.apiClient, userID: appState.currentUserID)
+                await viewModel.loadFavorites(apiClient: appState.apiClient)
             }
             .refreshable {
-                await viewModel.loadFavorites(apiClient: appState.apiClient, userID: appState.currentUserID)
+                await viewModel.loadFavorites(apiClient: appState.apiClient)
             }
             .navigationDestination(for: RecipeSummary.self) { recipe in
                 RecipeDetailView(recipeSummary: recipe)
@@ -58,4 +58,3 @@ struct HomeView: View {
         }
     }
 }
-
