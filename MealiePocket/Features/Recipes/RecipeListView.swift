@@ -16,14 +16,12 @@ struct RecipeListView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading || viewModel.isLoadingFavorites {
+                if (viewModel.isLoading || viewModel.isLoadingFavorites) && viewModel.recipes.isEmpty {
                     ProgressView()
                 } else if let errorMessage = viewModel.errorMessage {
                     contentUnavailable(title: "Error", message: errorMessage)
-                } else if filteredRecipeIndices.isEmpty && (viewModel.showOnlyFavorites || !searchText.isEmpty) {
+                } else if isDisplayingEmptyResults() {
                     contentUnavailable(title: "No Results", message: "No recipes match your filter.", systemImage: "magnifyingglass")
-                } else if viewModel.recipes.isEmpty && !viewModel.showOnlyFavorites {
-                    contentUnavailable(title: "No Recipes", message: "Your recipe book is empty.", systemImage: "book")
                 } else {
                     recipeGrid
                 }
@@ -90,6 +88,20 @@ struct RecipeListView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+    
+    private func isDisplayingEmptyResults() -> Bool {
+        let sourceArray = viewModel.showOnlyFavorites ? viewModel.allFavorites : viewModel.recipes
+        
+        if !searchText.isEmpty && sourceArray.filter({ $0.name.localizedCaseInsensitiveContains(searchText) }).isEmpty {
+            return true
+        }
+        
+        if viewModel.showOnlyFavorites && sourceArray.isEmpty {
+            return true
+        }
+        
+        return false
     }
     
     private var favoritesFilterButton: some View {

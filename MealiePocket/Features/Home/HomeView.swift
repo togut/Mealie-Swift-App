@@ -8,7 +8,7 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading) {
-                    if viewModel.isLoading {
+                    if viewModel.isLoading && viewModel.favoriteRecipes.isEmpty {
                         ProgressView()
                             .frame(maxWidth: .infinity)
                             .padding()
