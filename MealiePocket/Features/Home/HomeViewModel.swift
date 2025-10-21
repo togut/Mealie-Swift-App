@@ -33,16 +33,19 @@ class HomeViewModel {
                 )
                 
                 var favorites = response.items
+                let ratingsDict = Dictionary(uniqueKeysWithValues: favoriteRatings.map { ($0.recipeId, $0.rating) })
+
                 for i in favorites.indices {
                     favorites[i].isFavorite = true
+                    if let userRating = ratingsDict[favorites[i].id] {
+                        favorites[i].rating = userRating
+                    }
                 }
                 
                 await MainActor.run { favoriteRecipes = favorites }
             }
         } catch {
-            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else {
-                return
-            }
+            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else { return }
             await MainActor.run {
                 errorMessage = "Failed to load favorite recipes: \(error.localizedDescription)"
             }

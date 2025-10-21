@@ -5,23 +5,24 @@ struct RecipeListView: View {
     @Environment(AppState.self) private var appState
     @State private var searchText = ""
 
-    private var filteredRecipeIndices: [Int] {
-        let sourceArray = viewModel.showOnlyFavorites ? viewModel.allFavorites : viewModel.recipes
-        return sourceArray.indices.filter { index in
-            let recipe = sourceArray[index]
-            return searchText.isEmpty || recipe.name.localizedCaseInsensitiveContains(searchText)
+    private var filteredRecipes: [RecipeSummary] {
+        viewModel.recipes.filter { recipe in
+            let searchMatch = searchText.isEmpty || recipe.name.localizedCaseInsensitiveContains(searchText)
+            return searchMatch
         }
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if (viewModel.isLoading || viewModel.isLoadingFavorites) && viewModel.recipes.isEmpty {
+                if viewModel.isLoading && viewModel.recipes.isEmpty {
                     ProgressView()
                 } else if let errorMessage = viewModel.errorMessage {
                     contentUnavailable(title: "Error", message: errorMessage)
-                } else if isDisplayingEmptyResults() {
+                } else if filteredRecipes.isEmpty && searchText.isEmpty {
                     contentUnavailable(title: "No Results", message: "No recipes match your filter.", systemImage: "magnifyingglass")
+                } else if viewModel.recipes.isEmpty {
+                    contentUnavailable(title: "No Recipes", message: "Your recipe book is empty.", systemImage: "book")
                 } else {
                     recipeGrid
                 }
@@ -30,7 +31,6 @@ struct RecipeListView: View {
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    favoritesFilterButton
                     sortMenu
                 }
             }
@@ -51,70 +51,34 @@ struct RecipeListView: View {
     private var recipeGrid: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
-                if viewModel.showOnlyFavorites {
-                    recipeGridContent(for: $viewModel.allFavorites)
-                } else {
-                    recipeGridContent(for: $viewModel.recipes)
+                ForEach(filteredRecipes, id: \.id) { recipe in
+                    if let index = viewModel.recipes.firstIndex(where: { $0.id == recipe.id }) {
+                        let recipeBinding = $viewModel.recipes[index]
+                        
+                        NavigationLink(value: recipe) {
+                            RecipeCardView(recipe: recipeBinding, baseURL: appState.apiClient?.baseURL) {
+                                Task {
+                                    await viewModel.toggleFavorite(for: recipe.id, userID: appState.currentUserID, apiClient: appState.apiClient)
+                                }
+                            }
+                            .task {
+                                if index == viewModel.recipes.count - 1 {
+                                    await viewModel.loadMoreRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
             .padding()
             
-            if viewModel.isLoadingMore && !viewModel.showOnlyFavorites {
+            if viewModel.isLoadingMore {
                 ProgressView()
             }
         }
     }
 
-    @ViewBuilder
-    private func recipeGridContent(for recipeListBinding: Binding<[RecipeSummary]>) -> some View {
-        let filteredIndices = recipeListBinding.wrappedValue.indices.filter { index in
-            searchText.isEmpty || recipeListBinding.wrappedValue[index].name.localizedCaseInsensitiveContains(searchText)
-        }
-        
-        ForEach(filteredIndices, id: \.self) { index in
-            let recipeBinding = recipeListBinding[index]
-            
-            NavigationLink(value: recipeBinding.wrappedValue) {
-                RecipeCardView(recipe: recipeBinding, baseURL: appState.apiClient?.baseURL) {
-                    Task {
-                        await viewModel.toggleFavorite(for: recipeBinding.wrappedValue.id, userID: appState.currentUserID, apiClient: appState.apiClient)
-                    }
-                }
-                .task {
-                    if !viewModel.showOnlyFavorites && index == viewModel.recipes.count - 1 {
-                        await viewModel.loadMoreRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-        }
-    }
-    
-    private func isDisplayingEmptyResults() -> Bool {
-        let sourceArray = viewModel.showOnlyFavorites ? viewModel.allFavorites : viewModel.recipes
-        
-        if !searchText.isEmpty && sourceArray.filter({ $0.name.localizedCaseInsensitiveContains(searchText) }).isEmpty {
-            return true
-        }
-        
-        if viewModel.showOnlyFavorites && sourceArray.isEmpty {
-            return true
-        }
-        
-        return false
-    }
-    
-    private var favoritesFilterButton: some View {
-        Button(action: {
-            Task {
-                await viewModel.toggleFavoritesFilter(apiClient: appState.apiClient, userID: appState.currentUserID)
-            }
-        }) {
-            Image(systemName: viewModel.showOnlyFavorites ? "heart.fill" : "heart")
-                .foregroundColor(viewModel.showOnlyFavorites ? .red : .primary)
-        }
-    }
-    
     private var sortMenu: some View {
         Menu {
             Picker("Sort By", selection: $viewModel.sortOption) {

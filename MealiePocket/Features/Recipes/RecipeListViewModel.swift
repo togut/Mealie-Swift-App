@@ -3,8 +3,7 @@ import Foundation
 @Observable
 class RecipeListViewModel {
     var recipes: [RecipeSummary] = []
-    var allFavorites: [RecipeSummary] = []
-    
+
     var isLoading = false
     var isLoadingMore = false
     var isLoadingFavorites = false
@@ -12,35 +11,22 @@ class RecipeListViewModel {
     
     var sortOption: SortOption = .name
     var sortDirection: SortDirection = .asc
-    var showOnlyFavorites = false
     
     private var currentPage = 1
     private var totalPages = 1
     private var paginationSeed: String?
     
     private var canLoadMore: Bool {
-        currentPage < totalPages && !isLoading && !showOnlyFavorites
+        currentPage < totalPages && !isLoading
     }
     
     func setSortOption(_ newOption: SortOption) {
         sortOption = newOption
         sortDirection = newOption.defaultDirection
     }
-    
+
     func applySort(apiClient: MealieAPIClient?, userID: String?) async {
-        if showOnlyFavorites {
-            await fetchAllFavorites(apiClient: apiClient, userID: userID)
-        } else {
-            await loadInitialRecipes(apiClient: apiClient, userID: userID)
-        }
-    }
-    
-    func toggleFavoritesFilter(apiClient: MealieAPIClient?, userID: String?) async {
-        showOnlyFavorites.toggle()
-        
-        if showOnlyFavorites && allFavorites.isEmpty {
-            await fetchAllFavorites(apiClient: apiClient, userID: userID)
-        }
+        await loadInitialRecipes(apiClient: apiClient, userID: userID)
     }
     
     func loadInitialRecipes(apiClient: MealieAPIClient?, userID: String?) async {
@@ -78,16 +64,18 @@ class RecipeListViewModel {
                 orderDirection: sortDirection.rawValue,
                 paginationSeed: paginationSeed
             )
-            async let favoritesResponse = apiClient.fetchFavorites(userID: userID)
+            async let userRatingsResponse = apiClient.fetchRatings(userID: userID)
             
             let fetchedRecipes = try await recipesResponse
-            let favorites = try await favoritesResponse
-            let favoriteIDs = Set(favorites.map { $0.recipeId })
+            let userRatings = try await userRatingsResponse
+            
+            let ratingsDict = Dictionary(uniqueKeysWithValues: userRatings.map { ($0.recipeId, $0) })
 
             var updatedItems = fetchedRecipes.items
             for i in updatedItems.indices {
-                if favoriteIDs.contains(updatedItems[i].id) {
-                    updatedItems[i].isFavorite = true
+                if let userRating = ratingsDict[updatedItems[i].id] {
+                    updatedItems[i].isFavorite = userRating.isFavorite
+                    updatedItems[i].rating = userRating.rating
                 }
             }
 
@@ -95,59 +83,19 @@ class RecipeListViewModel {
             totalPages = fetchedRecipes.totalPages
             
         } catch {
-            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else {
-                return
-            }
+            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else { return }
             errorMessage = "Failed to load recipes: \(error.localizedDescription)"
         }
         
         if initialLoad { isLoading = false } else { isLoadingMore = false }
     }
-    
-    private func fetchAllFavorites(apiClient: MealieAPIClient?, userID: String?) async {
-        guard let apiClient, let userID else { return }
-        
-        isLoadingFavorites = true
-        
-        do {
-            let favoriteRatings = try await apiClient.fetchFavorites(userID: userID)
-            let favoriteIDs = favoriteRatings.map { $0.recipeId.uuidString }
-            
-            if !favoriteIDs.isEmpty {
-                let filter = "id IN [\"\(favoriteIDs.joined(separator: "\",\""))\"]"
-                let response = try await apiClient.fetchRecipes(
-                    page: 1,
-                    orderBy: sortOption.rawValue,
-                    orderDirection: sortDirection.rawValue,
-                    paginationSeed: paginationSeed,
-                    queryFilter: filter,
-                    perPage: 1000
-                )
-                
-                var favorites = response.items
-                for i in favorites.indices { favorites[i].isFavorite = true }
-                
-                allFavorites = favorites
-            } else {
-                allFavorites = []
-            }
-        } catch {
-            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else {
-                return
-            }
-            errorMessage = "Failed to load all favorite recipes."
-        }
-        
-        isLoadingFavorites = false
-    }
-    
+
     func toggleFavorite(for recipeId: UUID, userID: String?, apiClient: MealieAPIClient?) async {
         guard let apiClient, let userID else { return }
 
         updateFavoriteStatus(for: recipeId, in: &recipes)
-        updateFavoriteStatus(for: recipeId, in: &allFavorites)
-
-        guard let recipe = recipes.first(where: { $0.id == recipeId }) ?? allFavorites.first(where: { $0.id == recipeId }) else { return }
+        
+        guard let recipe = recipes.first(where: { $0.id == recipeId }) else { return }
         
         do {
             if recipe.isFavorite {
@@ -155,12 +103,8 @@ class RecipeListViewModel {
             } else {
                 try await apiClient.removeFavorite(userID: userID, slug: recipe.slug)
             }
-            if !recipe.isFavorite {
-                allFavorites.removeAll { $0.id == recipeId }
-            }
         } catch {
             updateFavoriteStatus(for: recipeId, in: &recipes)
-            updateFavoriteStatus(for: recipeId, in: &allFavorites)
             errorMessage = "Failed to update favorite status"
         }
     }

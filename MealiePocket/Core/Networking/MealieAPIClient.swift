@@ -88,7 +88,24 @@ class MealieAPIClient {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         return try decoder.decode(PaginatedRecipes.self, from: data)
     }
-    
+
+    func fetchRatings(userID: String) async throws -> [UserRating] {
+        let url = baseURL.appendingPathComponent("api/users/\(userID)/ratings")
+        var request = URLRequest(url: url)
+        
+        guard let token = token else { throw APIError.unauthorized }
+        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw APIError.invalidResponse
+        }
+        
+        let decoder = JSONDecoder()
+        let ratingsResponse = try decoder.decode(UserRatingsResponse.self, from: data)
+        return ratingsResponse.ratings
+    }
+
     func fetchFavorites(userID: String) async throws -> [UserRating] {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites")
         var request = URLRequest(url: url)
