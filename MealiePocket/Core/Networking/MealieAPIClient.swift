@@ -56,6 +56,27 @@ class MealieAPIClient {
         return try JSONDecoder().decode(User.self, from: data)
     }
 
+    func fetchAllRecipes(orderBy: String, orderDirection: String, paginationSeed: String?) async throws -> [RecipeSummary] {
+        var allRecipes: [RecipeSummary] = []
+        var currentPage = 1
+        var totalPages = 1
+        
+        repeat {
+            let paginatedResponse = try await fetchRecipes(
+                page: currentPage,
+                orderBy: orderBy,
+                orderDirection: orderDirection,
+                paginationSeed: paginationSeed,
+                perPage: 100
+            )
+            allRecipes.append(contentsOf: paginatedResponse.items)
+            totalPages = paginatedResponse.totalPages
+            currentPage += 1
+        } while currentPage <= totalPages
+        
+        return allRecipes
+    }
+
     func fetchRecipes(page: Int, orderBy: String, orderDirection: String, paginationSeed: String?, queryFilter: String? = nil, perPage: Int? = nil) async throws -> PaginatedRecipes {
         var components = URLComponents(url: baseURL.appendingPathComponent("api/recipes"), resolvingAgainstBaseURL: false)
         components?.queryItems = [

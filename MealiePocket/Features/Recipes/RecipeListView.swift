@@ -61,21 +61,12 @@ struct RecipeListView: View {
                                     await viewModel.toggleFavorite(for: recipe.id, userID: appState.currentUserID, apiClient: appState.apiClient)
                                 }
                             }
-                            .task {
-                                if index == viewModel.recipes.count - 1 {
-                                    await viewModel.loadMoreRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
-                                }
-                            }
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
             .padding()
-            
-            if viewModel.isLoadingMore {
-                ProgressView()
-            }
         }
     }
 

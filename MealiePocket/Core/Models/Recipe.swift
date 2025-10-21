@@ -1,6 +1,6 @@
 import Foundation
 
-struct RecipeSummary: Decodable, Identifiable, Hashable {
+struct RecipeSummary: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
     let slug: String

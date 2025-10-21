@@ -5,19 +5,17 @@ class RecipeListViewModel {
     var recipes: [RecipeSummary] = []
 
     var isLoading = false
-    var isLoadingMore = false
-    var isLoadingFavorites = false
     var errorMessage: String?
     
     var sortOption: SortOption = .name
     var sortDirection: SortDirection = .asc
     
-    private var currentPage = 1
-    private var totalPages = 1
     private var paginationSeed: String?
     
-    private var canLoadMore: Bool {
-        currentPage < totalPages && !isLoading
+    init() {
+        if let cachedRecipes = RecipeCache.load(), !cachedRecipes.isEmpty {
+            self.recipes = cachedRecipes
+        }
     }
     
     func setSortOption(_ newOption: SortOption) {
@@ -26,12 +24,27 @@ class RecipeListViewModel {
     }
 
     func applySort(apiClient: MealieAPIClient?, userID: String?) async {
-        await loadInitialRecipes(apiClient: apiClient, userID: userID)
+        await loadAllRecipes(apiClient: apiClient, userID: userID, isRefresh: true)
     }
     
     func loadInitialRecipes(apiClient: MealieAPIClient?, userID: String?) async {
-        currentPage = 1
-        totalPages = 1
+        if recipes.isEmpty {
+            await loadAllRecipes(apiClient: apiClient, userID: userID, isRefresh: false)
+        } else {
+            await loadAllRecipes(apiClient: apiClient, userID: userID, isRefresh: true)
+        }
+    }
+
+    private func loadAllRecipes(apiClient: MealieAPIClient?, userID: String?, isRefresh: Bool) async {
+        guard let apiClient, let userID else {
+            errorMessage = "API client or User ID is not available."
+            return
+        }
+
+        if !isRefresh {
+            isLoading = true
+        }
+        errorMessage = nil
         
         if sortOption == .random {
             paginationSeed = UUID().uuidString
@@ -39,55 +52,37 @@ class RecipeListViewModel {
             paginationSeed = nil
         }
         
-        await loadRecipes(apiClient: apiClient, userID: userID, initialLoad: true)
-    }
-
-    func loadMoreRecipes(apiClient: MealieAPIClient?, userID: String?) async {
-        guard canLoadMore else { return }
-        currentPage += 1
-        await loadRecipes(apiClient: apiClient, userID: userID, initialLoad: false)
-    }
-
-    private func loadRecipes(apiClient: MealieAPIClient?, userID: String?, initialLoad: Bool) async {
-        guard let apiClient, let userID else {
-            errorMessage = "API client or User ID is not available."
-            return
-        }
-
-        if initialLoad { isLoading = true } else { isLoadingMore = true }
-        errorMessage = nil
-        
         do {
-            async let recipesResponse = apiClient.fetchRecipes(
-                page: currentPage,
+            async let allRecipesResponse = apiClient.fetchAllRecipes(
                 orderBy: sortOption.rawValue,
                 orderDirection: sortDirection.rawValue,
                 paginationSeed: paginationSeed
             )
             async let userRatingsResponse = apiClient.fetchRatings(userID: userID)
             
-            let fetchedRecipes = try await recipesResponse
+            var fetchedRecipes = try await allRecipesResponse
             let userRatings = try await userRatingsResponse
             
             let ratingsDict = Dictionary(uniqueKeysWithValues: userRatings.map { ($0.recipeId, $0) })
 
-            var updatedItems = fetchedRecipes.items
-            for i in updatedItems.indices {
-                if let userRating = ratingsDict[updatedItems[i].id] {
-                    updatedItems[i].isFavorite = userRating.isFavorite
-                    updatedItems[i].rating = userRating.rating
+            for i in fetchedRecipes.indices {
+                if let userRating = ratingsDict[fetchedRecipes[i].id] {
+                    fetchedRecipes[i].isFavorite = userRating.isFavorite
+                    fetchedRecipes[i].rating = userRating.rating
                 }
             }
-
-            if initialLoad { recipes = updatedItems } else { recipes.append(contentsOf: updatedItems) }
-            totalPages = fetchedRecipes.totalPages
+            
+            recipes = fetchedRecipes
+            RecipeCache.save(fetchedRecipes)
             
         } catch {
             guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else { return }
-            errorMessage = "Failed to load recipes: \(error.localizedDescription)"
+            if recipes.isEmpty {
+                errorMessage = "Failed to load recipes: \(error.localizedDescription)"
+            }
         }
         
-        if initialLoad { isLoading = false } else { isLoadingMore = false }
+        isLoading = false
     }
 
     func toggleFavorite(for recipeId: UUID, userID: String?, apiClient: MealieAPIClient?) async {
