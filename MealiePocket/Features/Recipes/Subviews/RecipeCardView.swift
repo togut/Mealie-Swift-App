@@ -5,8 +5,6 @@ struct RecipeCardView: View {
     let baseURL: URL?
     var showFavoriteButton: Bool = true
     var onFavoriteToggle: (() -> Void)?
-    
-    private let cardHeight: CGFloat = 220
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -18,8 +16,8 @@ struct RecipeCardView: View {
                         imageName: "min-original.webp"
                     )
                 )
-                .frame(height: 150)
-                .cornerRadius(10)
+                .frame(width: 170, height: 170)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
 
                 if showFavoriteButton {
                     favoriteButton
@@ -48,7 +46,7 @@ struct RecipeCardView: View {
             
             Spacer(minLength: 0)
         }
-        .frame(height: cardHeight)
+        .frame(width: 170)
     }
     
     @ViewBuilder

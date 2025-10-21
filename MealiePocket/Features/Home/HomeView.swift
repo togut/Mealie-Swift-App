@@ -25,7 +25,7 @@ struct HomeView: View {
                         favoritesCarousel
                         
                     } else {
-                        ContentUnavailableView("No Favorites", systemImage: "star.slash", description: Text("Your favorite recipes will appear here."))
+                        ContentUnavailableView("No Favorites", systemImage: "heart.slash", description: Text("Your favorite recipes will appear here."))
                     }
                 }
             }
@@ -47,8 +47,8 @@ struct HomeView: View {
             LazyHStack(spacing: 16) {
                 ForEach($viewModel.favoriteRecipes) { $recipe in
                     NavigationLink(value: recipe) {
-                        RecipeCardView(recipe: $recipe, baseURL: appState.apiClient?.baseURL, showFavoriteButton: false)
-                            .frame(width: 170)
+                        FavoriteCardView(recipe: $recipe, baseURL: appState.apiClient?.baseURL, showFavoriteButton: false)
+                            .frame(width: 150)
                     }
                     .buttonStyle(.plain)
                 }

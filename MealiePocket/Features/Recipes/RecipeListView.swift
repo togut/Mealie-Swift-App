@@ -47,7 +47,7 @@ struct RecipeListView: View {
             }
         }
     }
-    
+
     private var recipeGrid: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {

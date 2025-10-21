@@ -18,8 +18,7 @@ struct FavoriteCardView: View {
                         imageName: "min-original.webp"
                     )
                 )
-                .frame(maxWidth: .infinity)
-                .frame(height: 150)
+                .frame(width: 150, height: 150)
                 .clipped()
                 .clipShape(RoundedRectangle(cornerRadius: 10))
 
