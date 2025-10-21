@@ -23,4 +23,18 @@ class RecipeDetailViewModel {
         
         isLoading = false
     }
+    
+    func setRating(_ rating: Double, slug: String, apiClient: MealieAPIClient?, userID: String?) async {
+        guard let apiClient = apiClient, let userID = userID else {
+            errorMessage = "API client or User ID not available."
+            return
+        }
+        
+        do {
+            try await apiClient.setRating(userID: userID, slug: slug, rating: rating)
+            recipeDetail?.rating = rating
+        } catch {
+            errorMessage = "Failed to set rating: \(error.localizedDescription)"
+        }
+    }
 }

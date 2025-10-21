@@ -59,6 +59,19 @@ struct RecipeDetailView: View {
                 TimeInfoView(label: "Total", time: detail.totalTime)
                 TimeInfoView(label: "Prep", time: detail.prepTime)
                 TimeInfoView(label: "Cook", time: detail.cookTime)
+
+                if var rating = viewModel.recipeDetail?.rating {
+                    StarRatingView(rating: Binding(
+                        get: { rating },
+                        set: { newRating in
+                            rating = newRating
+                            viewModel.recipeDetail?.rating = newRating
+                            Task {
+                                await viewModel.setRating(newRating, slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
+                            }
+                        }
+                    ))
+                }
             }
         }
         .padding()

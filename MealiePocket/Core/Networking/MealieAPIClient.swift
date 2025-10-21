@@ -188,4 +188,22 @@ class MealieAPIClient {
             throw APIError.invalidResponse
         }
     }
+
+    func setRating(userID: String, slug: String, rating: Double) async throws {
+        let url = baseURL.appendingPathComponent("api/users/\(userID)/ratings/\(slug)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        guard let token = token else { throw APIError.unauthorized }
+        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let body = ["rating": rating]
+        request.httpBody = try JSONEncoder().encode(body)
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw APIError.invalidResponse
+        }
+    }
 }
