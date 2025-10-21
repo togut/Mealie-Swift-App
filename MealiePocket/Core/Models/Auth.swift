@@ -7,16 +7,3 @@ struct TokenResponse: Decodable {
         case accessToken = "access_token"
     }
 }
-
-struct User: Decodable {
-    let id: String
-}
-
-struct UserRating: Decodable, Hashable {
-    let recipeId: UUID
-    let isFavorite: Bool
-}
-
-struct UserRatingsResponse: Decodable {
-    let ratings: [UserRating]
-}

@@ -1,30 +1,29 @@
 import SwiftUI
 
+extension URL {
+    static func makeImageURL(baseURL: URL?, recipeID: UUID, imageName: String) -> URL? {
+        guard let baseURL else { return nil }
+        return baseURL.appendingPathComponent("api/media/recipes/\(recipeID.rfc4122String)/images/\(imageName)")
+    }
+}
+
 struct RecipeCardView: View {
-    @Binding var recipe: RecipeSummary
+    let recipe: RecipeSummary
     let baseURL: URL?
-    var showFavoriteButton: Bool = true
-    var onFavoriteToggle: (() -> Void)?
     
     private let cardHeight: CGFloat = 220
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ZStack(alignment: .topTrailing) {
-                AsyncImageView(
-                    url: .makeImageURL(
-                        baseURL: baseURL,
-                        recipeID: recipe.id,
-                        imageName: "min-original.webp"
-                    )
+            AsyncImageView(
+                url: .makeImageURL(
+                    baseURL: baseURL,
+                    recipeID: recipe.id,
+                    imageName: "min-original.webp"
                 )
-                .frame(height: 150)
-                .cornerRadius(10)
-
-                if showFavoriteButton {
-                    favoriteButton
-                }
-            }
+            )
+            .frame(height: 150)
+            .cornerRadius(10)
             .padding(.bottom, 8)
 
             Text(recipe.name)
@@ -50,18 +49,5 @@ struct RecipeCardView: View {
         }
         .frame(height: cardHeight)
     }
-    
-    @ViewBuilder
-    private var favoriteButton: some View {
-        if let onFavoriteToggle {
-            Button(action: onFavoriteToggle) {
-                Image(systemName: recipe.isFavorite ? "star.fill" : "star")
-                    .foregroundColor(recipe.isFavorite ? .yellow : .white)
-                    .padding(8)
-                    .background(.black.opacity(0.5))
-                    .clipShape(Circle())
-            }
-            .padding(8)
-        }
-    }
 }
+
