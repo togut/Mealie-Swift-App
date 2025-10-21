@@ -94,7 +94,10 @@ class RecipeListViewModel {
             if initialLoad { recipes = updatedItems } else { recipes.append(contentsOf: updatedItems) }
             totalPages = fetchedRecipes.totalPages
             
-        } catch { errorMessage = "Failed to load recipes: \(error.localizedDescription)" }
+        } catch is CancellationError {
+        } catch {
+            errorMessage = "Failed to load recipes: \(error.localizedDescription)"
+        }
         
         if initialLoad { isLoading = false } else { isLoadingMore = false }
     }
@@ -126,7 +129,11 @@ class RecipeListViewModel {
             } else {
                 allFavorites = []
             }
-        } catch { errorMessage = "Failed to load all favorite recipes." }
+        } catch is CancellationError {
+            // Ignorer l'erreur d'annulation.
+        } catch {
+            errorMessage = "Failed to load all favorite recipes."
+        }
         
         isLoadingFavorites = false
     }

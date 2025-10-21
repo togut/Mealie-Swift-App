@@ -1,11 +1,3 @@
-//
-//  HomeViewModel.swift
-//  MealiePocket
-//
-//  Created by Loriage on 21/10/2025.
-//
-
-
 import Foundation
 
 @Observable
@@ -30,26 +22,24 @@ class HomeViewModel {
             if favoriteIDs.isEmpty {
                 await MainActor.run { favoriteRecipes = [] }
             } else {
-                // Créer une chaîne de filtre pour la requête API
                 let filter = "id IN [\"\(favoriteIDs.joined(separator: "\",\""))\"]"
-                
-                // Récupérer les détails complets des recettes favorites
                 let response = try await apiClient.fetchRecipes(
                     page: 1,
                     orderBy: "name",
                     orderDirection: "asc",
                     paginationSeed: nil,
-                    queryFilter: filter
+                    queryFilter: filter,
+                    perPage: 1000
                 )
                 
                 var favorites = response.items
-                // Marquer toutes les recettes récupérées comme favorites
                 for i in favorites.indices {
                     favorites[i].isFavorite = true
                 }
                 
                 await MainActor.run { favoriteRecipes = favorites }
             }
+        } catch is CancellationError {
         } catch {
             await MainActor.run {
                 errorMessage = "Failed to load favorite recipes: \(error.localizedDescription)"
