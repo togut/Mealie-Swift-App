@@ -39,8 +39,10 @@ class HomeViewModel {
                 
                 await MainActor.run { favoriteRecipes = favorites }
             }
-        } catch is CancellationError {
         } catch {
+            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else {
+                return
+            }
             await MainActor.run {
                 errorMessage = "Failed to load favorite recipes: \(error.localizedDescription)"
             }
