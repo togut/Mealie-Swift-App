@@ -11,7 +11,7 @@ enum APIError: Error {
 class MealieAPIClient {
     let baseURL: URL
     private var token: String?
-    private let recipesPerPage = 20
+    private let defaultRecipesPerPage = 20
 
     init(baseURL: URL) {
         self.baseURL = baseURL
@@ -56,11 +56,11 @@ class MealieAPIClient {
         return try JSONDecoder().decode(User.self, from: data)
     }
 
-    func fetchRecipes(page: Int, orderBy: String, orderDirection: String, paginationSeed: String?, queryFilter: String? = nil) async throws -> PaginatedRecipes {
+    func fetchRecipes(page: Int, orderBy: String, orderDirection: String, paginationSeed: String?, queryFilter: String? = nil, perPage: Int? = nil) async throws -> PaginatedRecipes {
         var components = URLComponents(url: baseURL.appendingPathComponent("api/recipes"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
             URLQueryItem(name: "page", value: "\(page)"),
-            URLQueryItem(name: "perPage", value: "\(recipesPerPage)"),
+            URLQueryItem(name: "perPage", value: "\(perPage ?? defaultRecipesPerPage)"),
             URLQueryItem(name: "orderBy", value: orderBy),
             URLQueryItem(name: "orderDirection", value: orderDirection)
         ]
@@ -102,7 +102,6 @@ class MealieAPIClient {
         }
         
         let decoder = JSONDecoder()
-        // PAS de .keyDecodingStrategy ici, car la réponse est en camelCase
         let ratingsResponse = try decoder.decode(UserRatingsResponse.self, from: data)
         return ratingsResponse.ratings
     }

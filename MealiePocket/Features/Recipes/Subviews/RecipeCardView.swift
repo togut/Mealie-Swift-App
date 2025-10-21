@@ -55,8 +55,8 @@ struct RecipeCardView: View {
     private var favoriteButton: some View {
         if let onFavoriteToggle {
             Button(action: onFavoriteToggle) {
-                Image(systemName: recipe.isFavorite ? "star.fill" : "star")
-                    .foregroundColor(recipe.isFavorite ? .yellow : .white)
+                Image(systemName: recipe.isFavorite ? "heart.fill" : "heart")
+                    .foregroundColor(recipe.isFavorite ? .red : .white)
                     .padding(8)
                     .background(.black.opacity(0.5))
                     .clipShape(Circle())
