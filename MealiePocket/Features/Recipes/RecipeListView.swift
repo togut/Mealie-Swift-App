@@ -27,7 +27,7 @@ struct RecipeListView: View {
                 }
             }
             .navigationTitle("Recipes")
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+            .searchable(text: $searchText, placement: .toolbar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     sortMenu
