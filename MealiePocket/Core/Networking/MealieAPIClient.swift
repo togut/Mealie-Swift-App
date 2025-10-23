@@ -2,23 +2,81 @@ import Foundation
 
 enum APIError: Error {
     case invalidURL
-    case requestFailed(Error)
+    case requestFailed(statusCode: Int, error: Error?)
     case invalidResponse
     case decodingError(Error)
     case unauthorized
+    case encodingError(Error)
+    case unknown(Error)
+}
+
+extension Notification.Name {
+    static let userUnauthorizedNotification = Notification.Name("userUnauthorizedNotification")
 }
 
 class MealieAPIClient {
     let baseURL: URL
     private var token: String?
     private let defaultRecipesPerPage = 20
+    private let session: URLSession
 
-    init(baseURL: URL) {
+    struct NoReply: Decodable {}
+
+    init(baseURL: URL, session: URLSession = .shared) {
         self.baseURL = baseURL
+        self.session = session
     }
 
     func setToken(_ token: String) {
         self.token = token
+    }
+
+    private func performRequest<T: Decodable>(for request: URLRequest) async throws -> T {
+        var mutableRequest = request
+        
+        if let token = self.token {
+            mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        do {
+            let (data, response) = try await session.data(for: mutableRequest)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw APIError.invalidResponse
+            }
+
+            if httpResponse.statusCode == 401 {
+                NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
+                throw APIError.unauthorized
+            }
+
+            guard (200...299).contains(httpResponse.statusCode) else {
+                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+            }
+            
+            if T.self == NoReply.self {
+                 if let noReply = NoReply() as? T {
+                     return noReply
+                 } else {
+                     throw APIError.decodingError(NSError(domain: "MealieAPIClient", code: -2, userInfo: [NSLocalizedDescriptionKey: "Could not cast to NoReply"]))
+                 }
+            }
+
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                return try decoder.decode(T.self, from: data)
+            } catch {
+                throw APIError.decodingError(error)
+            }
+            
+        } catch let error as APIError {
+             throw error
+        } catch let urlError as URLError {
+             throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
+        } catch {
+             throw APIError.unknown(error)
+        }
     }
 
     func login(username: String, password: String) async throws -> String {
@@ -29,31 +87,29 @@ class MealieAPIClient {
 
         let bodyString = "username=\(username)&password=\(password)"
         request.httpBody = bodyString.data(using: .utf8)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
+        
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                 throw APIError.invalidResponse
+            }
+            guard httpResponse.statusCode == 200 else {
+                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+            }
+            let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
+            self.token = tokenResponse.accessToken
+            return tokenResponse.accessToken
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.unknown(error)
         }
-
-        let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
-        self.token = tokenResponse.accessToken
-        return tokenResponse.accessToken
     }
     
     func fetchCurrentUser() async throws -> User {
         let url = baseURL.appendingPathComponent("api/users/self")
-        var request = URLRequest(url: url)
-        
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
-        
-        return try JSONDecoder().decode(User.self, from: data)
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
     }
 
     func fetchAllRecipes(orderBy: String, orderDirection: String, paginationSeed: String?) async throws -> [RecipeSummary] {
@@ -62,7 +118,7 @@ class MealieAPIClient {
         var totalPages = 1
         
         repeat {
-            let paginatedResponse = try await fetchRecipes(
+            let paginatedResponse: PaginatedRecipes = try await fetchRecipes(
                 page: currentPage,
                 orderBy: orderBy,
                 orderDirection: orderDirection,
@@ -72,7 +128,7 @@ class MealieAPIClient {
             allRecipes.append(contentsOf: paginatedResponse.items)
             totalPages = paginatedResponse.totalPages
             currentPage += 1
-        } while currentPage <= totalPages
+        } while currentPage <= totalPages && totalPages > 0
         
         return allRecipes
     }
@@ -90,103 +146,48 @@ class MealieAPIClient {
             components?.queryItems?.append(URLQueryItem(name: "paginationSeed", value: seed))
         }
         
-        if let filter = queryFilter {
+        if let filter = queryFilter, !filter.isEmpty {
             components?.queryItems?.append(URLQueryItem(name: "queryFilter", value: filter))
         }
         
         guard let url = components?.url else { throw APIError.invalidURL }
         
-        var request = URLRequest(url: url)
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
-        
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(PaginatedRecipes.self, from: data)
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
     }
 
     func fetchRatings(userID: String) async throws -> [UserRating] {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/ratings")
-        var request = URLRequest(url: url)
-        
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
-        
-        let decoder = JSONDecoder()
-        let ratingsResponse = try decoder.decode(UserRatingsResponse.self, from: data)
-        return ratingsResponse.ratings
+        let request = URLRequest(url: url)
+        let response: UserRatingsResponse = try await performRequest(for: request)
+        return response.ratings
     }
 
     func fetchFavorites(userID: String) async throws -> [UserRating] {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites")
-        var request = URLRequest(url: url)
-        
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
-        
-        let decoder = JSONDecoder()
-        let ratingsResponse = try decoder.decode(UserRatingsResponse.self, from: data)
-        return ratingsResponse.ratings
+        let request = URLRequest(url: url)
+        let response: UserRatingsResponse = try await performRequest(for: request)
+        return response.ratings
     }
     
     func fetchRecipeDetail(slug: String) async throws -> RecipeDetail {
         let url = baseURL.appendingPathComponent("api/recipes/\(slug)")
-        var request = URLRequest(url: url)
-
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
-
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(RecipeDetail.self, from: data)
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
     }
     
     func addFavorite(userID: String, slug: String) async throws {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites/\(slug)")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (_, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
+        let _: NoReply = try await performRequest(for: request)
     }
 
     func removeFavorite(userID: String, slug: String) async throws {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites/\(slug)")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-
-        let (_, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
-        }
+        let _: NoReply = try await performRequest(for: request)
     }
 
     func setRating(userID: String, slug: String, rating: Double) async throws {
@@ -195,15 +196,13 @@ class MealieAPIClient {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        guard let token = token else { throw APIError.unauthorized }
-        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
         let body = ["rating": rating]
-        request.httpBody = try JSONEncoder().encode(body)
-        
-        let (_, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            throw APIError.invalidResponse
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+             throw APIError.encodingError(error)
         }
+        
+        let _: NoReply = try await performRequest(for: request)
     }
 }

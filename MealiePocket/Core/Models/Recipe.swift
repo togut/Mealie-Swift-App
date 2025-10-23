@@ -6,7 +6,8 @@ struct RecipeSummary: Codable, Identifiable, Hashable {
     let slug: String
     let recipeYield: String?
     let totalTime: String?
-    var rating: Double?
+    let rating: Double?
+    var userRating: Double?
     var isFavorite: Bool
 
     private enum CodingKeys: String, CodingKey {
@@ -15,25 +16,39 @@ struct RecipeSummary: Codable, Identifiable, Hashable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
         slug = try container.decode(String.self, forKey: .slug)
         recipeYield = try container.decodeIfPresent(String.self, forKey: .recipeYield)
         totalTime = try container.decodeIfPresent(String.self, forKey: .totalTime)
         rating = try container.decodeIfPresent(Double.self, forKey: .rating)
+        userRating = nil
         isFavorite = false
     }
 
-    init(id: UUID, name: String, slug: String, recipeYield: String?, totalTime: String?, rating: Double?, isFavorite: Bool) {
+    init(id: UUID, name: String, slug: String, recipeYield: String?, totalTime: String?, rating: Double?, userRating: Double?, isFavorite: Bool) {
         self.id = id
         self.name = name
         self.slug = slug
         self.recipeYield = recipeYield
         self.totalTime = totalTime
         self.rating = rating
+        self.userRating = userRating
         self.isFavorite = isFavorite
     }
+    
+     func hash(into hasher: inout Hasher) {
+         hasher.combine(id)
+     }
+
+     static func == (lhs: RecipeSummary, rhs: RecipeSummary) -> Bool {
+         lhs.id == rhs.id &&
+         lhs.name == rhs.name &&
+         lhs.slug == rhs.slug &&
+         lhs.rating == rhs.rating &&
+         lhs.userRating == rhs.userRating &&
+         lhs.isFavorite == rhs.isFavorite
+     }
 }
 
 struct PaginatedRecipes: Decodable {
@@ -45,7 +60,8 @@ struct RecipeDetail: Decodable, Identifiable {
     let id: UUID
     let name: String
     let description: String?
-    var rating: Double?
+    let rating: Double?
+    var userRating: Double?
     let totalTime: String?
     let prepTime: String?
     let cookTime: String?
@@ -53,6 +69,10 @@ struct RecipeDetail: Decodable, Identifiable {
     let recipeYield: String?
     let recipeIngredient: [RecipeIngredient]
     let recipeInstructions: [RecipeInstruction]
+    
+    private enum CodingKeys: String, CodingKey {
+         case id, name, description, rating, totalTime, prepTime, cookTime, recipeServings, recipeYield, recipeIngredient, recipeInstructions
+     }
 }
 
 struct RecipeIngredient: Decodable, Identifiable, Hashable {

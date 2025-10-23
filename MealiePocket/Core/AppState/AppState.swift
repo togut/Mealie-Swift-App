@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @Observable
 class AppState {
@@ -10,6 +11,8 @@ class AppState {
     private let tokenKey = "com.nohitdev.MealiePocket.apiToken"
     private let baseURLKey = "com.nohitdev.MealiePocket.baseURL"
     private let userIDKey = "com.nohitdev.MealiePocket.userID"
+    
+    private var cancellables = Set<AnyCancellable>()
 
     init() {
         if let tokenData = KeychainHelper.load(key: tokenKey),
@@ -27,6 +30,17 @@ class AppState {
             self.currentUserID = userID
             self.isAuthenticated = true
         }
+        
+        setupUnauthorizedObserver()
+    }
+    
+    private func setupUnauthorizedObserver() {
+        NotificationCenter.default.publisher(for: .userUnauthorizedNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.logout()
+            }
+            .store(in: &cancellables)
     }
     
     func login(baseURL: URL, token: String) async {
@@ -39,12 +53,21 @@ class AppState {
             guard let tokenData = token.data(using: .utf8),
                   let urlData = baseURL.absoluteString.data(using: .utf8),
                   let userIDData = user.id.data(using: .utf8) else {
+                await MainActor.run { self.logout() }
                 return
             }
 
-            _ = KeychainHelper.save(key: tokenKey, data: tokenData)
-            _ = KeychainHelper.save(key: baseURLKey, data: urlData)
-            _ = KeychainHelper.save(key: userIDKey, data: userIDData)
+            let tokenStatus = KeychainHelper.save(key: tokenKey, data: tokenData)
+            let urlStatus = KeychainHelper.save(key: baseURLKey, data: urlData)
+            let userStatus = KeychainHelper.save(key: userIDKey, data: userIDData)
+            
+            guard tokenStatus == noErr, urlStatus == noErr, userStatus == noErr else {
+                _ = KeychainHelper.delete(key: tokenKey)
+                _ = KeychainHelper.delete(key: baseURLKey)
+                _ = KeychainHelper.delete(key: userIDKey)
+                await MainActor.run { self.logout() }
+                return
+            }
             
             await MainActor.run {
                 self.apiClient = apiClient
@@ -58,13 +81,19 @@ class AppState {
         }
     }
 
+    @MainActor
     func logout() {
         _ = KeychainHelper.delete(key: tokenKey)
         _ = KeychainHelper.delete(key: baseURLKey)
         _ = KeychainHelper.delete(key: userIDKey)
         
+        self.apiClient?.setToken("")
         self.apiClient = nil
         self.currentUserID = nil
         self.isAuthenticated = false
+    }
+    
+    deinit {
+        cancellables.forEach { $0.cancel() }
     }
 }
