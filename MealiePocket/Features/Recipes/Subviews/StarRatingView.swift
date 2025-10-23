@@ -3,7 +3,6 @@ import SwiftUI
 struct StarRatingView: View {
     @Binding var rating: Double
     var maxRating: Int = 5
-    var onRatingChanged: ((Double) -> Void)?
 
     var body: some View {
         HStack {
@@ -13,7 +12,6 @@ struct StarRatingView: View {
                     .onTapGesture {
                         let newRating = Double(index)
                         rating = newRating
-                        onRatingChanged?(newRating)
                     }
             }
         }

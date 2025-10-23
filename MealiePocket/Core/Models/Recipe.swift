@@ -49,6 +49,8 @@ struct RecipeDetail: Decodable, Identifiable {
     let totalTime: String?
     let prepTime: String?
     let cookTime: String?
+    let recipeServings: Double?
+    let recipeYield: String?
     let recipeIngredient: [RecipeIngredient]
     let recipeInstructions: [RecipeInstruction]
 }

@@ -37,6 +37,7 @@ struct FavoriteCardView: View {
             HStack() {
                 if let totalTime = recipe.totalTime, !totalTime.isEmpty {
                     Label(totalTime, systemImage: "clock")
+                        .lineLimit(1)
                 }
 
                 if let rating = recipe.rating, rating > 0 {

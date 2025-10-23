@@ -12,11 +12,6 @@ struct RecipeDetailView: View {
                 if let detail = viewModel.recipeDetail {
                     headerView(detail: detail)
                     
-                    if let description = detail.description, !description.isEmpty {
-                        Text(description)
-                            .padding(.horizontal)
-                    }
-                    
                     Divider().padding(.horizontal)
                     
                     ingredientsSection(ingredients: detail.recipeIngredient)
@@ -27,12 +22,13 @@ struct RecipeDetailView: View {
                     
                 } else if viewModel.isLoading {
                     ProgressView()
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 50)
                 } else if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
                         .padding()
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
         }
@@ -44,37 +40,87 @@ struct RecipeDetailView: View {
     }
     
     private func headerView(detail: RecipeDetail) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            AsyncImageView(
-                url: .makeImageURL(
-                    baseURL: appState.apiClient?.baseURL,
-                    recipeID: detail.id,
-                    imageName: "original.webp"
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
+                AsyncImageView(
+                    url: .makeImageURL(
+                        baseURL: appState.apiClient?.baseURL,
+                        recipeID: detail.id,
+                        imageName: "original.webp"
+                    )
                 )
-            )
-            .frame(width: 150, height: 150)
-            .cornerRadius(10)
-            
-            VStack(alignment: .leading, spacing: 16) {
-                TimeInfoView(label: "Total", time: detail.totalTime)
-                TimeInfoView(label: "Prep", time: detail.prepTime)
-                TimeInfoView(label: "Cook", time: detail.cookTime)
+                .frame(width: 150, height: 150)
+                .cornerRadius(10)
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    TimeInfoView(icon: "clock", label: "Total", value: detail.totalTime)
 
-                if var rating = viewModel.recipeDetail?.rating {
-                    StarRatingView(rating: Binding(
-                        get: { rating },
-                        set: { newRating in
-                            rating = newRating
-                            viewModel.recipeDetail?.rating = newRating
-                            Task {
-                                await viewModel.setRating(newRating, slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
-                            }
-                        }
-                    ))
+                    HStack(spacing: 1) {
+                        TimeInfoView(icon: "stopwatch", label: "Preparation", value: detail.prepTime)
+                        Divider().padding()
+                        TimeInfoView(icon: "frying.pan", label: "Cooking", value: detail.cookTime)
+                    }
+
+                    let servingsValue: Double? = detail.recipeServings
+                    let isSingular: Bool = servingsValue == 1.0
+                    
+                    let servingsLabel: String = isSingular ? "Portion" : "Portions"
+                    let servingsIcon: String = isSingular ? "person" : "person.2"
+                    
+                    if let servingsValue, servingsValue > 0 {
+                        TimeInfoView(
+                            icon: servingsIcon,
+                            label: servingsLabel,
+                            value: servingsValue
+                        )
+                    } else if let yield = detail.recipeYield, !yield.isEmpty {
+                        TimeInfoView(
+                            icon: "person.2",
+                            label: "Portions",
+                            value: yield
+                        )
+                    } else {
+                        TimeInfoView(
+                            icon: "person",
+                            label: "Portion",
+                            value: (nil as String?)
+                        )
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+
+            let ratingBinding = Binding<Double>(
+                get: {
+                    viewModel.recipeDetail?.rating ?? 0.0
+                },
+                set: { newRating in
+                    viewModel.recipeDetail?.rating = newRating
+                Task {
+                    await viewModel.setRating(newRating, slug: recipeSummary.slug, apiClient: appState.apiClient, userID:  appState.currentUserID)
+                    }
+                }
+            )
+            
+            if let description = detail.description, !description.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Description")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(description)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Ratings")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                StarRatingView(rating: ratingBinding)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
+        .padding(.horizontal)
     }
     
     private func ingredientsSection(ingredients: [RecipeIngredient]) -> some View {
@@ -113,15 +159,37 @@ struct RecipeDetailView: View {
 
 private struct TimeInfoView: View {
     let label: String
-    let time: String?
+    let text: String
+    let icon: String
+
+    init(icon: String = "clock", label: String, value: String?) {
+        self.label = label
+        self.text = value ?? "N/A"
+        self.icon = icon
+    }
+
+    init(icon: String, label: String, value: Double?) {
+        self.label = label
+        self.icon = icon
+        
+        if let numValue = value, numValue > 0 {
+            let formatter = NumberFormatter()
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 1
+            self.text = formatter.string(from: NSNumber(value: numValue)) ?? "N/A"
+        } else {
+            self.text = "N/A"
+        }
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text(label)
+            Label(label, systemImage: icon)
                 .font(.caption)
                 .foregroundColor(.secondary)
-            Text(time ?? "None")
+            Text(text)
                 .fontWeight(.medium)
+                .lineLimit(1)
         }
     }
 }
