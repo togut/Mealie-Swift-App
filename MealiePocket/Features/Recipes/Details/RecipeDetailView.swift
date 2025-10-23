@@ -35,7 +35,7 @@ struct RecipeDetailView: View {
         .navigationTitle(recipeSummary.name)
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient)
+            await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
         }
     }
     
@@ -90,35 +90,37 @@ struct RecipeDetailView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            let ratingBinding = Binding<Double>(
-                get: {
-                    viewModel.recipeDetail?.rating ?? 0.0
-                },
-                set: { newRating in
-                    viewModel.recipeDetail?.rating = newRating
-                Task {
-                    await viewModel.setRating(newRating, slug: recipeSummary.slug, apiClient: appState.apiClient, userID:  appState.currentUserID)
-                    }
-                }
-            )
-            
-            if let description = detail.description, !description.isEmpty {
+            VStack(alignment: .leading) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Description")
-                        .font(.caption)
+                    Text("Your rating")
+                        .font(.caption.weight(.semibold))
                         .foregroundColor(.secondary)
-                    Text(description)
+                        .textCase(.uppercase)
+                    
+                    let ratingBinding = Binding<Double>(
+                        get: { viewModel.recipeDetail?.userRating ?? 0.0 },
+                        set: { newRating in
+                            Task {
+                                await viewModel.setRating(newRating, slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
+                            }
+                        }
+                    )
+                    StarRatingView(rating: ratingBinding)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                
+                if let globalRating = detail.rating, globalRating > 0, globalRating != viewModel.recipeDetail?.userRating {
+                    HStack(spacing: 4) {
+                        Text("Overall rating:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Label(String(format: "%.1f", globalRating), systemImage: "star.fill")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+                    .padding(.top, 4)
+                }
             }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Ratings")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                StarRatingView(rating: ratingBinding)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal)
     }

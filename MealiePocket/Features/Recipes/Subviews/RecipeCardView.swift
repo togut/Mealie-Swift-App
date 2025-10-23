@@ -29,6 +29,7 @@ struct RecipeCardView: View {
                 .font(.headline)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, 6)
             
             HStack() {
@@ -37,8 +38,8 @@ struct RecipeCardView: View {
                         .lineLimit(1)
                 }
 
-                if let rating = recipe.rating, rating > 0 {
-                    Label(String(format: "%.1f", rating), systemImage: "star.fill")
+                if let globalRating = recipe.rating, globalRating > 0 {
+                    Label(String(format: "%.1f", globalRating), systemImage: "star.fill")
                         .foregroundColor(.orange)
                 }
             }
@@ -48,6 +49,7 @@ struct RecipeCardView: View {
             Spacer(minLength: 0)
         }
         .frame(width: 170)
+        .frame(minHeight: 250)
     }
     
     @ViewBuilder
@@ -57,10 +59,9 @@ struct RecipeCardView: View {
                 Image(systemName: recipe.isFavorite ? "heart.fill" : "heart")
                     .foregroundColor(recipe.isFavorite ? .red : .white)
                     .padding(8)
-                    .background(.black.opacity(0.5))
-                    .clipShape(Circle())
+                    .background(Circle().fill(.black.opacity(0.5)))
             }
-            .padding(8)
+            .padding([.top, .trailing], 6)
         }
     }
 }

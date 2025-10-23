@@ -41,7 +41,7 @@ class RecipeListViewModel {
             return
         }
 
-        if !isRefresh {
+        if !isRefresh && recipes.isEmpty {
             isLoading = true
         }
         errorMessage = nil
@@ -63,26 +63,37 @@ class RecipeListViewModel {
             var fetchedRecipes = try await allRecipesResponse
             let userRatings = try await userRatingsResponse
             
-            let ratingsDict = Dictionary(uniqueKeysWithValues: userRatings.map { ($0.recipeId, $0) })
+            let userRatingsDict = Dictionary(uniqueKeysWithValues: userRatings.map { ($0.recipeId, $0) })
 
             for i in fetchedRecipes.indices {
-                if let userRating = ratingsDict[fetchedRecipes[i].id] {
-                    fetchedRecipes[i].isFavorite = userRating.isFavorite
-                    fetchedRecipes[i].rating = userRating.rating
+                if let userRatingData = userRatingsDict[fetchedRecipes[i].id] {
+                    fetchedRecipes[i].isFavorite = userRatingData.isFavorite
+                    fetchedRecipes[i].userRating = userRatingData.rating
+                } else {
+                    fetchedRecipes[i].isFavorite = false
+                    fetchedRecipes[i].userRating = nil
                 }
             }
             
-            recipes = fetchedRecipes
-            RecipeCache.save(fetchedRecipes)
+            await MainActor.run {
+                self.recipes = fetchedRecipes
+                RecipeCache.save(fetchedRecipes)
+                self.isLoading = false
+            }
             
+        } catch APIError.unauthorized {
+             await MainActor.run { isLoading = false }
         } catch {
-            guard !(error is CancellationError) && (error as? URLError)?.code != .cancelled else { return }
             if recipes.isEmpty {
-                errorMessage = "Failed to load recipes: \(error.localizedDescription)"
+                await MainActor.run {
+                     self.errorMessage = "Failed to load recipes: \(error.localizedDescription)"
+                     self.isLoading = false
+                }
+            } else {
+                 print("Failed to refresh recipes: \(error.localizedDescription)")
+                 await MainActor.run { isLoading = false }
             }
         }
-        
-        isLoading = false
     }
 
     func toggleFavorite(for recipeId: UUID, userID: String?, apiClient: MealieAPIClient?) async {
@@ -95,12 +106,16 @@ class RecipeListViewModel {
         do {
             if recipe.isFavorite {
                 try await apiClient.addFavorite(userID: userID, slug: recipe.slug)
+                RecipeCache.save(recipes)
             } else {
                 try await apiClient.removeFavorite(userID: userID, slug: recipe.slug)
+                RecipeCache.save(recipes)
             }
         } catch {
             updateFavoriteStatus(for: recipeId, in: &recipes)
-            errorMessage = "Failed to update favorite status"
+             await MainActor.run {
+                 self.errorMessage = "Failed to update favorite status: \(error.localizedDescription)"
+             }
         }
     }
     
@@ -127,7 +142,7 @@ enum SortOption: String, CaseIterable, Identifiable {
         case .createdAt: "Date Created"
         case .lastMade: "Last Made"
         case .updatedAt: "Date Updated"
-        case .rating: "Rating"
+        case .rating: "Overall rating"
         case .random: "Random"
         }
     }
