@@ -7,11 +7,13 @@ enum APIError: Error {
     case decodingError(Error)
     case unauthorized
     case encodingError(Error)
+    case tokenRefreshFailed
     case unknown(Error)
 }
 
 extension Notification.Name {
     static let userUnauthorizedNotification = Notification.Name("userUnauthorizedNotification")
+    static let tokenRefreshedNotification = Notification.Name("tokenRefreshedNotification")
 }
 
 class MealieAPIClient {
@@ -19,23 +21,37 @@ class MealieAPIClient {
     private var token: String?
     private let defaultRecipesPerPage = 20
     private let session: URLSession
+    private var isRefreshingToken = false
+    private var requestQueue: [(URLRequest, (Result<Data, Error>) -> Void)] = []
+
 
     struct NoReply: Decodable {}
+    struct RefreshResponse: Decodable {
+        let accessToken: String
+        enum CodingKeys: String, CodingKey {
+            case accessToken = "access_token"
+        }
+    }
+
 
     init(baseURL: URL, session: URLSession = .shared) {
         self.baseURL = baseURL
         self.session = session
     }
 
-    func setToken(_ token: String) {
+    func setToken(_ token: String?) {
         self.token = token
+    }
+    
+    func getToken() -> String? {
+        return self.token
     }
 
     private func performRequest<T: Decodable>(for request: URLRequest) async throws -> T {
         var mutableRequest = request
         
         if let token = self.token {
-            mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+             mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
         do {
@@ -46,29 +62,37 @@ class MealieAPIClient {
             }
 
             if httpResponse.statusCode == 401 {
-                NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
-                throw APIError.unauthorized
+                 do {
+                     let newToken = try await refreshToken()
+                     mutableRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
+                     let (newData, newResponse) = try await session.data(for: mutableRequest)
+                     
+                     guard let newHttpResponse = newResponse as? HTTPURLResponse else {
+                         throw APIError.invalidResponse
+                     }
+
+                     guard (200...299).contains(newHttpResponse.statusCode) else {
+                          if newHttpResponse.statusCode == 401 {
+                              NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
+                              throw APIError.unauthorized
+                          } else {
+                              throw APIError.requestFailed(statusCode: newHttpResponse.statusCode, error: nil)
+                          }
+                     }
+                     return try decodeResponseData(newData)
+                     
+                 } catch {
+                      NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
+                      throw APIError.tokenRefreshFailed
+                 }
             }
+
 
             guard (200...299).contains(httpResponse.statusCode) else {
                  throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
             }
             
-            if T.self == NoReply.self {
-                 if let noReply = NoReply() as? T {
-                     return noReply
-                 } else {
-                     throw APIError.decodingError(NSError(domain: "MealieAPIClient", code: -2, userInfo: [NSLocalizedDescriptionKey: "Could not cast to NoReply"]))
-                 }
-            }
-
-            do {
-                let decoder = JSONDecoder()
-                decoder.keyDecodingStrategy = .convertFromSnakeCase
-                return try decoder.decode(T.self, from: data)
-            } catch {
-                throw APIError.decodingError(error)
-            }
+           return try decodeResponseData(data)
             
         } catch let error as APIError {
              throw error
@@ -78,6 +102,65 @@ class MealieAPIClient {
              throw APIError.unknown(error)
         }
     }
+
+     private func decodeResponseData<T: Decodable>(_ data: Data) throws -> T {
+         if T.self == NoReply.self {
+              if let noReply = NoReply() as? T {
+                  return noReply
+              } else {
+                  throw APIError.decodingError(NSError(domain: "MealieAPIClient", code: -2, userInfo: [NSLocalizedDescriptionKey: "Could not cast to NoReply"]))
+              }
+         }
+         
+         do {
+             let decoder = JSONDecoder()
+             decoder.keyDecodingStrategy = .convertFromSnakeCase
+             return try decoder.decode(T.self, from: data)
+         } catch {
+             throw APIError.decodingError(error)
+         }
+     }
+
+
+    func refreshToken() async throws -> String {
+         let url = baseURL.appendingPathComponent("api/auth/refresh")
+         var request = URLRequest(url: url)
+         request.httpMethod = "GET"
+
+         guard let currentToken = self.token else {
+             throw APIError.unauthorized
+         }
+         request.addValue("Bearer \(currentToken)", forHTTPHeaderField: "Authorization")
+
+         do {
+             let (data, response) = try await session.data(for: request)
+             
+             guard let httpResponse = response as? HTTPURLResponse else {
+                 throw APIError.invalidResponse
+             }
+
+             guard httpResponse.statusCode == 200 else {
+                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+             }
+             
+             let refreshResponse = try JSONDecoder().decode(RefreshResponse.self, from: data)
+             let newToken = refreshResponse.accessToken
+
+             self.token = newToken
+
+              NotificationCenter.default.post(name: .tokenRefreshedNotification, object: newToken)
+
+             return newToken
+             
+         } catch let error as APIError {
+             throw error
+         } catch let urlError as URLError {
+              throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
+         } catch {
+             throw APIError.unknown(error)
+         }
+     }
+
 
     func login(username: String, password: String) async throws -> String {
         let url = baseURL.appendingPathComponent("api/auth/token")

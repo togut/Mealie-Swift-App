@@ -4,6 +4,14 @@ struct LoginView: View {
     @State private var viewModel = LoginViewModel()
     @Environment(AppState.self) private var appState
 
+    enum LoginMode: String, CaseIterable, Identifiable {
+        case password = "Password"
+        case apiKey = "API Key"
+        var id: String { self.rawValue }
+    }
+    
+    @State private var selectedMode: LoginMode = .password
+
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
@@ -11,6 +19,15 @@ struct LoginView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
+                .padding(.bottom)
+
+            Picker("Login Method", selection: $selectedMode) {
+                ForEach(LoginMode.allCases) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.bottom)
 
             VStack {
                 TextField("Server URL", text: $viewModel.serverURL)
@@ -20,19 +37,30 @@ struct LoginView: View {
                     .padding()
                     .background(.thinMaterial)
                     .cornerRadius(10)
-                
-                TextField("Username", text: $viewModel.username)
-                    .textContentType(.username)
-                    .autocapitalization(.none)
-                    .padding()
-                    .background(.thinMaterial)
-                    .cornerRadius(10)
+                Group{
+                    if selectedMode == .password {
+                        TextField("Username", text: $viewModel.username)
+                            .textContentType(.username)
+                            .autocapitalization(.none)
+                            .padding()
+                            .background(.thinMaterial)
+                            .cornerRadius(10)
+                        
+                        SecureField("Password", text: $viewModel.password)
+                            .textContentType(.password)
+                            .padding()
+                            .background(.thinMaterial)
+                            .cornerRadius(10)
+                    } else {
+                        SecureField("API Key", text: $viewModel.apiKey)
+                            .textContentType(.password)
+                            .padding()
+                            .background(.thinMaterial)
+                            .cornerRadius(10)
 
-                SecureField("Password", text: $viewModel.password)
-                    .textContentType(.password)
-                    .padding()
-                    .background(.thinMaterial)
-                    .cornerRadius(10)
+                        Spacer().frame(height: 62)
+                    }
+                }
             }
 
             if let errorMessage = viewModel.errorMessage {
@@ -50,7 +78,7 @@ struct LoginView: View {
             } else {
                 Button(action: {
                     Task {
-                        await viewModel.login(appState: appState)
+                        await viewModel.performLogin(appState: appState, mode: selectedMode)
                     }
                 }) {
                     Text("Login")
@@ -61,5 +89,8 @@ struct LoginView: View {
             }
         }
         .padding()
+        .onChange(of: selectedMode) { _, _ in
+             viewModel.errorMessage = nil
+        }
     }
 }
