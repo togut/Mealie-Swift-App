@@ -38,8 +38,8 @@ struct RecipeCardView: View {
                         .lineLimit(1)
                 }
 
-                if let globalRating = recipe.rating, globalRating > 0 {
-                    Label(String(format: "%.1f", globalRating), systemImage: "star.fill")
+                if let userRating = recipe.userRating, userRating > 0 {
+                    Label(String(format: "%.1f", userRating), systemImage: "star.fill")
                         .foregroundColor(.orange)
                 }
             }
