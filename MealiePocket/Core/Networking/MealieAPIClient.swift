@@ -23,8 +23,8 @@ class MealieAPIClient {
     private let session: URLSession
     private var isRefreshingToken = false
     private var requestQueue: [(URLRequest, (Result<Data, Error>) -> Void)] = []
-
-
+    
+    
     struct NoReply: Decodable {}
     struct RefreshResponse: Decodable {
         let accessToken: String
@@ -32,13 +32,58 @@ class MealieAPIClient {
             case accessToken = "access_token"
         }
     }
-
-
+    
+    struct CreatePlanEntry: Codable {
+        let date: String
+        let recipeId: String
+        let entryType: String
+    }
+    
+    struct ReadPlanEntry: Codable {
+        let id: Int
+    }
+    
+    struct UpdateRecipePayload: Codable {
+        var id: UUID
+        var userId: String?
+        var householdId: String?
+        var groupId: String?
+        var name: String
+        var slug: String
+        var image: String?
+        var recipeServings: Double?
+        var recipeYieldQuantity: Int?
+        var recipeYield: String?
+        var totalTime: String?
+        var prepTime: String?
+        var cookTime: String?
+        var performTime: String?
+        var description: String?
+        var recipeCategory: [RecipeCategoryInput]?
+        var tags: [RecipeTagInput]?
+        var tools: [RecipeToolInput]?
+        var rating: Double?
+        var orgURL: String?
+        var dateAdded: String?
+        var dateUpdated: String?
+        var createdAt: String?
+        var updatedAt: String?
+        var lastMade: String?
+        var recipeIngredient: [RecipeIngredient]
+        var recipeInstructions: [RecipeInstruction]
+        var nutrition: Nutrition?
+        var settings: RecipeSettings?
+        var assets: [RecipeAsset]?
+        var notes: [RecipeNote]?
+        var extras: [String: String]?
+        var comments: [CommentStub]?
+    }
+    
     init(baseURL: URL, session: URLSession = .shared) {
         self.baseURL = baseURL
         self.session = session
     }
-
+    
     func setToken(_ token: String?) {
         self.token = token
     }
@@ -46,138 +91,138 @@ class MealieAPIClient {
     func getToken() -> String? {
         return self.token
     }
-
+    
     private func performRequest<T: Decodable>(for request: URLRequest) async throws -> T {
         var mutableRequest = request
         
         if let token = self.token {
-             mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-
+        
         do {
             let (data, response) = try await session.data(for: mutableRequest)
-
+            
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw APIError.invalidResponse
             }
-
+            
             if httpResponse.statusCode == 401 {
-                 do {
-                     let newToken = try await refreshToken()
-                     mutableRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
-                     let (newData, newResponse) = try await session.data(for: mutableRequest)
-                     
-                     guard let newHttpResponse = newResponse as? HTTPURLResponse else {
-                         throw APIError.invalidResponse
-                     }
-
-                     guard (200...299).contains(newHttpResponse.statusCode) else {
-                          if newHttpResponse.statusCode == 401 {
-                              NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
-                              throw APIError.unauthorized
-                          } else {
-                              throw APIError.requestFailed(statusCode: newHttpResponse.statusCode, error: nil)
-                          }
-                     }
-                     return try decodeResponseData(newData)
-                     
-                 } catch {
-                      NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
-                      throw APIError.tokenRefreshFailed
-                 }
-            }
-
-
-            guard (200...299).contains(httpResponse.statusCode) else {
-                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+                do {
+                    let newToken = try await refreshToken()
+                    mutableRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
+                    let (newData, newResponse) = try await session.data(for: mutableRequest)
+                    
+                    guard let newHttpResponse = newResponse as? HTTPURLResponse else {
+                        throw APIError.invalidResponse
+                    }
+                    
+                    guard (200...299).contains(newHttpResponse.statusCode) else {
+                        if newHttpResponse.statusCode == 401 {
+                            NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
+                            throw APIError.unauthorized
+                        } else {
+                            throw APIError.requestFailed(statusCode: newHttpResponse.statusCode, error: nil)
+                        }
+                    }
+                    return try decodeResponseData(newData)
+                    
+                } catch {
+                    NotificationCenter.default.post(name: .userUnauthorizedNotification, object: nil)
+                    throw APIError.tokenRefreshFailed
+                }
             }
             
-           return try decodeResponseData(data)
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+            }
+            
+            return try decodeResponseData(data)
             
         } catch let error as APIError {
-             throw error
+            throw error
         } catch let urlError as URLError {
-             throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
+            throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
         } catch {
-             throw APIError.unknown(error)
+            throw APIError.unknown(error)
         }
     }
-
-     private func decodeResponseData<T: Decodable>(_ data: Data) throws -> T {
-         if T.self == NoReply.self {
-              if let noReply = NoReply() as? T {
-                  return noReply
-              } else {
-                  throw APIError.decodingError(NSError(domain: "MealieAPIClient", code: -2, userInfo: [NSLocalizedDescriptionKey: "Could not cast to NoReply"]))
-              }
-         }
-         
-         do {
-             let decoder = JSONDecoder()
-             decoder.keyDecodingStrategy = .convertFromSnakeCase
-             return try decoder.decode(T.self, from: data)
-         } catch {
-             throw APIError.decodingError(error)
-         }
-     }
-
-
+    
+    private func decodeResponseData<T: Decodable>(_ data: Data) throws -> T {
+        if T.self == NoReply.self {
+            if let noReply = NoReply() as? T {
+                return noReply
+            } else {
+                throw APIError.decodingError(NSError(domain: "MealieAPIClient", code: -2, userInfo: [NSLocalizedDescriptionKey: "Could not cast to NoReply"]))
+            }
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+    
+    
     func refreshToken() async throws -> String {
-         let url = baseURL.appendingPathComponent("api/auth/refresh")
-         var request = URLRequest(url: url)
-         request.httpMethod = "GET"
-
-         guard let currentToken = self.token else {
-             throw APIError.unauthorized
-         }
-         request.addValue("Bearer \(currentToken)", forHTTPHeaderField: "Authorization")
-
-         do {
-             let (data, response) = try await session.data(for: request)
-             
-             guard let httpResponse = response as? HTTPURLResponse else {
-                 throw APIError.invalidResponse
-             }
-
-             guard httpResponse.statusCode == 200 else {
-                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
-             }
-             
-             let refreshResponse = try JSONDecoder().decode(RefreshResponse.self, from: data)
-             let newToken = refreshResponse.accessToken
-
-             self.token = newToken
-
-              NotificationCenter.default.post(name: .tokenRefreshedNotification, object: newToken)
-
-             return newToken
-             
-         } catch let error as APIError {
-             throw error
-         } catch let urlError as URLError {
-              throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
-         } catch {
-             throw APIError.unknown(error)
-         }
-     }
-
-
+        let url = baseURL.appendingPathComponent("api/auth/refresh")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        guard let currentToken = self.token else {
+            throw APIError.unauthorized
+        }
+        request.addValue("Bearer \(currentToken)", forHTTPHeaderField: "Authorization")
+        
+        do {
+            let (data, response) = try await session.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw APIError.invalidResponse
+            }
+            
+            guard httpResponse.statusCode == 200 else {
+                throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+            }
+            
+            let refreshResponse = try JSONDecoder().decode(RefreshResponse.self, from: data)
+            let newToken = refreshResponse.accessToken
+            
+            self.token = newToken
+            
+            NotificationCenter.default.post(name: .tokenRefreshedNotification, object: newToken)
+            
+            return newToken
+            
+        } catch let error as APIError {
+            throw error
+        } catch let urlError as URLError {
+            throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
+        } catch {
+            throw APIError.unknown(error)
+        }
+    }
+    
+    
     func login(username: String, password: String) async throws -> String {
         let url = baseURL.appendingPathComponent("api/auth/token")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-
+        
         let bodyString = "username=\(username)&password=\(password)"
         request.httpBody = bodyString.data(using: .utf8)
         
         do {
             let (data, response) = try await session.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                 throw APIError.invalidResponse
+                throw APIError.invalidResponse
             }
             guard httpResponse.statusCode == 200 else {
-                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
+                throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
             }
             let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
             self.token = tokenResponse.accessToken
@@ -194,7 +239,7 @@ class MealieAPIClient {
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
-
+    
     func fetchAllRecipes(orderBy: String, orderDirection: String, paginationSeed: String?) async throws -> [RecipeSummary] {
         var allRecipes: [RecipeSummary] = []
         var currentPage = 1
@@ -215,7 +260,7 @@ class MealieAPIClient {
         
         return allRecipes
     }
-
+    
     func fetchRecipes(page: Int, orderBy: String, orderDirection: String, paginationSeed: String?, queryFilter: String? = nil, perPage: Int? = nil) async throws -> PaginatedRecipes {
         var components = URLComponents(url: baseURL.appendingPathComponent("api/recipes"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
@@ -238,14 +283,14 @@ class MealieAPIClient {
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
-
+    
     func fetchRatings(userID: String) async throws -> [UserRating] {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/ratings")
         let request = URLRequest(url: url)
         let response: UserRatingsResponse = try await performRequest(for: request)
         return response.ratings
     }
-
+    
     func fetchFavorites(userID: String) async throws -> [UserRating] {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites")
         let request = URLRequest(url: url)
@@ -265,14 +310,14 @@ class MealieAPIClient {
         request.httpMethod = "POST"
         let _: NoReply = try await performRequest(for: request)
     }
-
+    
     func removeFavorite(userID: String, slug: String) async throws {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/favorites/\(slug)")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         let _: NoReply = try await performRequest(for: request)
     }
-
+    
     func setRating(userID: String, slug: String, rating: Double) async throws {
         let url = baseURL.appendingPathComponent("api/users/\(userID)/ratings/\(slug)")
         var request = URLRequest(url: url)
@@ -283,7 +328,55 @@ class MealieAPIClient {
         do {
             request.httpBody = try JSONEncoder().encode(body)
         } catch {
-             throw APIError.encodingError(error)
+            throw APIError.encodingError(error)
+        }
+        
+        let _: NoReply = try await performRequest(for: request)
+    }
+    
+    func addMealPlanEntry(date: Date, recipeId: UUID, entryType: String) async throws {
+        let url = baseURL.appendingPathComponent("api/households/mealplans")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        let body = CreatePlanEntry(
+            date: dateString,
+            recipeId: recipeId.uuidString,
+            entryType: entryType.lowercased()
+        )
+        
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        let _: ReadPlanEntry = try await performRequest(for: request)
+    }
+    
+    func updateRecipe(slug: String, payload: UpdateRecipePayload) async throws {
+        let url = baseURL.appendingPathComponent("api/recipes/\(slug)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let encoder = JSONEncoder()
+            request.httpBody = try encoder.encode(payload)
+
+            if let body = request.httpBody, let jsonString = String(data: body, encoding: .utf8) {
+                print("--- Sending PUT Payload ---")
+                print(jsonString)
+                print("--------------------------")
+            }
+            
+        } catch {
+            throw APIError.encodingError(error)
         }
         
         let _: NoReply = try await performRequest(for: request)

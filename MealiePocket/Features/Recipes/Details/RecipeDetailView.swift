@@ -3,12 +3,20 @@ import SwiftUI
 struct RecipeDetailView: View {
     let recipeSummary: RecipeSummary
     
-    @State private var viewModel = RecipeDetailViewModel()
+    @State private var viewModel: RecipeDetailViewModel
+    
     @Environment(AppState.self) private var appState
+    
+    @State private var editViewModel: EditRecipeViewModel? = nil
+    
+    init(recipeSummary: RecipeSummary) {
+        self.recipeSummary = recipeSummary
+        _viewModel = State(initialValue: RecipeDetailViewModel(recipeSummary: recipeSummary))
+    }
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 20) {
                 if let detail = viewModel.recipeDetail {
                     headerView(detail: detail)
                     
@@ -25,22 +33,104 @@ struct RecipeDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 50)
                 } else if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .padding()
+                    VStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .resizable().scaledToFit().frame(width: 50, height: 50).foregroundColor(.orange)
+                        Text("Erreur").font(.title2).fontWeight(.bold)
+                        Text(errorMessage).font(.callout).multilineTextAlignment(.center).foregroundColor(.secondary).padding(.horizontal)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 50)
+                } else {
+                    ProgressView()
                         .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 50)
                 }
             }
+            .padding(.vertical)
         }
-        .navigationTitle(recipeSummary.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button {
+                    viewModel.showingAddToPlanSheet = true
+                } label: {
+                    Image(systemName: "calendar.badge.plus")
+                }
+                .disabled(viewModel.recipeDetail == nil)
+                
+                Button {
+                    Task {
+                        await viewModel.toggleFavorite(apiClient: appState.apiClient, userID: appState.currentUserID)
+                    }
+                } label: {
+                    Image(systemName: viewModel.isFavorite ? "heart.fill" : "heart")
+                        .foregroundColor(viewModel.isFavorite ? .red : .primary)
+                }
+                .disabled(viewModel.recipeDetail == nil)
+                
+                Button {
+                    if let detail = viewModel.recipeDetail {
+                        editViewModel = EditRecipeViewModel(recipe: detail)
+                        viewModel.showingEditSheet = true
+                    }
+                } label: {
+                    Image(systemName: "pencil")
+                }
+                .disabled(viewModel.recipeDetail == nil)
+            }
+        }
+        .sheet(isPresented: $viewModel.showingAddToPlanSheet) {
+            if let client = appState.apiClient {
+                AddToMealPlanView(viewModel: viewModel, apiClient: client)
+            }
+        }
+        .sheet(isPresented: $viewModel.showingEditSheet, onDismiss: {
+            if editViewModel?.saveSuccessful ?? false {
+                viewModel.markForRefresh()
+                Task {
+                    await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
+                }
+            }
+            editViewModel = nil
+        }) {
+            if let editVM = editViewModel, let client = appState.apiClient {
+                EditRecipeView(viewModel: editVM, apiClient: client)
+            } else {
+                Text("Loading recipe data...")
+                    .padding()
+            }
+        }
         .task {
-            await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
+            if viewModel.recipeDetail == nil || viewModel.needsRefresh {
+                await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
+            }
         }
+        .overlay(alignment: .bottom) {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(8)
+                    .background(Color.red.opacity(0.8))
+                    .cornerRadius(8)
+                    .padding(.bottom)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            if viewModel.errorMessage == errorMessage {
+                                viewModel.errorMessage = nil
+                            }
+                        }
+                    }
+            }
+        }
+        .animation(.easeInOut, value: viewModel.errorMessage)
     }
-    
+
     private func headerView(detail: RecipeDetail) -> some View {
         VStack(alignment: .leading, spacing: 16) {
+            Text(viewModel.recipeDetail?.name ?? recipeSummary.name)
+                .font(.title.bold())
             HStack(alignment: .top, spacing: 16) {
                 AsyncImageView(
                     url: .makeImageURL(
@@ -54,13 +144,13 @@ struct RecipeDetailView: View {
                 
                 VStack(alignment: .leading, spacing: 10) {
                     TimeInfoView(icon: "clock", label: "Total", value: detail.totalTime)
-
+                    
                     HStack(spacing: 1) {
                         TimeInfoView(icon: "stopwatch", label: "Preparation", value: detail.prepTime)
                         Divider().padding()
-                        TimeInfoView(icon: "frying.pan", label: "Cooking", value: detail.cookTime)
+                        TimeInfoView(icon: "frying.pan", label: "Cooking", value: detail.performTime)
                     }
-
+                    
                     let servingsValue: Double? = detail.recipeServings
                     let isSingular: Bool = servingsValue == 1.0
                     
@@ -89,8 +179,19 @@ struct RecipeDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            
+            VStack(alignment: .leading, spacing: 10) {
+                if let description = detail.description, !description.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Description")
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondary)
+                            .textCase(.uppercase)
+                        Text(description)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
 
-            VStack(alignment: .leading) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Your rating")
                         .font(.caption.weight(.semibold))
@@ -127,12 +228,8 @@ struct RecipeDetailView: View {
     
     private func ingredientsSection(ingredients: [RecipeIngredient]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Ingredients")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.horizontal)
-            
-            VStack(alignment: .leading, spacing: 10) {
+            Text("Ingrédients").font(.title2.weight(.semibold)).padding(.horizontal)
+            LazyVStack(alignment: .leading, spacing: 10) {
                 ForEach(ingredients) { ingredient in
                     IngredientRow(text: ingredient.display)
                 }
@@ -143,12 +240,8 @@ struct RecipeDetailView: View {
     
     private func instructionsSection(instructions: [RecipeInstruction]) -> some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("Instructions")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.horizontal)
-            
-            VStack(alignment: .leading, spacing: 15) {
+            Text("Instructions").font(.title2.weight(.semibold)).padding(.horizontal)
+            LazyVStack(alignment: .leading, spacing: 15) {
                 ForEach(Array(instructions.enumerated()), id: \.element.id) { index, instruction in
                     InstructionRow(index: index, instruction: instruction)
                 }
@@ -163,13 +256,13 @@ private struct TimeInfoView: View {
     let label: String
     let text: String
     let icon: String
-
+    
     init(icon: String = "clock", label: String, value: String?) {
         self.label = label
         self.text = value ?? "N/A"
         self.icon = icon
     }
-
+    
     init(icon: String, label: String, value: Double?) {
         self.label = label
         self.icon = icon
@@ -199,15 +292,16 @@ private struct TimeInfoView: View {
 private struct IngredientRow: View {
     let text: String
     @State private var isChecked = false
-    
     var body: some View {
         Button(action: { isChecked.toggle() }) {
-            HStack {
-                Image(systemName: isChecked ? "checkmark.square.fill" : "square")
-                    .foregroundColor(isChecked ? .accentColor : .secondary)
+            HStack(spacing: 12) {
+                Image(systemName: isChecked ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(isChecked ? .green : .secondary)
+                    .font(.title3)
                 Text(text)
                     .strikethrough(isChecked, color: .secondary)
                     .foregroundColor(isChecked ? .secondary : .primary)
+                    .font(.body)
                 Spacer()
             }
             .contentShape(Rectangle())
@@ -230,7 +324,7 @@ private struct InstructionRow: View {
             return "Step \(index + 1)"
         }
     }
-
+    
     var body: some View {
         Button(action: {
             withAnimation(.spring()) {
@@ -263,3 +357,44 @@ private struct InstructionRow: View {
     }
 }
 
+struct AddToMealPlanView: View {
+    @Bindable var viewModel: RecipeDetailViewModel
+    var apiClient: MealieAPIClient?
+    
+    @State private var selectedDate = Date()
+    @State private var selectedMealType = "Dinner"
+    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
+    
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                
+                Picker("Meal Type", selection: $selectedMealType) {
+                    ForEach(mealTypes, id: \.self) { type in
+                        Text(type).tag(type)
+                    }
+                }
+            }
+            .navigationTitle("Add to Meal Plan")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        Task {
+                            await viewModel.addToMealPlan(date: selectedDate, mealType: selectedMealType, apiClient: apiClient)
+                        }
+                    }
+                    .disabled(viewModel.recipeDetail == nil)
+                }
+            }
+        }
+    }
+}
