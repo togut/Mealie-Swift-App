@@ -6,7 +6,14 @@ struct EditRecipeView: View {
     
     @Environment(\.dismiss) var dismiss
     @State private var localEditMode: EditMode = .inactive
-    
+
+    private var numberFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }
+
     var body: some View {
         NavigationView {
             Form {
@@ -29,8 +36,52 @@ struct EditRecipeView: View {
                             if let title = ingredient.title, !title.isEmpty {
                                 Text(title).font(.headline).padding(.top, 5)
                             }
-                            TextEditor(text: $ingredient.note)
-                                .frame(minHeight: 30)
+
+                            VStack(alignment: .leading) {
+                                HStack(spacing: 12) {
+                                    TextField("Qté", value: $ingredient.quantity.bound, formatter: numberFormatter)
+                                        .keyboardType(.decimalPad)
+                                        .frame(width: 60)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                                    Picker("Unité", selection: $ingredient.unit) {
+                                        Text("(optionnel)").tag(nil as RecipeIngredient.IngredientUnitStub?)
+                                        ForEach(viewModel.allUnits) { unit in
+                                            Text(unit.name).tag(unit as RecipeIngredient.IngredientUnitStub?)
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .labelsHidden()
+                                    .tint(.primary)
+                                    .frame(minWidth: 120, maxWidth: .infinity, alignment: .leading)
+
+                                    NavigationLink(destination:
+                                        FoodSearchView(
+                                            selectedFood: $ingredient.food,
+                                            searchResults: viewModel.foodSearchResults,
+                                            onSearchQueryChanged: { newQuery in
+                                                await viewModel.searchFoods(query: newQuery, apiClient: apiClient)
+                                            },
+                                            onCreateTapped: { foodName in
+                                                return await viewModel.createFood(name: foodName, apiClient: apiClient)
+                                            }
+                                        )
+                                    ) {
+                                        Text($ingredient.food.wrappedValue?.name ?? "Choisir...")
+                                            .foregroundColor($ingredient.food.wrappedValue == nil ? .gray : .primary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                }
+
+                                TextEditor(text: $ingredient.note)
+                                    .frame(minHeight: 30)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                    .padding(4)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                            }
+                            .padding(.vertical, 4)
                         }
                         .onDelete(perform: viewModel.removeIngredient)
                         .onMove(perform: viewModel.moveIngredients)
@@ -102,6 +153,11 @@ struct EditRecipeView: View {
                 }
             }
             .environment(\.editMode, $localEditMode)
+            .onAppear {
+                Task {
+                    await viewModel.fetchAllUnits(apiClient: apiClient)
+                }
+            }
         }
     }
 }
@@ -119,3 +175,10 @@ extension Optional where Wrapped == Bool {
         set { self = newValue }
     }
 }
+
+extension Optional where Wrapped == Double {
+     var bound: Double {
+         get { self ?? 0 }
+         set { self = newValue }
+     }
+ }

@@ -368,7 +368,7 @@ class MealieAPIClient {
         do {
             let encoder = JSONEncoder()
             request.httpBody = try encoder.encode(payload)
-
+            
             if let body = request.httpBody, let jsonString = String(data: body, encoding: .utf8) {
                 print("--- Sending PUT Payload ---")
                 print(jsonString)
@@ -380,5 +380,51 @@ class MealieAPIClient {
         }
         
         let _: NoReply = try await performRequest(for: request)
+    }
+
+    func getUnits(page: Int = 1, perPage: Int = 500) async throws -> IngredientUnitPagination {
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/units"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "perPage", value: "\(perPage)")
+        ]
+        
+        guard let url = components?.url else { throw APIError.invalidURL }
+        
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+
+    func searchFoods(query: String, page: Int = 1, perPage: Int = 50) async throws -> IngredientFoodPagination {
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/foods"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "search", value: query),
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "perPage", value: "\(perPage)")
+        ]
+        
+        guard let url = components?.url else { throw APIError.invalidURL }
+        
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+
+    func createFood(name: String) async throws -> RecipeIngredient.IngredientFoodStub {
+        let url = baseURL.appendingPathComponent("api/foods")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = CreateIngredientFood(name: name)
+        
+        do {
+            let encoder = JSONEncoder()
+            encoder.keyEncodingStrategy = .convertToSnakeCase
+            request.httpBody = try encoder.encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+
+        return try await performRequest(for: request)
     }
 }

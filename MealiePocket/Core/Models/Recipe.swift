@@ -126,9 +126,16 @@ struct RecipeIngredient: Codable, Identifiable, Hashable {
     enum CodingKeys: String, CodingKey {
         case referenceId, display, title, note, quantity, unit, food, originalText
     }
-    
-    struct IngredientUnitStub: Codable, Hashable {}
-    struct IngredientFoodStub: Codable, Hashable {}
+
+    struct IngredientUnitStub: Codable, Hashable, Identifiable {
+        var id: String
+        var name: String
+    }
+
+    struct IngredientFoodStub: Codable, Hashable, Identifiable {
+        var id: String
+        var name: String
+    }
 }
 
 
@@ -271,3 +278,7 @@ struct Nutrition: Codable, Hashable {
 }
 
 struct CommentStub: Codable, Hashable {}
+
+struct CreateIngredientFood: Codable, Hashable {
+    let name: String
+}

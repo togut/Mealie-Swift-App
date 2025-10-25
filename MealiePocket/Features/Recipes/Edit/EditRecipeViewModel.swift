@@ -1,9 +1,12 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @Observable
 class EditRecipeViewModel {
-    
+    var allUnits: [RecipeIngredient.IngredientUnitStub] = []
+    var foodSearchResults: [RecipeIngredient.IngredientFoodStub] = []
+
     private var originalRecipe: RecipeDetail
     
     var name: String
@@ -105,6 +108,45 @@ class EditRecipeViewModel {
 
     func addTool() { tools.append(RecipeToolInput()) }
     func removeTool(at offsets: IndexSet) { tools.remove(atOffsets: offsets) }
+
+    @MainActor
+    func fetchAllUnits(apiClient: MealieAPIClient?) async {
+        guard let apiClient else { return }
+        do {
+            let unitPagination = try await apiClient.getUnits(perPage: 500)
+            
+            self.allUnits = unitPagination.items
+            
+        } catch {
+            print("Erreur de chargement des unités: \(error)")
+        }
+    }
+
+    func searchFoods(query: String, apiClient: MealieAPIClient?) async {
+        guard let apiClient, !query.isEmpty else {
+            self.foodSearchResults = []
+            return
+        }
+        do {
+            let foodPagination = try await apiClient.searchFoods(query: query)
+            self.foodSearchResults = foodPagination.items
+        } catch {
+            print("Erreur de recherche d'aliments: \(error)")
+        }
+    }
+
+    @MainActor
+    func createFood(name: String, apiClient: MealieAPIClient?) async -> RecipeIngredient.IngredientFoodStub? {
+        guard let apiClient, !name.isEmpty else { return nil }
+        
+        do {
+            let newFood = try await apiClient.createFood(name: name)
+            return newFood
+        } catch {
+            print("Erreur de création d'aliment: \(error.localizedDescription)")
+            return nil
+        }
+    }
 
     func saveChanges(apiClient: MealieAPIClient?) async -> Bool {
         guard let apiClient = apiClient else {
