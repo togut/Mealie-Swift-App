@@ -6,16 +6,16 @@ struct EditRecipeView: View {
     
     @Environment(\.dismiss) var dismiss
     @State private var localEditMode: EditMode = .inactive
-
+    
     private var numberFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 2
         return formatter
     }
-
+    
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section("Basic Info") {
                     TextField("Name", text: $viewModel.name)
@@ -36,14 +36,14 @@ struct EditRecipeView: View {
                             if let title = ingredient.title, !title.isEmpty {
                                 Text(title).font(.headline).padding(.top, 5)
                             }
-
+                            
                             VStack(alignment: .leading) {
                                 HStack(spacing: 12) {
                                     TextField("Qté", value: $ingredient.quantity.bound, formatter: numberFormatter)
                                         .keyboardType(.decimalPad)
                                         .frame(width: 60)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
-
+                                    
                                     Picker("Unité", selection: $ingredient.unit) {
                                         Text("(optionnel)").tag(nil as RecipeIngredient.IngredientUnitStub?)
                                         ForEach(viewModel.allUnits) { unit in
@@ -54,7 +54,7 @@ struct EditRecipeView: View {
                                     .labelsHidden()
                                     .tint(.primary)
                                     .frame(minWidth: 120, maxWidth: .infinity, alignment: .leading)
-
+                                    
                                     NavigationLink(destination:
                                         FoodSearchView(
                                             selectedFood: $ingredient.food,
@@ -72,7 +72,7 @@ struct EditRecipeView: View {
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                     }
                                 }
-
+                                
                                 TextEditor(text: $ingredient.note)
                                     .frame(minHeight: 30)
                                     .font(.subheadline)
@@ -88,7 +88,7 @@ struct EditRecipeView: View {
                     }
                     Button("Add Ingredient", systemImage: "plus") { viewModel.addIngredient() }
                 }
-
+                
                 Section("Instructions") {
                     List {
                         ForEach($viewModel.instructions) { $instruction in
@@ -104,7 +104,7 @@ struct EditRecipeView: View {
                     }
                     Button("Add Instruction", systemImage: "plus") { viewModel.addInstruction() }
                 }
-
+                
                 Section("Settings") {
                     Toggle("Public Recipe", isOn: $viewModel.settings.publicRecipe.bound)
                     Toggle("Show Nutrition", isOn: $viewModel.settings.showNutrition.bound)
@@ -113,7 +113,7 @@ struct EditRecipeView: View {
                     Toggle("Landscape View", isOn: $viewModel.settings.landscapeView.bound)
                     Toggle("Locked", isOn: $viewModel.settings.locked.bound)
                 }
-
+                
                 if let errorMessage = viewModel.errorMessage {
                     Section {
                         Text(errorMessage).foregroundColor(.red)
@@ -124,7 +124,7 @@ struct EditRecipeView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
-
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if localEditMode.isEditing {
                         Button("Done") {
@@ -136,7 +136,7 @@ struct EditRecipeView: View {
                         }
                     }
                 }
-
+                
                 ToolbarItem(placement: .confirmationAction) {
                     if viewModel.isLoading {
                         ProgressView()

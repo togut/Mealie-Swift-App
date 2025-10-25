@@ -136,7 +136,8 @@ class RecipeDetailViewModel {
         }
     }
     
-    @MainActor func markForRefresh() {
+    @MainActor
+    func markForRefresh() {
         needsRefresh = true
     }
 }
