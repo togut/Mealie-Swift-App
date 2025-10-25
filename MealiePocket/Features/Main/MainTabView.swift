@@ -2,31 +2,46 @@ import SwiftUI
 
 struct MainTabView: View {
     var body: some View {
-        TabView {
-            HomeView()
+        ZStack {
+            Color(.systemBackground)
+                .ignoresSafeArea()
+
+            TabView {
+                NavigationStack {
+                    HomeView()
+                }
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
-            
-            RecipeListView()
+                
+                NavigationStack {
+                    RecipeListView()
+                }
                 .tabItem {
                     Label("Recipes", systemImage: "book.fill")
                 }
 
-            MealPlannerView()
+                NavigationStack {
+                    MealPlannerView()
+                }
                 .tabItem {
                     Label("Planner", systemImage: "calendar")
                 }
 
-            ShoppingListView()
+                NavigationStack {
+                    ShoppingListView()
+                }
                 .tabItem {
                     Label("Shopping", systemImage: "cart.fill")
                 }
-            
-            SettingsView()
+                
+                NavigationStack {
+                    SettingsView()
+                }
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
+            }
         }
     }
 }

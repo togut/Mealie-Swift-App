@@ -4,10 +4,7 @@ struct RecipeDetailView: View {
     let recipeSummary: RecipeSummary
     
     @State private var viewModel: RecipeDetailViewModel
-    
     @Environment(AppState.self) private var appState
-    
-    @State private var editViewModel: EditRecipeViewModel? = nil
     
     init(recipeSummary: RecipeSummary) {
         self.recipeSummary = recipeSummary
@@ -68,10 +65,13 @@ struct RecipeDetailView: View {
                 }
                 .disabled(viewModel.recipeDetail == nil)
                 
-                Button {
+                NavigationLink {
                     if let detail = viewModel.recipeDetail {
-                        editViewModel = EditRecipeViewModel(recipe: detail)
-                        viewModel.showingEditSheet = true
+                        EditRecipeView(
+                            viewModel: EditRecipeViewModel(recipe: detail),
+                            detailViewModel: viewModel,
+                            apiClient: appState.apiClient
+                        )
                     }
                 } label: {
                     Image(systemName: "pencil")
@@ -84,47 +84,11 @@ struct RecipeDetailView: View {
                 AddToMealPlanView(viewModel: viewModel, apiClient: client)
             }
         }
-        .sheet(isPresented: $viewModel.showingEditSheet, onDismiss: {
-            if editViewModel?.saveSuccessful ?? false {
-                viewModel.markForRefresh()
-                Task {
-                    await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
-                }
-            }
-            editViewModel = nil
-        }) {
-            if let editVM = editViewModel, let client = appState.apiClient {
-                EditRecipeView(viewModel: editVM, apiClient: client)
-            } else {
-                Text("Loading recipe data...")
-                    .padding()
-            }
-        }
         .task {
             if viewModel.recipeDetail == nil || viewModel.needsRefresh {
                 await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
             }
         }
-        .overlay(alignment: .bottom) {
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .font(.caption)
-                    .foregroundColor(.white)
-                    .padding(8)
-                    .background(Color.red.opacity(0.8))
-                    .cornerRadius(8)
-                    .padding(.bottom)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            if viewModel.errorMessage == errorMessage {
-                                viewModel.errorMessage = nil
-                            }
-                        }
-                    }
-            }
-        }
-        .animation(.easeInOut, value: viewModel.errorMessage)
     }
 
     private func headerView(detail: RecipeDetail) -> some View {

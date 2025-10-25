@@ -21,12 +21,12 @@ struct RecipeListView: View {
                 }
             }
             .navigationTitle("Recipes")
-            .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .automatic))
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     sortMenu
                 }
             }
+            .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .automatic))
             .onChange(of: viewModel.searchText) { _, _ in
                 viewModel.triggerSearch(apiClient: appState.apiClient, userID: appState.currentUserID)
             }

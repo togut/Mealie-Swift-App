@@ -47,6 +47,7 @@ class RecipeDetailViewModel {
                 self.recipeDetail = detail
                 self.isFavorite = currentFavoriteStatus
                 self.isLoading = false
+                self.needsRefresh = false
             }
             
         } catch APIError.unauthorized {
@@ -59,6 +60,7 @@ class RecipeDetailViewModel {
                     self.errorMessage = "Failed to refresh details: \(error.localizedDescription)"
                 }
                 self.isLoading = false
+                self.needsRefresh = false
             }
         }
     }
