@@ -3,16 +3,16 @@ import SwiftUI
 struct MealPlannerView: View {
     @State private var viewModel = MealPlannerViewModel()
     @Environment(AppState.self) private var appState
-
+    
     @State private var selectedTabIndex = 1
     @State private var currentlyVisibleMonth: Date = Date().startOfMonth()
     @State private var scrollViewFrame: CGRect = .zero
     private let daysOfWeek = ["L", "M", "M", "J", "V", "S", "D"]
-
+    
     var body: some View {
         VStack {
             header
-
+            
             if viewModel.isLoadingPast { ProgressView().progressViewStyle(.circular) }
             
             if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
@@ -88,6 +88,7 @@ struct MealPlannerView: View {
                         Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
                     } label: { Image(systemName: "chevron.left") }
                         .padding(.leading)
+                        .disabled(!viewModel.canChangeDateBack)
                     Spacer()
                     Text(dateRangeTitle)
                         .font(.caption)
@@ -109,14 +110,6 @@ struct MealPlannerView: View {
                     ScrollViewReader { scrollProxy in
                         ScrollView {
                             LazyVStack(spacing: 20) {
-                                Color.clear
-                                    .frame(height: 1)
-                                    .onAppear {
-                                        Task {
-                                            await viewModel.loadMoreMonths(direction: -1, apiClient: appState.apiClient)
-                                        }
-                                    }
-                                
                                 ForEach(viewModel.displayedMonths, id: \.self) { monthStart in
                                     GeometryReader { monthProxy in
                                         CalendarMonthView(
@@ -176,7 +169,7 @@ struct MealPlannerView: View {
             }
         }
     }
-
+    
     private func updateVisibleMonth(preferences: [MonthVisibilityInfo], scrollFrame: CGRect) {
         let scrollCenterY = scrollFrame.midY
         var closestMonth: Date? = nil
@@ -196,7 +189,7 @@ struct MealPlannerView: View {
             currentlyVisibleMonth = month
         }
     }
-
+    
     private var weekView: some View {
         let days = viewModel.daysInWeek
         return VStack(alignment: .leading, spacing: 15) {
@@ -222,7 +215,7 @@ struct MealPlannerView: View {
         }
         .padding()
     }
-
+    
     private var dayView: some View {
         let date = Calendar.current.startOfDay(for: viewModel.selectedDate)
         return VStack(alignment: .leading) {
@@ -235,7 +228,7 @@ struct MealPlannerView: View {
         }
         .padding()
     }
-
+    
     @ViewBuilder
     private func mealEntriesList(for date: Date, showType: Bool = false) -> some View {
         let entries = viewModel.mealPlanEntries[Calendar.current.startOfDay(for: date)] ?? []
@@ -270,7 +263,7 @@ struct MealPlannerView: View {
             .padding(.vertical, viewModel.viewMode == .month ? 0 : 5)
         }
     }
-
+    
     @ViewBuilder
     private func mealEntryView(entry: ReadPlanEntry, showType: Bool) -> some View {
         HStack {
@@ -284,7 +277,7 @@ struct MealPlannerView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private func labelView(entry: ReadPlanEntry, recipeName: String?, showType: Bool) -> some View {
         let isMonthView = viewModel.viewMode == .month
@@ -344,7 +337,7 @@ struct MealPlannerView: View {
             in: RoundedRectangle(cornerRadius: isMonthView ? 3 : 8)
         )
     }
-
+    
     private var dateRangeTitle: String {
         let dateToShow = viewModel.viewMode == .month ? currentlyVisibleMonth : viewModel.selectedDate
         
@@ -371,7 +364,7 @@ struct MealPlannerView: View {
             return dateToShow.formatted(.dateTime.month(.wide).year())
         }
     }
-
+    
     private func iconForEntryType(_ type: String) -> String {
         switch type.lowercased() {
         case "breakfast": return "sun.horizon.fill"
@@ -390,9 +383,9 @@ struct MonthVisibilityInfo: Equatable {
 
 struct VisibleMonthPreferenceKey: PreferenceKey {
     typealias Value = [MonthVisibilityInfo]
-
+    
     static var defaultValue: Value = []
-
+    
     static func reduce(value: inout Value, nextValue: () -> Value) {
         value.append(contentsOf: nextValue())
     }
