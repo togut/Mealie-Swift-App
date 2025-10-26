@@ -3,12 +3,19 @@ import SwiftUI
 struct MealPlannerView: View {
     @State private var viewModel = MealPlannerViewModel()
     @Environment(AppState.self) private var appState
-    
+
+    @State private var selectedTabIndex = 1
+    @State private var currentlyVisibleMonth: Date = Date().startOfMonth()
+    @State private var scrollViewFrame: CGRect = .zero
+    private let daysOfWeek = ["L", "M", "M", "J", "V", "S", "D"]
+
     var body: some View {
         VStack {
             header
+
+            if viewModel.isLoadingPast { ProgressView().progressViewStyle(.circular) }
             
-            if viewModel.isLoading {
+            if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
                 ProgressView()
                 Spacer()
             } else if let errorMessage = viewModel.errorMessage {
@@ -16,6 +23,8 @@ struct MealPlannerView: View {
             } else {
                 calendarContent
             }
+            
+            if viewModel.isLoadingFuture { ProgressView().progressViewStyle(.circular) }
         }
         .navigationTitle("Planner")
         .toolbar {
@@ -26,13 +35,25 @@ struct MealPlannerView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .frame(width: 200)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Aujourd'hui") {
+                    currentlyVisibleMonth = Date().startOfMonth()
+                    viewModel.goToToday(apiClient: appState.apiClient)
+                }
             }
         }
         .task {
+            currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
             await viewModel.loadMealPlan(apiClient: appState.apiClient)
         }
         .onChange(of: viewModel.viewMode) { _, _ in
+            if viewModel.viewMode == .month {
+                currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
+            }
             Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
+            selectedTabIndex = 1
         }
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
@@ -42,40 +63,108 @@ struct MealPlannerView: View {
     private var header: some View {
         VStack(spacing: 5) {
             HStack {
-                Button {
-                    viewModel.changeDate(-1, apiClient: appState.apiClient)
-                } label: { Image(systemName: "chevron.left") }
-                    .padding(.leading)
                 Spacer()
-                Text(dateRangeTitle)
+                Text(currentlyVisibleMonth.formatted(.dateTime.month(.wide).year()))
                     .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .id(currentlyVisibleMonth)
                 Spacer()
-                Button {
-                    viewModel.changeDate(1, apiClient: appState.apiClient)
-                } label: { Image(systemName: "chevron.right") }
-                    .padding(.trailing)
             }
             .padding(.vertical, 8)
+            .padding(.horizontal)
+            HStack {
+                ForEach(daysOfWeek.indices, id: \.self) { index in
+                    Text(daysOfWeek[index])
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .frame(maxWidth: .infinity)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.bottom, 5)
+            if viewModel.viewMode != .month {
+                HStack {
+                    Button {
+                        viewModel.changeDate(-1)
+                        Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
+                    } label: { Image(systemName: "chevron.left") }
+                        .padding(.leading)
+                    Spacer()
+                    Text(dateRangeTitle)
+                        .font(.caption)
+                    Spacer()
+                    Button {
+                        viewModel.changeDate(1)
+                        Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
+                    } label: { Image(systemName: "chevron.right") }
+                        .padding(.trailing)
+                }
+            }
         }
     }
     
     private var calendarContent: some View {
         Group {
             if viewModel.viewMode == .month {
-                ScrollView {
-                    CalendarMonthView(
-                        days: viewModel.daysInMonth,
-                        mealPlanEntries: viewModel.mealPlanEntries,
-                        selectedMonthDate: viewModel.selectedDate,
-                        baseURL: appState.apiClient?.baseURL,
-                        onDateSelected: { date in
-                            viewModel.selectDateAndView(date: date)
+                GeometryReader { scrollViewProxy in
+                    ScrollViewReader { scrollProxy in
+                        ScrollView {
+                            LazyVStack(spacing: 20) {
+                                Color.clear
+                                    .frame(height: 1)
+                                    .onAppear {
+                                        Task {
+                                            await viewModel.loadMoreMonths(direction: -1, apiClient: appState.apiClient)
+                                        }
+                                    }
+                                
+                                ForEach(viewModel.displayedMonths, id: \.self) { monthStart in
+                                    GeometryReader { monthProxy in
+                                        CalendarMonthView(
+                                            days: viewModel.daysInSpecificMonth(monthStart),
+                                            mealPlanEntries: viewModel.mealPlanEntries,
+                                            selectedMonthDate: monthStart,
+                                            baseURL: appState.apiClient?.baseURL,
+                                            onDateSelected: { date in
+                                                viewModel.selectDateAndView(date: date)
+                                            }
+                                        )
+                                        .id(monthStart)
+                                        .preference(key: VisibleMonthPreferenceKey.self, value: [MonthVisibilityInfo(month: monthStart, frame: monthProxy.frame(in: .global))])
+                                    }
+                                    .frame(height: 450)
+                                }
+                                
+                                Color.clear
+                                    .frame(height: 1)
+                                    .onAppear {
+                                        Task {
+                                            await viewModel.loadMoreMonths(direction: 1, apiClient: appState.apiClient)
+                                        }
+                                    }
+                            }
+                            .padding(.horizontal)
                         }
-                    )
+                        .coordinateSpace(name: "scrollView")
+                        .onPreferenceChange(VisibleMonthPreferenceKey.self) { preferences in
+                            updateVisibleMonth(preferences: preferences, scrollFrame: scrollViewProxy.frame(in: .global))
+                        }
+                        .onChange(of: viewModel.selectedDate) { _, newDate in
+                            if viewModel.viewMode == .month {
+                                let targetMonth = newDate.startOfMonth()
+                                currentlyVisibleMonth = targetMonth
+                                withAnimation {
+                                    scrollProxy.scrollTo(targetMonth, anchor: .top)
+                                }
+                            }
+                        }
+                        .onAppear {
+                            scrollViewFrame = scrollViewProxy.frame(in: .global)
+                        }
+                        .onChange(of: scrollViewProxy.frame(in: .global)) { _, newFrame in
+                            scrollViewFrame = newFrame
+                        }
+                    }
                 }
-                
             } else {
                 ScrollView {
                     if viewModel.viewMode == .week {
@@ -87,7 +176,27 @@ struct MealPlannerView: View {
             }
         }
     }
-    
+
+    private func updateVisibleMonth(preferences: [MonthVisibilityInfo], scrollFrame: CGRect) {
+        let scrollCenterY = scrollFrame.midY
+        var closestMonth: Date? = nil
+        var minDistance = CGFloat.infinity
+        
+        for info in preferences {
+            if info.frame.intersects(scrollFrame) {
+                let distance = abs(info.frame.midY - scrollCenterY)
+                if distance < minDistance {
+                    minDistance = distance
+                    closestMonth = info.month
+                }
+            }
+        }
+        
+        if let month = closestMonth, month != currentlyVisibleMonth {
+            currentlyVisibleMonth = month
+        }
+    }
+
     private var weekView: some View {
         let days = viewModel.daysInWeek
         return VStack(alignment: .leading, spacing: 15) {
@@ -113,7 +222,7 @@ struct MealPlannerView: View {
         }
         .padding()
     }
-    
+
     private var dayView: some View {
         let date = Calendar.current.startOfDay(for: viewModel.selectedDate)
         return VStack(alignment: .leading) {
@@ -126,7 +235,7 @@ struct MealPlannerView: View {
         }
         .padding()
     }
-    
+
     @ViewBuilder
     private func mealEntriesList(for date: Date, showType: Bool = false) -> some View {
         let entries = viewModel.mealPlanEntries[Calendar.current.startOfDay(for: date)] ?? []
@@ -161,7 +270,7 @@ struct MealPlannerView: View {
             .padding(.vertical, viewModel.viewMode == .month ? 0 : 5)
         }
     }
-    
+
     @ViewBuilder
     private func mealEntryView(entry: ReadPlanEntry, showType: Bool) -> some View {
         HStack {
@@ -175,14 +284,14 @@ struct MealPlannerView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private func labelView(entry: ReadPlanEntry, recipeName: String?, showType: Bool) -> some View {
         let isMonthView = viewModel.viewMode == .month
         let showTimes = !isMonthView && entry.recipe != nil &&
         ((entry.recipe?.totalTime?.isEmpty == false) || (entry.recipe?.prepTime?.isEmpty == false))
-
-        let baseImageSize: CGFloat = isMonthView ? 16 : (showTimes ? 50 : 30)
+        
+        let baseImageSize: CGFloat = isMonthView ? 16 : (showTimes ? 40 : 30)
         let placeholderSize: CGFloat = isMonthView ? 16 : 30
         
         HStack(spacing: isMonthView ? 4 : 8) {
@@ -206,7 +315,7 @@ struct MealPlannerView: View {
             VStack(alignment: .leading, spacing: isMonthView ? 0 : 2) {
                 if !isMonthView && (showType || viewModel.viewMode == .day) {
                     Text(entry.entryType.capitalized)
-                        .font(.caption.bold())
+                        .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 Text(recipeName ?? (entry.title.isEmpty ? entry.text : entry.title))
@@ -235,13 +344,15 @@ struct MealPlannerView: View {
             in: RoundedRectangle(cornerRadius: isMonthView ? 3 : 8)
         )
     }
-    
+
     private var dateRangeTitle: String {
+        let dateToShow = viewModel.viewMode == .month ? currentlyVisibleMonth : viewModel.selectedDate
+        
         switch viewModel.viewMode {
         case .day:
-            return viewModel.selectedDate.formatted(date: .complete, time: .omitted)
+            return dateToShow.formatted(date: .complete, time: .omitted)
         case .week:
-            guard let interval = Calendar.current.dateInterval(of: .weekOfYear, for: viewModel.selectedDate) else { return "" }
+            guard let interval = Calendar.current.dateInterval(of: .weekOfYear, for: dateToShow) else { return "" }
             let start = interval.start
             let end = interval.end.addingTimeInterval(-1)
             
@@ -257,10 +368,10 @@ struct MealPlannerView: View {
                 return "\(start.formatted(monthDayYearFormat)) - \(end.formatted(monthDayYearFormat))"
             }
         case .month:
-            return viewModel.selectedDate.formatted(.dateTime.month(.wide).year())
+            return dateToShow.formatted(.dateTime.month(.wide).year())
         }
     }
-    
+
     private func iconForEntryType(_ type: String) -> String {
         switch type.lowercased() {
         case "breakfast": return "sun.horizon.fill"
@@ -269,5 +380,20 @@ struct MealPlannerView: View {
         case "side": return "fork.knife"
         default: return "note.text"
         }
+    }
+}
+
+struct MonthVisibilityInfo: Equatable {
+    let month: Date
+    let frame: CGRect
+}
+
+struct VisibleMonthPreferenceKey: PreferenceKey {
+    typealias Value = [MonthVisibilityInfo]
+
+    static var defaultValue: Value = []
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value.append(contentsOf: nextValue())
     }
 }

@@ -11,18 +11,7 @@ struct CalendarMonthView: View {
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                ForEach(daysOfWeek.indices, id: \.self) { index in
-                    Text(daysOfWeek[index])
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .padding(.bottom, 5)
-            
+        VStack(spacing: 0) {          
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(days, id: \.self) { date in
                     CalendarDayCell(
