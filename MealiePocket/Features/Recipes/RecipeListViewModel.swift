@@ -40,113 +40,111 @@ class RecipeListViewModel {
     }
 
     private func performSearchOrLoad(apiClient: MealieAPIClient?, userID: String?, isSearching: Bool, loadMore: Bool) async {
-         guard let apiClient, let userID else {
-             errorMessage = "API client or User ID not available."
-             return
-         }
-
-         if loadMore {
-              guard !isLoadingMore && canLoadMore else { return }
-              isLoadingMore = true
-         } else {
-              isLoading = true
-              currentPage = 1
-              recipes = []
-         }
-         errorMessage = nil
+        guard let apiClient, let userID else {
+            errorMessage = "API client or User ID not available."
+            return
+        }
         
-         if sortOption == .random && searchText.isEmpty {
-             paginationSeed = UUID().uuidString
-         } else {
-             paginationSeed = nil
-         }
+        if loadMore {
+            guard !isLoadingMore && canLoadMore else { return }
+            isLoadingMore = true
+        } else {
+            isLoading = true
+            currentPage = 1
+            recipes = []
+        }
+        errorMessage = nil
         
-         let pageToLoad = loadMore ? currentPage + 1 : 1
-         
-         do {
-             let response = try await apiClient.fetchRecipes(
-                 page: pageToLoad,
-                 orderBy: sortOption.rawValue,
-                 orderDirection: sortDirection.rawValue,
-                 paginationSeed: paginationSeed,
-                 queryFilter: searchText.isEmpty ? nil : "name LIKE %\(searchText)%",
-                 perPage: 50
-             )
-             
-             let fetchedRecipes = response.items
-             
-             let recipeIDs = fetchedRecipes.map { $0.id.uuidString }
-             var userRatings: [UserRating] = []
-             if !recipeIDs.isEmpty {
-                  let allUserRatings = try await apiClient.fetchRatings(userID: userID)
-                  userRatings = allUserRatings.filter { recipeIDs.contains($0.recipeId.uuidString) }
-             }
-             
-             let userRatingsDict = Dictionary(uniqueKeysWithValues: userRatings.map { ($0.recipeId, $0) })
-
-             var updatedRecipes = fetchedRecipes
-             for i in updatedRecipes.indices {
-                 if let userRatingData = userRatingsDict[updatedRecipes[i].id] {
-                     updatedRecipes[i].isFavorite = userRatingData.isFavorite
-                     updatedRecipes[i].userRating = userRatingData.rating
-                 } else {
-                      updatedRecipes[i].isFavorite = false
-                      updatedRecipes[i].userRating = nil
-                 }
-             }
-             
-             await MainActor.run {
-                  if loadMore {
-                      self.recipes.append(contentsOf: updatedRecipes)
-                      self.currentPage = pageToLoad
-                  } else {
-                      self.recipes = updatedRecipes
-                      self.currentPage = 1
-                  }
-                  self.totalPages = response.totalPages
-
-                  self.isLoading = false
-                  self.isLoadingMore = false
-             }
-             
-         } catch APIError.unauthorized {
-              await MainActor.run {
-                   isLoading = false
-                   isLoadingMore = false
-              }
-         } catch {
-             guard !(error is CancellationError) else {
-                 await MainActor.run {
-                     isLoading = false
-                     isLoadingMore = false
-                 }
-                 return
-             }
-             await MainActor.run {
-                  self.errorMessage = "Failed to load or search recipes: \(error.localizedDescription)"
-                  self.isLoading = false
-                  self.isLoadingMore = false
-             }
-         }
-     }
-
+        if sortOption == .random && searchText.isEmpty {
+            paginationSeed = UUID().uuidString
+        } else {
+            paginationSeed = nil
+        }
+        
+        let pageToLoad = loadMore ? currentPage + 1 : 1
+        
+        do {
+            let response = try await apiClient.fetchRecipes(
+                page: pageToLoad,
+                orderBy: sortOption.rawValue,
+                orderDirection: sortDirection.rawValue,
+                paginationSeed: paginationSeed,
+                queryFilter: searchText.isEmpty ? nil : "name LIKE %\(searchText)%",
+                perPage: 50
+            )
+            
+            let fetchedRecipes = response.items
+            
+            let recipeIDs = fetchedRecipes.map { $0.id.uuidString }
+            var userRatings: [UserRating] = []
+            if !recipeIDs.isEmpty {
+                let allUserRatings = try await apiClient.fetchRatings(userID: userID)
+                userRatings = allUserRatings.filter { recipeIDs.contains($0.recipeId.uuidString) }
+            }
+            
+            let userRatingsDict = Dictionary(uniqueKeysWithValues: userRatings.map { ($0.recipeId, $0) })
+            
+            var updatedRecipes = fetchedRecipes
+            for i in updatedRecipes.indices {
+                if let userRatingData = userRatingsDict[updatedRecipes[i].id] {
+                    updatedRecipes[i].isFavorite = userRatingData.isFavorite
+                    updatedRecipes[i].userRating = userRatingData.rating
+                } else {
+                    updatedRecipes[i].isFavorite = false
+                    updatedRecipes[i].userRating = nil
+                }
+            }
+            
+            await MainActor.run {
+                if loadMore {
+                    self.recipes.append(contentsOf: updatedRecipes)
+                    self.currentPage = pageToLoad
+                } else {
+                    self.recipes = updatedRecipes
+                    self.currentPage = 1
+                }
+                self.totalPages = response.totalPages
+                
+                self.isLoading = false
+                self.isLoadingMore = false
+            }
+            
+        } catch APIError.unauthorized {
+            await MainActor.run {
+                isLoading = false
+                isLoadingMore = false
+            }
+        } catch {
+            guard !(error is CancellationError) else {
+                await MainActor.run {
+                    isLoading = false
+                    isLoadingMore = false
+                }
+                return
+            }
+            await MainActor.run {
+                self.errorMessage = "Failed to load or search recipes: \(error.localizedDescription)"
+                self.isLoading = false
+                self.isLoadingMore = false
+            }
+        }
+    }
 
     func applySort(apiClient: MealieAPIClient?, userID: String?) async {
         await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: false)
     }
-    
+
     func loadInitialOrRefreshRecipes(apiClient: MealieAPIClient?, userID: String?) async {
-         await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: false)
-     }
-     
-     // Nouvelle fonction pour charger plus
-     func loadMoreRecipes(apiClient: MealieAPIClient?, userID: String?) async {
-         await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: true)
-     }
+        await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: false)
+    }
+
+    func loadMoreRecipes(apiClient: MealieAPIClient?, userID: String?) async {
+        await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: true)
+    }
 
     func toggleFavorite(for recipeId: UUID, userID: String?, apiClient: MealieAPIClient?) async {
         guard let apiClient, let userID else { return }
-
+        
         updateFavoriteStatus(for: recipeId, in: &recipes)
         
         guard let recipe = recipes.first(where: { $0.id == recipeId }) else { return }
@@ -159,9 +157,9 @@ class RecipeListViewModel {
             }
         } catch {
             updateFavoriteStatus(for: recipeId, in: &recipes)
-             await MainActor.run {
-                 self.errorMessage = "Failed to update favorite status: \(error.localizedDescription)"
-             }
+            await MainActor.run {
+                self.errorMessage = "Failed to update favorite status: \(error.localizedDescription)"
+            }
         }
     }
     

@@ -427,4 +427,20 @@ class MealieAPIClient {
 
         return try await performRequest(for: request)
     }
+
+    func fetchMealPlanEntries(startDate: String, endDate: String, page: Int = 1, perPage: Int = 500) async throws -> PlanEntryPagination {
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/households/mealplans"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "start_date", value: startDate),
+            URLQueryItem(name: "end_date", value: endDate),
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "perPage", value: "\(perPage)"),
+            URLQueryItem(name: "orderBy", value: "date"),
+            URLQueryItem(name: "orderDirection", value: "asc")
+        ]
+        
+        guard let url = components?.url else { throw APIError.invalidURL }
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
 }

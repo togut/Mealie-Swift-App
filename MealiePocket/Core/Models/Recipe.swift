@@ -6,12 +6,13 @@ struct RecipeSummary: Codable, Identifiable, Hashable {
     let slug: String
     let recipeYield: String?
     let totalTime: String?
+    let prepTime: String?
     let rating: Double?
     var userRating: Double?
     var isFavorite: Bool
     
     private enum CodingKeys: String, CodingKey {
-        case id, name, slug, recipeYield, totalTime, rating
+        case id, name, slug, recipeYield, totalTime, prepTime, rating
     }
     
     init(from decoder: Decoder) throws {
@@ -21,17 +22,19 @@ struct RecipeSummary: Codable, Identifiable, Hashable {
         slug = try container.decode(String.self, forKey: .slug)
         recipeYield = try container.decodeIfPresent(String.self, forKey: .recipeYield)
         totalTime = try container.decodeIfPresent(String.self, forKey: .totalTime)
+        prepTime = try container.decodeIfPresent(String.self, forKey: .prepTime)
         rating = try container.decodeIfPresent(Double.self, forKey: .rating)
         userRating = nil
         isFavorite = false
     }
     
-    init(id: UUID, name: String, slug: String, recipeYield: String?, totalTime: String?, rating: Double?, userRating: Double?, isFavorite: Bool) {
+    init(id: UUID, name: String, slug: String, recipeYield: String?, totalTime: String?, prepTime: String?, rating: Double?, userRating: Double?, isFavorite: Bool) {
         self.id = id
         self.name = name
         self.slug = slug
         self.recipeYield = recipeYield
         self.totalTime = totalTime
+        self.prepTime = prepTime
         self.rating = rating
         self.userRating = userRating
         self.isFavorite = isFavorite

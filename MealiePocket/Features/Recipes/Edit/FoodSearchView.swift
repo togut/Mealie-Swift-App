@@ -62,6 +62,7 @@ struct FoodSearchView: View {
             }
         }
         .navigationTitle("Rechercher un aliment")
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchQuery, prompt: "Tapez pour rechercher...")
         .onChange(of: searchQuery) { _, newValue in
             Task {
