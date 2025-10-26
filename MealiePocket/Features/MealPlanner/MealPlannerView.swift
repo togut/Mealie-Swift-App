@@ -36,11 +36,9 @@ struct MealPlannerView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 200)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Aujourd'hui") {
-                    currentlyVisibleMonth = Date().startOfMonth()
                     viewModel.goToToday(apiClient: appState.apiClient)
                 }
             }
@@ -63,28 +61,28 @@ struct MealPlannerView: View {
     
     private var header: some View {
         VStack(spacing: 5) {
-            HStack {
-                Spacer()
-                Text(currentlyVisibleMonth.formatted(.dateTime.month(.wide).year()))
-                    .font(.headline)
-                    .id(currentlyVisibleMonth)
-                Spacer()
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal)
-
-            HStack {
-                ForEach(daysOfWeek.indices, id: \.self) { index in
-                    Text(daysOfWeek[index])
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .foregroundColor(.secondary)
+            if viewModel.viewMode == .month {
+                HStack {
+                    Spacer()
+                    Text(currentlyVisibleMonth.formatted(.dateTime.month(.wide).year()))
+                        .font(.headline)
+                        .id(currentlyVisibleMonth)
+                    Spacer()
                 }
-            }
-            .padding(.bottom, 5)
-
-            if viewModel.viewMode != .month {
+                .padding(.vertical, 12)
+                .padding(.horizontal)
+                
+                HStack {
+                    ForEach(daysOfWeek.indices, id: \.self) { index in
+                        Text(daysOfWeek[index])
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.bottom, 5)
+            } else {
                 HStack {
                     Button {
                         viewModel.changeDate(-1)
@@ -94,7 +92,7 @@ struct MealPlannerView: View {
                         .disabled(!viewModel.canChangeDateBack)
                     Spacer()
                     Text(dateRangeTitle)
-                        .font(.caption)
+                        .font(.headline)
                     Spacer()
                     Button {
                         viewModel.changeDate(1)
@@ -102,6 +100,7 @@ struct MealPlannerView: View {
                     } label: { Image(systemName: "chevron.right") }
                         .padding(.trailing)
                 }
+                .padding(.vertical, 12)
             }
         }
     }

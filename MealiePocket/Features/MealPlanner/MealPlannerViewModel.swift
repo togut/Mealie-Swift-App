@@ -67,23 +67,22 @@ class MealPlannerViewModel {
     
     var canChangeDateBack: Bool {
         let calendar = Calendar.current
-        let component: Calendar.Component = viewMode == .day ? .day : (viewMode == .week ? .weekOfYear : .month)
+        let component: Calendar.Component = viewMode == .day ? .day : .weekOfYear
         
         guard let newDate = calendar.date(byAdding: component, value: -1, to: selectedDate) else {
             return false
         }
         
-        let startOfToday = calendar.startOfDay(for: Date())
-        
         if viewMode == .day {
-            return newDate >= startOfToday
+            return newDate >= currentMonthStart
         } else if viewMode == .week {
-            guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: newDate) else { return false }
-            return weekInterval.end > startOfToday
-        } else {
-            guard let monthInterval = calendar.dateInterval(of: .month, for: newDate) else { return false }
-            return monthInterval.end > startOfToday
+            guard let newWeekInterval = calendar.dateInterval(of: .weekOfYear, for: newDate) else {
+                return false
+            }
+            return newWeekInterval.end > currentMonthStart
         }
+        
+        return false
     }
     
     var daysInSpecificMonth: (Date) -> [Date] = { date in
@@ -145,10 +144,11 @@ class MealPlannerViewModel {
         let todayMonthStart = today.startOfMonth()
         selectedDate = today
         
-        if !displayedMonths.contains(todayMonthStart) {
-            setupInitialMonths(referenceDate: today)
+        if viewMode != .month || !displayedMonths.contains(todayMonthStart) {
+            if !displayedMonths.contains(todayMonthStart) {
+                setupInitialMonths(referenceDate: today)
+            }
             Task { await loadMealPlan(apiClient: apiClient) }
-        } else {
         }
     }
     
@@ -164,15 +164,10 @@ class MealPlannerViewModel {
         }
         
         guard let client = self.apiClient else {
-            guard let fallbackClient = AppState().apiClient else {
-                errorMessage = "API Client non disponible."
-                isLoading = false
-                isLoadingPast = false
-                isLoadingFuture = false
-                return
-            }
-            self.apiClient = fallbackClient
-            await loadMealPlan()
+            errorMessage = "API Client non disponible."
+            isLoading = false
+            isLoadingPast = false
+            isLoadingFuture = false
             return
         }
         
