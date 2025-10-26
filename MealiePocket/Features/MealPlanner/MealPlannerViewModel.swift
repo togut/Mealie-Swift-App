@@ -166,7 +166,7 @@ class MealPlannerViewModel {
         // Utiliser l'apiClient interne (mis à jour ou initial)
         guard let client = self.apiClient else {
              // Essayer de le récupérer de AppState comme fallback (à adapter)
-             guard let fallbackClient = await AppState().apiClient else {
+             guard let fallbackClient = AppState().apiClient else {
                   errorMessage = "API Client non disponible."
                   isLoading = false
                   isLoadingPast = false
