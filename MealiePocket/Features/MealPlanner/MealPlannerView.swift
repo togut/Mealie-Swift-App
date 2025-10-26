@@ -27,6 +27,7 @@ struct MealPlannerView: View {
             if viewModel.isLoadingFuture { ProgressView().progressViewStyle(.circular) }
         }
         .navigationTitle("Planner")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Picker("Vue", selection: $viewModel.viewMode) {
@@ -71,6 +72,7 @@ struct MealPlannerView: View {
             }
             .padding(.vertical, 8)
             .padding(.horizontal)
+
             HStack {
                 ForEach(daysOfWeek.indices, id: \.self) { index in
                     Text(daysOfWeek[index])
@@ -81,6 +83,7 @@ struct MealPlannerView: View {
                 }
             }
             .padding(.bottom, 5)
+
             if viewModel.viewMode != .month {
                 HStack {
                     Button {
@@ -135,7 +138,6 @@ struct MealPlannerView: View {
                                         }
                                     }
                             }
-                            .padding(.horizontal)
                         }
                         .coordinateSpace(name: "scrollView")
                         .onPreferenceChange(VisibleMonthPreferenceKey.self) { preferences in

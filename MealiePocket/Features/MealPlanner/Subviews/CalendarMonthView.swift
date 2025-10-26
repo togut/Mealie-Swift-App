@@ -11,7 +11,7 @@ struct CalendarMonthView: View {
     private let columns = Array(repeating: GridItem(.flexible()), count: 7)
     
     var body: some View {
-        VStack(spacing: 0) {          
+        VStack(spacing: 0) {
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(days, id: \.self) { date in
                     CalendarDayCell(
@@ -32,7 +32,7 @@ struct CalendarDayCell: View {
     let entries: [ReadPlanEntry]
     let isCurrentMonth: Bool
     let onTap: () -> Void
-
+    
     private var sortedEntries: [ReadPlanEntry] {
         entries.sorted {
             let typeOrder: [String: Int] = ["breakfast": 0, "lunch": 1, "dinner": 2, "side": 3]
@@ -46,43 +46,47 @@ struct CalendarDayCell: View {
             return name1 < name2
         }
     }
-
+    
     private let maxIconsToShow = 4
-
+    
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 2) {
-                Text(date.formatted(.dateTime.day()))
-                    .font(.callout.bold())
-                    .fontWeight(Calendar.current.isDateInToday(date) ? .heavy : .regular)
-                    .foregroundColor(foregroundColorForDate)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 5)
-                
-                Spacer()
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(sortedEntries.prefix(maxIconsToShow)) { entry in
-                        Image(systemName: iconForEntryType(entry.entryType))
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 12, height: 12)
-                            .foregroundColor(entry.entryType.lowercased() == "note" ? .gray : .accentColor)
+                if isCurrentMonth {
+                    Text(date.formatted(.dateTime.day()))
+                        .font(.callout.bold())
+                        .fontWeight(Calendar.current.isDateInToday(date) ? .heavy : .regular)
+                        .foregroundColor(foregroundColorForDate)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 5)
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(sortedEntries.prefix(maxIconsToShow)) { entry in
+                            Image(systemName: iconForEntryType(entry.entryType))
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 12, height: 12)
+                                .foregroundColor(entry.entryType.lowercased() == "note" ? .gray : .accentColor)
+                        }
+                        if entries.count > maxIconsToShow {
+                            Text("...")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
                     }
-                    if entries.count > maxIconsToShow {
-                        Text("...")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                    }
+                    .padding(.bottom, 4)
+                } else {
                     Spacer()
                 }
-                .padding(.bottom, 4)
             }
             .padding(2)
-            .opacity(isCurrentMonth ? 1.0 : 0.3)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(!isCurrentMonth)
     }
     
     private var foregroundColorForDate: Color {
@@ -94,7 +98,7 @@ struct CalendarDayCell: View {
             return .secondary
         }
     }
-
+    
     private func iconForEntryType(_ type: String) -> String {
         switch type.lowercased() {
         case "breakfast": return "sun.horizon.fill"
