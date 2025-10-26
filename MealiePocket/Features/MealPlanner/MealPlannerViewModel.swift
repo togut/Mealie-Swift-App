@@ -61,7 +61,15 @@ class MealPlannerViewModel {
         selectedDate = Date()
         Task { await loadMealPlan(apiClient: apiClient) }
     }
-    
+
+    func selectDateAndView(date: Date) {
+        selectedDate = date
+        viewMode = .day
+
+        // Si pas déjà load
+        // Task { await loadMealPlan() }
+    }
+
     func loadMealPlan(apiClient: MealieAPIClient? = nil) async {
         guard let client = apiClient else {
             errorMessage = "API Client non disponible."

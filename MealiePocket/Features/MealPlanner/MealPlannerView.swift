@@ -19,10 +19,13 @@ struct MealPlannerView: View {
         }
         .navigationTitle("Planner")
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Aujourd'hui") {
-                    viewModel.goToToday(apiClient: appState.apiClient)
+            ToolbarItem(placement: .principal) {
+                Picker("Vue", selection: $viewModel.viewMode) {
+                    ForEach(MealPlannerViewModel.ViewMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
                 }
+                .pickerStyle(.segmented)
             }
         }
         .task {
@@ -38,14 +41,6 @@ struct MealPlannerView: View {
     
     private var header: some View {
         VStack(spacing: 5) {
-            Picker("Vue", selection: $viewModel.viewMode) {
-                ForEach(MealPlannerViewModel.ViewMode.allCases) { mode in
-                    Text(mode.rawValue).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            
             HStack {
                 Button {
                     viewModel.changeDate(-1, apiClient: appState.apiClient)
@@ -74,7 +69,10 @@ struct MealPlannerView: View {
                         days: viewModel.daysInMonth,
                         mealPlanEntries: viewModel.mealPlanEntries,
                         selectedMonthDate: viewModel.selectedDate,
-                        baseURL: appState.apiClient?.baseURL
+                        baseURL: appState.apiClient?.baseURL,
+                        onDateSelected: { date in
+                            viewModel.selectDateAndView(date: date)
+                        }
                     )
                 }
                 
