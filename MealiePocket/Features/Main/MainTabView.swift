@@ -1,38 +1,58 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @State private var selectedTab: Int = 0
+    @State private var mealPlannerViewModel = MealPlannerViewModel()
+
     var body: some View {
         ZStack {
             Color(.systemBackground)
                 .ignoresSafeArea()
 
-            TabView {
-                Tab("Home", systemImage: "house.fill") {
-                    NavigationStack {
-                        HomeView()
-                    }
+            TabView(selection: $selectedTab) {
+                NavigationStack {
+                    HomeView(selectedTab: $selectedTab)
+                        .environment(mealPlannerViewModel)
                 }
-                Tab("Recipes", systemImage: "book.fill") {
-                    NavigationStack {
-                        RecipeListView()
-                    }
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
                 }
-                Tab("Planner", systemImage: "calendar") {
-                    NavigationStack {
-                        MealPlannerView()
-                    }
+                .tag(0)
+
+                NavigationStack {
+                    RecipeListView()
                 }
-                Tab("Shopping", systemImage: "cart.fill") {
-                    NavigationStack {
-                        ShoppingListView()
-                    }
+                .tabItem {
+                    Label("Recipes", systemImage: "book.fill")
                 }
-                Tab("Settings", systemImage: "gearshape.fill") {
-                    NavigationStack {
-                        SettingsView()
-                    }
+                .tag(1)
+
+                NavigationStack {
+                    MealPlannerView()
+                        .environment(mealPlannerViewModel)
                 }
+                .tabItem {
+                    Label("Planner", systemImage: "calendar")
+                }
+                .tag(2)
+
+                NavigationStack {
+                    ShoppingListView()
+                }
+                .tabItem {
+                    Label("Shopping", systemImage: "cart.fill")
+                }
+                .tag(3)
+
+                NavigationStack {
+                    SettingsView()
+                }
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .tag(4)
             }
         }
     }
 }
+

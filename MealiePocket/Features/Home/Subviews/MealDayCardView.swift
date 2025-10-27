@@ -8,6 +8,10 @@ struct MealDayCardView: View {
 
     @Environment(AppState.self) private var appState
 
+    @Environment(MealPlannerViewModel.self) private var mealPlannerViewModel
+    @Binding var selectedTab: Int
+    let plannerTabIndex = 2
+
     private let maxEntriesToShow = 4
     private var sortedEntries: [ReadPlanEntry] {
         entries.sorted {
@@ -24,7 +28,6 @@ struct MealDayCardView: View {
             HStack(alignment: .center) {
                 Text(date, format: .dateTime.weekday(.wide).day())
                     .font(.headline)
-                    .padding(.bottom, 4)
 
                 Spacer()
 
@@ -39,11 +42,12 @@ struct MealDayCardView: View {
                         
                 }
             }
-            .background(.red)
+            .padding(.bottom, 10)
 
             if sortedEntries.isEmpty {
                 Text("Rien de prévu")
                     .font(.callout)
+                    .padding(.bottom, 10)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
@@ -54,41 +58,66 @@ struct MealDayCardView: View {
                     }
 
                     if sortedEntries.count >= maxEntriesToShow {
-                        Text("Voir plus...")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        HStack {
+                            Spacer()
+                            Button {
+                                print("Bouton 'Voir plus...' cliqué pour la date: \(date)") // <-- DEBUG
+                                mealPlannerViewModel.selectDateAndView(date: date)
+                                print("ViewModel mis à jour. Nouvelle date: \(mealPlannerViewModel.selectedDate), Mode: \(mealPlannerViewModel.viewMode)") // <-- DEBUG
+                                DispatchQueue.main.async {
+                                    selectedTab = plannerTabIndex
+                                    print("Changement d'onglet demandé (async). Nouvelle valeur: \(selectedTab)")
+                                }
+                            } label: {
+                                Text("Voir plus...")
+                                    .font(.subheadline)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 10)
+                                    .glassEffect(.regular.tint(.clear).interactive())
+                                
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } else {
+                        Spacer()
                     }
                 }
             }
-            Spacer()
         }
         .padding()
-        .frame(width: 300, height: 180)
+        .frame(width: 300)
         .background(.thinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
     @ViewBuilder
     private func mealEntryRow(entry: ReadPlanEntry) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: iconForEntryType(entry.entryType))
-                .foregroundColor(.secondary)
-                .frame(width: 15)
-            
-            if let recipe = entry.recipe {
-                NavigationLink(value: recipe) {
+        if let recipe = entry.recipe {
+            NavigationLink(value: recipe) {
+                HStack(spacing: 6) {
+                    Image(systemName: iconForEntryType(entry.entryType))
+                        .foregroundColor(.secondary)
+                        .frame(width: 15)
+                    
+                    
                     Text(recipe.name)
                         .font(.subheadline)
                         .lineLimit(1)
                 }
                 .buttonStyle(.plain)
-            } else {
-                Text(entry.title.isEmpty ? entry.text : entry.title)
+                
+                Spacer()
+                Image(systemName: "chevron.right")
                     .font(.subheadline)
-                    .lineLimit(1)
                     .foregroundColor(.secondary)
             }
-            Spacer()
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+        } else {
+            Text(entry.title.isEmpty ? entry.text : entry.title)
+                .font(.subheadline)
+                .lineLimit(1)
+                .foregroundColor(.secondary)
         }
     }
     

@@ -72,6 +72,11 @@ struct MealPlannerView: View {
             Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
             selectedTabIndex = 1
         }
+        .onChange(of: viewModel.viewMode) { _, newMode in
+            print("MealPlannerView: viewMode changed to \(newMode)")
+            // Assure-toi que cela recharge les données si nécessaire
+            Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
+        }
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
         }

@@ -2,7 +2,11 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
+    @State private var mealPlannerViewModel = MealPlannerViewModel()
     @Environment(AppState.self) private var appState
+
+    @Binding var selectedTab: Int
+    let plannerTabIndex = 2
 
     var body: some View {
         NavigationStack {
@@ -101,7 +105,8 @@ struct HomeView: View {
                         baseURL: appState.apiClient?.baseURL,
                         onAddRecipeTapped: { selectedDate in
                             viewModel.presentAddRecipeSheet(apiClient: appState.apiClient, for: selectedDate)
-                        }
+                        },
+                        selectedTab: $selectedTab
                     )
                 }
             }
