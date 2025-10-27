@@ -71,21 +71,14 @@ class HomeViewModel {
         await MainActor.run { isLoading = false }
     }
 
-    private func getCurrentWeekDates() -> [Date] {
+    private func getNextSevenDays() -> [Date] {
         let calendar = Calendar.current
-        guard let today = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: Date()),
-              let weekInterval = calendar.dateInterval(of: .weekOfYear, for: today)
-        else { return [] }
-        
+        let today = calendar.startOfDay(for: Date())
         var dates: [Date] = []
-        calendar.enumerateDates(startingAfter: weekInterval.start.addingTimeInterval(-1),
-                                matching: DateComponents(hour: 0, minute: 0, second: 0),
-                                matchingPolicy: .nextTime) { (date, _, stop) in
-            guard let date = date else { return }
-            if date < weekInterval.end {
+        
+        for dayOffset in 0..<7 {
+            if let date = calendar.date(byAdding: .day, value: dayOffset, to: today) {
                 dates.append(date)
-            } else {
-                stop = true
             }
         }
         return dates
@@ -106,7 +99,7 @@ class HomeViewModel {
         await MainActor.run {
             isLoadingWeeklyMeals = true
             weeklyMealsErrorMessage = nil
-            self.daysOfWeek = getCurrentWeekDates()
+            self.daysOfWeek = getNextSevenDays()
         }
 
         guard let firstDay = daysOfWeek.first, let lastDay = daysOfWeek.last else {
