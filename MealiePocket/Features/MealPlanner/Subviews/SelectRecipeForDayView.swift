@@ -79,7 +79,7 @@ struct SelectRecipeForDayView: View {
                         showingMealTypeSelection = false
                     }
                 )
-                .presentationDetents([.height(300)])
+                .presentationDetents([.height(200)])
             }
         }
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in

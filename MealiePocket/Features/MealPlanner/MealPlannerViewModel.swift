@@ -3,7 +3,6 @@ import SwiftUI
 
 @Observable
 class MealPlannerViewModel {
-    
     enum ViewMode: String, CaseIterable, Identifiable {
         case day = "Jour"
         case week = "Semaine"

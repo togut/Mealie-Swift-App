@@ -51,11 +51,11 @@ struct MealPlannerView: View {
                         viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
                     } label: {
                         Image(systemName: "plus")
-                            .font(.title2.weight(.semibold))
-                            .foregroundColor(.primary)
+                            .font(.title2)
+                            .foregroundColor(.white)
                             .padding()
                     }
-                    .glassEffect(.regular.tint(.clear).interactive())
+                    .glassEffect(.regular.tint(.accentColor).interactive(), in: .circle)
                     .padding(.trailing, 20)
                     .padding(.bottom, 10)
                 }
@@ -234,9 +234,11 @@ struct MealPlannerView: View {
                         Button {
                             viewModel.presentAddRecipeSheet(for: date)
                         } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.accentColor)
-                                .imageScale(.large)
+                            Image(systemName: "plus")
+                                .font(.subheadline)
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .glassEffect(.regular.tint(.accentColor), in: .circle)
                         }
                         .buttonStyle(.plain)
                     }
