@@ -51,7 +51,7 @@ struct MealDayCardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 16) {
                     let entriesToDisplay = sortedEntries.prefix(maxEntriesToShow)
                     ForEach(entriesToDisplay.prefix(sortedEntries.count >= maxEntriesToShow ? maxEntriesToShow - 1 : maxEntriesToShow)) { entry in
                         mealEntryRow(entry: entry)
@@ -98,16 +98,16 @@ struct MealDayCardView: View {
                     Text(recipe.name)
                         .font(.subheadline)
                         .lineLimit(1)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
-                .buttonStyle(.plain)
-                
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .contentShape(Rectangle())
         } else {
             Text(entry.title.isEmpty ? entry.text : entry.title)
                 .font(.subheadline)
