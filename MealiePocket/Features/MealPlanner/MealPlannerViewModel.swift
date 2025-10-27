@@ -326,4 +326,24 @@ class MealPlannerViewModel {
             }
         }
     }
+
+    func deleteMealEntry(entryID: Int) async {
+        guard let client = self.apiClient else {
+            errorMessage = "API Client non disponible."
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await client.deleteMealPlanEntry(entryID: entryID)
+            await loadMealPlan(apiClient: client)
+        } catch {
+            await MainActor.run {
+                errorMessage = "Erreur lors de la suppression : \(error.localizedDescription)"
+                isLoading = false
+            }
+        }
+    }
 }

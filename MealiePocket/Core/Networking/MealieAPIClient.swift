@@ -436,4 +436,12 @@ class MealieAPIClient {
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
+
+    func deleteMealPlanEntry(entryID: Int) async throws {
+        let url = baseURL.appendingPathComponent("api/households/mealplans/\(entryID)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+
+        let _: ReadPlanEntry = try await performRequest(for: request)
+    }
 }

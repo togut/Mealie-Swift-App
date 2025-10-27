@@ -303,6 +303,7 @@ struct MealPlannerView: View {
                 ForEach(sortedEntries) { entry in
                     mealEntryView(entry: entry, showType: showType)
                 }
+                .onDelete(perform: deleteEntry)
             }
             .padding(.horizontal, viewModel.viewMode == .month ? 0 : 5)
             .padding(.vertical, viewModel.viewMode == .month ? 0 : 5)
@@ -315,10 +316,21 @@ struct MealPlannerView: View {
             if let recipe = entry.recipe {
                 NavigationLink(value: recipe) {
                     labelView(entry: entry, recipeName: recipe.name, showType: showType)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             } else {
                 labelView(entry: entry, recipeName: nil, showType: showType)
+                    .contentShape(Rectangle())
+            }
+        }
+        .contextMenu {
+            Button(role: .destructive) {
+                Task {
+                    await viewModel.deleteMealEntry(entryID: entry.id)
+                }
+            } label: {
+                Label("Supprimer", systemImage: "trash")
             }
         }
     }
@@ -408,6 +420,30 @@ struct MealPlannerView: View {
             }
         case .month:
             return dateToShow.formatted(.dateTime.month(.wide).year())
+        }
+    }
+
+    private func deleteEntry(at offsets: IndexSet) {
+        let dateKey = Calendar.current.startOfDay(for: viewModel.selectedDate)
+        guard let entries = viewModel.mealPlanEntries[dateKey] else { return }
+        let sortedEntries = entries.sorted {
+            let typeOrder: [String: Int] = ["breakfast": 0, "lunch": 1, "dinner": 2, "side": 3]
+            let order1 = typeOrder[$0.entryType.lowercased()] ?? 4
+            let order2 = typeOrder[$1.entryType.lowercased()] ?? 4
+            if order1 != order2 {
+                return order1 < order2
+            }
+            let name1 = $0.recipe?.name ?? $0.title
+            let name2 = $1.recipe?.name ?? $1.title
+            return name1 < name2
+        }
+        
+        let idsToDelete = offsets.map { sortedEntries[$0].id }
+        
+        Task {
+            for entryID in idsToDelete {
+                await viewModel.deleteMealEntry(entryID: entryID)
+            }
         }
     }
     
