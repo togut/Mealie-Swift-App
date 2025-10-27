@@ -114,6 +114,7 @@ struct RecipeDetailView: View {
                         Divider().padding()
                         TimeInfoView(icon: "frying.pan", label: "Cooking", value: detail.performTime)
                     }
+                    .lineLimit(1)
                     
                     let servingsValue: Double? = detail.recipeServings
                     let isSingular: Bool = servingsValue == 1.0

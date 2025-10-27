@@ -57,6 +57,16 @@ struct MealPlannerView: View {
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
         }
+        .sheet(isPresented: $viewModel.showingAddRecipeSheet) {
+            if let date = viewModel.dateForAddingRecipe {
+                SelectRecipeForDayView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
+            } else {
+                Text("Erreur: Date non sélectionnée.")
+            }
+        }
+        .onChange(of: viewModel.searchQueryForSelection) { _, _ in
+            Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient) }
+        }
     }
     
     private var header: some View {
@@ -203,6 +213,14 @@ struct MealPlannerView: View {
                             .font(.headline)
                             .bold(Calendar.current.isDateInToday(date))
                         Spacer()
+                        Button {
+                            viewModel.presentAddRecipeSheet(for: date)
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.accentColor)
+                                .imageScale(.large)
+                        }
+                        .buttonStyle(.plain)
                     }
                     .padding(.bottom, 5)
                     
@@ -222,6 +240,14 @@ struct MealPlannerView: View {
         return VStack(alignment: .leading) {
             mealEntriesList(for: date, showType: true)
             Spacer()
+            Button {
+                viewModel.presentAddRecipeSheet(for: date)
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .foregroundColor(.accentColor)
+                    .imageScale(.large)
+            }
+            .buttonStyle(.plain)
         }
         .padding()
     }

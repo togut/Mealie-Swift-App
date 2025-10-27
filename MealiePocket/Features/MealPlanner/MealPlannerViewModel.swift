@@ -10,7 +10,7 @@ class MealPlannerViewModel {
         case month = "Mois"
         var id: String { self.rawValue }
     }
-
+    
     var selectedDate = Date()
     var viewMode: ViewMode = .month
     var mealPlanEntries: [Date: [ReadPlanEntry]] = [:]
@@ -26,6 +26,17 @@ class MealPlannerViewModel {
     private var currentMonthStart: Date {
         Date().startOfMonth()
     }
+    
+    var showingAddRecipeSheet = false
+    var dateForAddingRecipe: Date? = nil
+    var recipesForSelection: [RecipeSummary] = []
+    var isLoadingRecipesForSelection = false
+    var isLoadingMoreRecipesForSelection = false
+    var searchQueryForSelection = ""
+    private var searchTaskForSelection: Task<Void, Never>? = nil
+    private var currentPageForSelection = 1
+    private var totalPagesForSelection = 1
+    var canLoadMoreForSelection: Bool { currentPageForSelection < totalPagesForSelection }
     
     init() {
         setupInitialMonths()
@@ -206,6 +217,111 @@ class MealPlannerViewModel {
                 self.isLoading = false
                 self.isLoadingPast = false
                 self.isLoadingFuture = false
+            }
+        }
+    }
+    
+    func presentAddRecipeSheet(for date: Date) {
+        dateForAddingRecipe = date
+        searchQueryForSelection = ""
+        recipesForSelection = []
+        currentPageForSelection = 1
+        totalPagesForSelection = 1
+        isLoadingRecipesForSelection = false
+        isLoadingMoreRecipesForSelection = false
+        showingAddRecipeSheet = true
+    }
+    
+    func searchRecipesForSelection(apiClient: MealieAPIClient?, loadMore: Bool = false) async {
+        guard let apiClient = apiClient else { return }
+        
+        if !loadMore {
+            searchTaskForSelection?.cancel()
+            currentPageForSelection = 1
+            isLoadingRecipesForSelection = true
+            isLoadingMoreRecipesForSelection = false
+        } else {
+            guard canLoadMoreForSelection, !isLoadingMoreRecipesForSelection else { return }
+            isLoadingMoreRecipesForSelection = true
+            isLoadingRecipesForSelection = false
+        }
+        
+        searchTaskForSelection = Task {
+            do {
+                if !loadMore {
+                    try await Task.sleep(nanoseconds: 300_000_000)
+                }
+                
+                let pageToLoad = loadMore ? currentPageForSelection + 1 : 1
+                
+                let response = try await apiClient.fetchRecipes(
+                    page: pageToLoad,
+                    orderBy: "name",
+                    orderDirection: "asc",
+                    paginationSeed: nil,
+                    queryFilter: searchQueryForSelection.isEmpty ? nil : "name LIKE %\(searchQueryForSelection)%",
+                    perPage: 25
+                )
+                
+                let fetchedRecipes = response.items
+                
+                await MainActor.run {
+                    if loadMore {
+                        self.recipesForSelection.append(contentsOf: fetchedRecipes)
+                        self.currentPageForSelection = pageToLoad
+                    } else {
+                        self.recipesForSelection = fetchedRecipes
+                        self.currentPageForSelection = 1
+                    }
+                    self.totalPagesForSelection = response.totalPages
+                    
+                    self.isLoadingRecipesForSelection = false
+                    self.isLoadingMoreRecipesForSelection = false
+                }
+            } catch APIError.unauthorized {
+                await MainActor.run {
+                    isLoadingRecipesForSelection = false
+                    isLoadingMoreRecipesForSelection = false
+                }
+            } catch is CancellationError {
+                await MainActor.run {
+                    if !loadMore { isLoadingRecipesForSelection = false }
+                }
+            } catch {
+                await MainActor.run {
+                    print("Error searching recipes for selection: \(error)")
+                    if !loadMore { self.recipesForSelection = [] }
+                    self.isLoadingRecipesForSelection = false
+                    self.isLoadingMoreRecipesForSelection = false
+                }
+            }
+        }
+    }
+    
+    func loadMoreRecipesForSelection(apiClient: MealieAPIClient?) async {
+        await searchRecipesForSelection(apiClient: apiClient, loadMore: true)
+    }
+    
+    func addSelectedRecipeToPlan(recipe: RecipeSummary, mealType: String, apiClient: MealieAPIClient?) async {
+        guard let date = dateForAddingRecipe, let apiClient = apiClient else {
+            errorMessage = "Erreur: Date ou client API manquant."
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await apiClient.addMealPlanEntry(date: date, recipeId: recipe.id, entryType: mealType)
+            await loadMealPlan(apiClient: apiClient)
+            await MainActor.run {
+                showingAddRecipeSheet = false
+                isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "Erreur lors de l'ajout au planning: \(error.localizedDescription)"
+                isLoading = false
             }
         }
     }
