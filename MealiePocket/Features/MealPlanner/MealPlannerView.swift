@@ -8,7 +8,7 @@ struct MealPlannerView: View {
     @State private var currentlyVisibleMonth: Date = Date().startOfMonth()
     @State private var scrollViewFrame: CGRect = .zero
     private let daysOfWeek = ["L", "M", "M", "J", "V", "S", "D"]
-    
+
     var body: some View {
         VStack {
             header
@@ -126,7 +126,7 @@ struct MealPlannerView: View {
                                         .id(monthStart)
                                         .preference(key: VisibleMonthPreferenceKey.self, value: [MonthVisibilityInfo(month: monthStart, frame: monthProxy.frame(in: .global))])
                                     }
-                                    .frame(height: 450)
+                                    .frame(height: CGFloat(viewModel.daysInSpecificMonth(monthStart).count / 7) * 100)
                                 }
                                 
                                 Color.clear
@@ -196,7 +196,7 @@ struct MealPlannerView: View {
         return VStack(alignment: .leading, spacing: 15) {
             ForEach(days, id: \.self) { date in
                 VStack(alignment: .leading) {
-                    HStack {
+                    HStack(spacing: 2) {
                         Text(date.formatted(.dateTime.weekday(.wide)))
                             .font(.headline)
                         Text(date.formatted(.dateTime.day()))
@@ -220,10 +220,6 @@ struct MealPlannerView: View {
     private var dayView: some View {
         let date = Calendar.current.startOfDay(for: viewModel.selectedDate)
         return VStack(alignment: .leading) {
-            Text(date.formatted(date: .complete, time: .omitted))
-                .font(.title2)
-                .bold()
-                .padding(.bottom)
             mealEntriesList(for: date, showType: true)
             Spacer()
         }

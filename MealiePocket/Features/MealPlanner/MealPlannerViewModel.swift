@@ -10,7 +10,7 @@ class MealPlannerViewModel {
         case month = "Mois"
         var id: String { self.rawValue }
     }
-    
+
     var selectedDate = Date()
     var viewMode: ViewMode = .month
     var mealPlanEntries: [Date: [ReadPlanEntry]] = [:]
