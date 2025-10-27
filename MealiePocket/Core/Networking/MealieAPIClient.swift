@@ -367,14 +367,7 @@ class MealieAPIClient {
         
         do {
             let encoder = JSONEncoder()
-            request.httpBody = try encoder.encode(payload)
-            
-            if let body = request.httpBody, let jsonString = String(data: body, encoding: .utf8) {
-                print("--- Sending PUT Payload ---")
-                print(jsonString)
-                print("--------------------------")
-            }
-            
+            request.httpBody = try encoder.encode(payload)           
         } catch {
             throw APIError.encodingError(error)
         }

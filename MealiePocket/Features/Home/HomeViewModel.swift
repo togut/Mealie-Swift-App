@@ -221,7 +221,6 @@ class HomeViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    print("Error searching recipes for selection (Home): \(error)")
                     if !loadMore { self.recipesForSelection = [] }
                     self.isLoadingRecipesForSelection = false
                     self.isLoadingMoreRecipesForSelection = false

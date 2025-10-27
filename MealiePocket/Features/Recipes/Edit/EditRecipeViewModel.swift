@@ -189,7 +189,6 @@ class EditRecipeViewModel {
                 var updatedIngredient = ingredient
                 updatedIngredient.title = ingredient.title?.isEmpty ?? true ? nil : ingredient.title
                 updatedIngredient.originalText = ingredient.originalText?.isEmpty ?? true ? nil : ingredient.originalText
-                // to fix
                 return updatedIngredient
             },
             recipeInstructions: instructions.map { instruction in

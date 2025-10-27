@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MealPlannerView: View {
-    @State private var viewModel = MealPlannerViewModel()
+    @Environment(MealPlannerViewModel.self) private var viewModel
     @Environment(AppState.self) private var appState
     
     @State private var selectedTabIndex = 1
@@ -30,7 +30,10 @@ struct MealPlannerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Picker("Vue", selection: $viewModel.viewMode) {
+                Picker("Vue", selection: Binding(
+                    get: { viewModel.viewMode },
+                    set: { viewModel.viewMode = $0 }
+                )) {
                     ForEach(MealPlannerViewModel.ViewMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
                     }
@@ -70,17 +73,19 @@ struct MealPlannerView: View {
                 currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
             }
             Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
-            selectedTabIndex = 1
         }
-        .onChange(of: viewModel.viewMode) { _, newMode in
-            print("MealPlannerView: viewMode changed to \(newMode)")
-            // Assure-toi que cela recharge les données si nécessaire
-            Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
+        .onChange(of: viewModel.selectedDate) { _, newDate in
+            if viewModel.viewMode == .day {
+                Task { await viewModel.loadMealPlan(apiClient: appState.apiClient) }
+            }
         }
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
         }
-        .sheet(isPresented: $viewModel.showingAddRecipeSheet) {
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingAddRecipeSheet },
+            set: { viewModel.showingAddRecipeSheet = $0 }
+        )) {
             if let date = viewModel.dateForAddingRecipe {
                 SelectRecipeForDayView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
             } else {
@@ -328,12 +333,12 @@ struct MealPlannerView: View {
         let placeholderSize: CGFloat = isMonthView ? 16 : 30
         
         HStack(spacing: isMonthView ? 4 : 8) {
-            
             if let recipe = entry.recipe {
                 AsyncImageView(url: .makeImageURL(
                     baseURL: appState.apiClient?.baseURL,
                     recipeID: recipe.id,
-                    imageName: "min-original.webp"
+                    imageName: "min-original.webp",
+                    cacheBuster: viewModel.imageLoadID.uuidString
                 ))
                 .frame(width: baseImageSize, height: baseImageSize)
                 .clipShape(RoundedRectangle(cornerRadius: 3))
@@ -370,6 +375,7 @@ struct MealPlannerView: View {
             }
             Spacer()
         }
+        .id(entry.id)
         .padding(.vertical, isMonthView ? 2 : (showTimes ? 10 : 8))
         .padding(.horizontal, isMonthView ? 2 : 10)
         .background(

@@ -17,6 +17,7 @@ class MealPlannerViewModel {
     var isLoadingPast = false
     var isLoadingFuture = false
     var errorMessage: String?
+    var imageLoadID = UUID()
     
     var displayedMonths: [Date] = []
     
@@ -165,7 +166,6 @@ class MealPlannerViewModel {
     func selectDateAndView(date: Date) {
         selectedDate = date
         viewMode = .day
-        Task { await loadMealPlan(apiClient: self.apiClient) }
     }
     
     func loadMealPlan(apiClient: MealieAPIClient? = nil) async {
@@ -209,6 +209,8 @@ class MealPlannerViewModel {
                 self.isLoading = false
                 self.isLoadingPast = false
                 self.isLoadingFuture = false
+                self.errorMessage = nil
+                self.imageLoadID = UUID()
             }
         } catch {
             await MainActor.run {

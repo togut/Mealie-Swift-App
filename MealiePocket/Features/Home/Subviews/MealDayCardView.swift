@@ -61,13 +61,8 @@ struct MealDayCardView: View {
                         HStack {
                             Spacer()
                             Button {
-                                print("Bouton 'Voir plus...' cliqué pour la date: \(date)") // <-- DEBUG
                                 mealPlannerViewModel.selectDateAndView(date: date)
-                                print("ViewModel mis à jour. Nouvelle date: \(mealPlannerViewModel.selectedDate), Mode: \(mealPlannerViewModel.viewMode)") // <-- DEBUG
-                                DispatchQueue.main.async {
-                                    selectedTab = plannerTabIndex
-                                    print("Changement d'onglet demandé (async). Nouvelle valeur: \(selectedTab)")
-                                }
+                                selectedTab = plannerTabIndex
                             } label: {
                                 Text("Voir plus...")
                                     .font(.subheadline)
