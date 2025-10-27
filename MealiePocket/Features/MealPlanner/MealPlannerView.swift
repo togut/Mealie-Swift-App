@@ -43,6 +43,24 @@ struct MealPlannerView: View {
                 }
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            if viewModel.viewMode == .day {
+                HStack {
+                    Spacer()
+                    Button {
+                        viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.title2.weight(.semibold))
+                            .foregroundColor(.primary)
+                            .padding()
+                    }
+                    .glassEffect(.regular.tint(.clear).interactive())
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 10)
+                }
+            }
+        }
         .task {
             currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
             await viewModel.loadMealPlan(apiClient: appState.apiClient)
@@ -240,14 +258,6 @@ struct MealPlannerView: View {
         return VStack(alignment: .leading) {
             mealEntriesList(for: date, showType: true)
             Spacer()
-            Button {
-                viewModel.presentAddRecipeSheet(for: date)
-            } label: {
-                Image(systemName: "plus.circle.fill")
-                    .foregroundColor(.accentColor)
-                    .imageScale(.large)
-            }
-            .buttonStyle(.plain)
         }
         .padding()
     }

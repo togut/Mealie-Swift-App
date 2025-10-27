@@ -7,39 +7,30 @@ struct MainTabView: View {
                 .ignoresSafeArea()
 
             TabView {
-                NavigationStack {
-                    HomeView()
+                Tab("Home", systemImage: "house.fill") {
+                    NavigationStack {
+                        HomeView()
+                    }
                 }
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                Tab("Recipes", systemImage: "book.fill") {
+                    NavigationStack {
+                        RecipeListView()
+                    }
                 }
-                
-                NavigationStack {
-                    RecipeListView()
+                Tab("Planner", systemImage: "calendar") {
+                    NavigationStack {
+                        MealPlannerView()
+                    }
                 }
-                .tabItem {
-                    Label("Recipes", systemImage: "book.fill")
+                Tab("Shopping", systemImage: "cart.fill") {
+                    NavigationStack {
+                        ShoppingListView()
+                    }
                 }
-
-                NavigationStack {
-                    MealPlannerView()
-                }
-                .tabItem {
-                    Label("Planner", systemImage: "calendar")
-                }
-
-                NavigationStack {
-                    ShoppingListView()
-                }
-                .tabItem {
-                    Label("Shopping", systemImage: "cart.fill")
-                }
-                
-                NavigationStack {
-                    SettingsView()
-                }
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
+                Tab("Settings", systemImage: "gearshape.fill") {
+                    NavigationStack {
+                        SettingsView()
+                    }
                 }
             }
         }
