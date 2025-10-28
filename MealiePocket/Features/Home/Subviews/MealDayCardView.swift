@@ -24,25 +24,41 @@ struct MealDayCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center) {
                 Text(date, format: .dateTime.weekday(.wide).day())
                     .font(.headline)
 
                 Spacer()
 
-                Button {
-                    hapticImpact(style: .light)
-                    onAddRecipeTapped(date)
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        .padding(4)
-                        .glassEffect(.regular.tint(.accentColor), in: .circle)
+                if sortedEntries.count >= maxEntriesToShow {
+                    Button {
+                        hapticImpact(style: .light)
+                        mealPlannerViewModel.selectDateAndView(date: date)
+                        selectedTab = plannerTabIndex
+                    } label: {
+                        Text("Voir plus...")
+                            .font(.subheadline)
+                            .padding(.horizontal, 10)
+                            .frame(height: 25)
+                            .glassEffect(.regular.tint(.clear).interactive())
+                            
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Button {
+                        hapticImpact(style: .light)
+                        onAddRecipeTapped(date)
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .frame(width: 25, height: 25)
+                            .glassEffect(.regular.tint(.accentColor), in: .circle)
+                    }
                 }
             }
-            .padding(.bottom, 10)
+            .frame(minWidth: 150)
 
             if sortedEntries.isEmpty {
                 Text("Rien de prévu")
@@ -51,37 +67,16 @@ struct MealDayCardView: View {
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else {
-                VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .top, spacing: 16) {
                     let entriesToDisplay = sortedEntries.prefix(maxEntriesToShow)
                     ForEach(entriesToDisplay.prefix(sortedEntries.count >= maxEntriesToShow ? maxEntriesToShow - 1 : maxEntriesToShow)) { entry in
                         mealEntryRow(entry: entry)
-                    }
-
-                    if sortedEntries.count >= maxEntriesToShow {
-                        HStack {
-                            Spacer()
-                            Button {
-                                mealPlannerViewModel.selectDateAndView(date: date)
-                                selectedTab = plannerTabIndex
-                            } label: {
-                                Text("Voir plus...")
-                                    .font(.subheadline)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 10)
-                                    .glassEffect(.regular.tint(.clear).interactive())
-                                
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    } else {
-                        Spacer()
                     }
                 }
             }
         }
         .padding()
-        .frame(width: 300)
-        .background(.thinMaterial)
+        .background(.thinMaterial) // not convinced by this. Will probably change later?
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
@@ -89,23 +84,25 @@ struct MealDayCardView: View {
     private func mealEntryRow(entry: ReadPlanEntry) -> some View {
         if let recipe = entry.recipe {
             NavigationLink(value: recipe) {
-                HStack(spacing: 6) {
-                    Image(systemName: iconForEntryType(entry.entryType))
-                        .foregroundColor(.secondary)
-                        .frame(width: 15)
-                    
-                    
+                VStack(alignment: .leading, spacing: 6) {
+                    AsyncImageView(
+                        url: .makeImageURL(
+                            baseURL: baseURL,
+                            recipeID: recipe.id,
+                            imageName: "min-original.webp"
+                        )
+                    )
+                    .frame(width: 80, height: 80)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+
                     Text(recipe.name)
                         .font(.subheadline)
-                        .lineLimit(1)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .lineLimit(2, reservesSpace: true)
+                        .multilineTextAlignment(.leading)
+                        .padding(.bottom, 6)
                 }
-                .contentShape(Rectangle())
+                .frame(width: 80)
             }
             .buttonStyle(.plain)
         } else {
