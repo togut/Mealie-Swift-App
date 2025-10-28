@@ -62,7 +62,7 @@ struct MealPlannerView: View {
                             hapticImpact(style: .light)
                             viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
                         } label: {
-                            Image(systemName: "dice.fill")
+                            Image(systemName: "dice")
                                 .font(.title2)
                                 .foregroundStyle(Color.primary)
                                 .padding()
@@ -287,17 +287,32 @@ struct MealPlannerView: View {
                             .font(.headline)
                             .bold(Calendar.current.isDateInToday(date))
                         Spacer()
-                        Button {
-                            hapticImpact(style: .light)
-                            viewModel.presentAddRecipeSheet(for: date)
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.subheadline)
-                                .foregroundColor(.white)
-                                .padding(6)
-                                .glassEffect(.regular.tint(.accentColor), in: .circle)
+
+                        HStack(spacing: 12) {
+                            Button {
+                                hapticImpact(style: .light)
+                                viewModel.presentRandomMealTypeSheet(for: date)
+                            } label: {
+                                Image(systemName: "dice")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                    .frame(width: 25, height: 25)
+                                    .glassEffect(.regular.tint(.clear), in: .circle)
+                            }
+                            .buttonStyle(.plain)
+                            
+                            Button {
+                                hapticImpact(style: .light)
+                                viewModel.presentAddRecipeSheet(for: date)
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
+                                    .frame(width: 25, height: 25)
+                                    .glassEffect(.regular.tint(.accentColor), in: .circle)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                     .padding(.bottom, 5)
                     
