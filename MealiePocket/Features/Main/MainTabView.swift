@@ -40,7 +40,7 @@ struct MainTabView: View {
                     ShoppingListView()
                 }
                 .tabItem {
-                    Label("Shopping", systemImage: "cart.fill")
+                    Label("List", systemImage: "list.bullet")
                 }
                 .tag(3)
 
