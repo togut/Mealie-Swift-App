@@ -22,6 +22,7 @@ struct SelectRecipeForDayView: View {
                             self.selectedRecipe = recipe
                             self.showingMealTypeSelection = true
                         }
+                        .listSectionSeparator(.hidden, edges: .top)
                 }
                 if viewModel.canLoadMoreForSelection && !viewModel.recipesForSelection.isEmpty {
                     Section {
