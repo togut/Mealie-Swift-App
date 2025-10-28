@@ -9,6 +9,14 @@ struct MealPlannerView: View {
     @State private var scrollViewFrame: CGRect = .zero
     private let daysOfWeek = ["L", "M", "M", "J", "V", "S", "D"]
 
+    @State private var showingMealTypeSelection = false
+    @State private var selectedMealType = "Dinner"
+    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
+
+    @Environment(\.dismiss) var dismiss
+
+    @Namespace var unionNamespace
+
     var body: some View {
         VStack {
             header
@@ -48,18 +56,32 @@ struct MealPlannerView: View {
         }
         .overlay(alignment: .bottomTrailing) {
             if viewModel.viewMode == .day {
-                HStack {
-                    Spacer()
-                    Button {
-                        hapticImpact(style: .light)
-                        viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding()
+                GlassEffectContainer(spacing: 20.0) {
+                    HStack {
+                        Button {
+                            hapticImpact(style: .light)
+                            viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
+                        } label: {
+                            Image(systemName: "dice.fill")
+                                .font(.title2)
+                                .foregroundStyle(Color.primary)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+
+                        Button {
+                            hapticImpact(style: .light)
+                            viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title2)
+                                .foregroundStyle(Color.accentColor)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
                     }
-                    .glassEffect(.regular.tint(.accentColor).interactive(), in: .circle)
                     .padding(.trailing, 20)
                     .padding(.bottom, 10)
                 }
@@ -89,6 +111,29 @@ struct MealPlannerView: View {
         )) {
             if let date = viewModel.dateForAddingRecipe {
                 SelectRecipeForDayView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
+            } else {
+                Text("Erreur: Date non sélectionnée.")
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingMealTypeSelection },
+            set: { viewModel.showingMealTypeSelection = $0 }
+        )) {
+            if let date = viewModel.dateForAddingRecipe {
+                MealTypeSelectionView(
+                    selectedMealType: $selectedMealType,
+                    mealTypes: mealTypes,
+                    onConfirm: {
+                        Task {
+                            await viewModel.addRandomMeal(date: date, mealType: selectedMealType)
+                        }
+                        viewModel.showingMealTypeSelection = false
+                    },
+                    onCancel: {
+                        viewModel.showingMealTypeSelection = false
+                    }
+                )
+                .presentationDetents([.height(200)])
             } else {
                 Text("Erreur: Date non sélectionnée.")
             }

@@ -28,6 +28,7 @@ class MealPlannerViewModel {
     }
     
     var showingAddRecipeSheet = false
+    var showingMealTypeSelection = false
     var dateForAddingRecipe: Date? = nil
     var recipesForSelection: [RecipeSummary] = []
     var isLoadingRecipesForSelection = false
@@ -232,6 +233,11 @@ class MealPlannerViewModel {
         isLoadingMoreRecipesForSelection = false
         showingAddRecipeSheet = true
     }
+
+    func presentRandomMealTypeSheet(for date: Date) {
+        dateForAddingRecipe = date
+        showingMealTypeSelection = true
+    }
     
     func searchRecipesForSelection(apiClient: MealieAPIClient?, loadMore: Bool = false) async {
         guard let apiClient = apiClient else { return }
@@ -326,13 +332,37 @@ class MealPlannerViewModel {
             }
         }
     }
-
+    
+    func addRandomMeal(date: Date, mealType: String) async {
+        guard let date = dateForAddingRecipe, let apiClient = apiClient else {
+            errorMessage = "API Client non disponible."
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let _ = try await apiClient.addRandomMealPlanEntry(date: date, entryType: mealType)
+            await loadMealPlan(apiClient: apiClient)
+            await MainActor.run {
+                showingMealTypeSelection = false
+                isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "Erreur lors de l'ajout aléatoire : \(error.localizedDescription)"
+                isLoading = false
+            }
+        }
+    }
+    
     func deleteMealEntry(entryID: Int) async {
         guard let client = self.apiClient else {
             errorMessage = "API Client non disponible."
             return
         }
-
+        
         isLoading = true
         errorMessage = nil
         

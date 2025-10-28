@@ -37,7 +37,7 @@ struct MealDayCardView: View {
                         mealPlannerViewModel.selectDateAndView(date: date)
                         selectedTab = plannerTabIndex
                     } label: {
-                        Text("Voir plus...")
+                        Text("Voir plus")
                             .font(.subheadline)
                             .padding(.horizontal, 10)
                             .frame(height: 25)

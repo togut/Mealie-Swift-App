@@ -78,6 +78,11 @@ class MealieAPIClient {
         var extras: [String: String]?
         var comments: [CommentStub]?
     }
+
+    struct CreateRandomEntry: Codable {
+        let date: String
+        let entryType: String
+    }
     
     init(baseURL: URL, session: URLSession = .shared) {
         self.baseURL = baseURL
@@ -443,5 +448,31 @@ class MealieAPIClient {
         request.httpMethod = "DELETE"
 
         let _: ReadPlanEntry = try await performRequest(for: request)
+    }
+
+    func addRandomMealPlanEntry(date: Date, entryType: String) async throws -> ReadPlanEntry {
+        let url = baseURL.appendingPathComponent("api/households/mealplans/random")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+        
+        let body = CreateRandomEntry(
+            date: dateString,
+            entryType: entryType.lowercased()
+        )
+
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+
+        let createdEntry: ReadPlanEntry = try await performRequest(for: request)
+
+        return createdEntry
     }
 }
