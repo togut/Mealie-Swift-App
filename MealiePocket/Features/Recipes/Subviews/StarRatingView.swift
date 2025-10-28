@@ -10,8 +10,8 @@ struct StarRatingView: View {
                 Image(systemName: imageName(for: index))
                     .foregroundColor(.orange)
                     .onTapGesture {
-                        let newRating = Double(index)
-                        rating = newRating
+                        hapticImpact(style: .light)
+                        rating = Double(index)
                     }
             }
         }

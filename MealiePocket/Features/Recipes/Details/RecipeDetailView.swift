@@ -56,6 +56,7 @@ struct RecipeDetailView: View {
                 .disabled(viewModel.recipeDetail == nil)
                 
                 Button {
+                    hapticImpact(style: .light)
                     Task {
                         await viewModel.toggleFavorite(apiClient: appState.apiClient, userID: appState.currentUserID)
                     }

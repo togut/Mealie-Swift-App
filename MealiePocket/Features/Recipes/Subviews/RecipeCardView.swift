@@ -55,7 +55,10 @@ struct RecipeCardView: View {
     @ViewBuilder
     private var favoriteButton: some View {
         if let onFavoriteToggle {
-            Button(action: onFavoriteToggle) {
+            Button {
+                hapticImpact(style: .light)
+                onFavoriteToggle()
+            } label: {
                 Image(systemName: recipe.isFavorite ? "heart.fill" : "heart")
                     .foregroundColor(recipe.isFavorite ? .red : .white)
                     .padding(8)

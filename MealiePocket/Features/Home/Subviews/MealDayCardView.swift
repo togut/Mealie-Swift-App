@@ -32,6 +32,7 @@ struct MealDayCardView: View {
                 Spacer()
 
                 Button {
+                    hapticImpact(style: .light)
                     onAddRecipeTapped(date)
                 } label: {
                     Image(systemName: "plus")
@@ -39,7 +40,6 @@ struct MealDayCardView: View {
                         .foregroundColor(.white)
                         .padding(4)
                         .glassEffect(.regular.tint(.accentColor), in: .circle)
-                        
                 }
             }
             .padding(.bottom, 10)

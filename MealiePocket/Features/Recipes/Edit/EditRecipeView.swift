@@ -74,9 +74,16 @@ struct EditRecipeView: View {
                                 .frame(minHeight: 30)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-                                .padding(4)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+                                .padding(.vertical, 7)
+                                .padding(.horizontal, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color(.systemBackground))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                                            )
+                                    )
                         }
                         .padding(.vertical, 4)
                     }

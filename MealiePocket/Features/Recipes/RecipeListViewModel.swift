@@ -187,7 +187,7 @@ enum SortOption: String, CaseIterable, Identifiable {
         case .createdAt: "Date Created"
         case .lastMade: "Last Made"
         case .updatedAt: "Date Updated"
-        case .rating: "Overall rating"
+        case .rating: "Rating"
         case .random: "Random"
         }
     }

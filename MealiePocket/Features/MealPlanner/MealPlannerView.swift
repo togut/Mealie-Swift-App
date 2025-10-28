@@ -51,6 +51,7 @@ struct MealPlannerView: View {
                 HStack {
                     Spacer()
                     Button {
+                        hapticImpact(style: .light)
                         viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
                     } label: {
                         Image(systemName: "plus")
@@ -242,6 +243,7 @@ struct MealPlannerView: View {
                             .bold(Calendar.current.isDateInToday(date))
                         Spacer()
                         Button {
+                            hapticImpact(style: .light)
                             viewModel.presentAddRecipeSheet(for: date)
                         } label: {
                             Image(systemName: "plus")
