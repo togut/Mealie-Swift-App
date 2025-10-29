@@ -78,7 +78,7 @@ class MealieAPIClient {
         var extras: [String: String]?
         var comments: [CommentStub]?
     }
-
+    
     struct CreateRandomEntry: Codable {
         let date: String
         let entryType: String
@@ -143,7 +143,6 @@ class MealieAPIClient {
             }
             
             return try decodeResponseData(data)
-            
         } catch let error as APIError {
             throw error
         } catch let urlError as URLError {
@@ -167,6 +166,7 @@ class MealieAPIClient {
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             return try decoder.decode(T.self, from: data)
         } catch {
+            print("Decoding Error: \(error)")
             throw APIError.decodingError(error)
         }
     }
@@ -372,14 +372,14 @@ class MealieAPIClient {
         
         do {
             let encoder = JSONEncoder()
-            request.httpBody = try encoder.encode(payload)           
+            request.httpBody = try encoder.encode(payload)
         } catch {
             throw APIError.encodingError(error)
         }
         
         let _: NoReply = try await performRequest(for: request)
     }
-
+    
     func getUnits(page: Int = 1, perPage: Int = 500) async throws -> IngredientUnitPagination {
         var components = URLComponents(url: baseURL.appendingPathComponent("api/units"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
@@ -392,7 +392,7 @@ class MealieAPIClient {
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
-
+    
     func searchFoods(query: String, page: Int = 1, perPage: Int = 50) async throws -> IngredientFoodPagination {
         var components = URLComponents(url: baseURL.appendingPathComponent("api/foods"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
@@ -406,7 +406,7 @@ class MealieAPIClient {
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
-
+    
     func createFood(name: String) async throws -> RecipeIngredient.IngredientFoodStub {
         let url = baseURL.appendingPathComponent("api/foods")
         var request = URLRequest(url: url)
@@ -422,10 +422,10 @@ class MealieAPIClient {
         } catch {
             throw APIError.encodingError(error)
         }
-
+        
         return try await performRequest(for: request)
     }
-
+    
     func fetchMealPlanEntries(startDate: String, endDate: String, page: Int = 1, perPage: Int = 500) async throws -> PlanEntryPagination {
         var components = URLComponents(url: baseURL.appendingPathComponent("api/households/mealplans"), resolvingAgainstBaseURL: false)
         components?.queryItems = [
@@ -441,15 +441,15 @@ class MealieAPIClient {
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
-
+    
     func deleteMealPlanEntry(entryID: Int) async throws {
         let url = baseURL.appendingPathComponent("api/households/mealplans/\(entryID)")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-
+        
         let _: ReadPlanEntry = try await performRequest(for: request)
     }
-
+    
     func addRandomMealPlanEntry(date: Date, entryType: String) async throws -> ReadPlanEntry {
         let url = baseURL.appendingPathComponent("api/households/mealplans/random")
         var request = URLRequest(url: url)
@@ -464,15 +464,153 @@ class MealieAPIClient {
             date: dateString,
             entryType: entryType.lowercased()
         )
-
+        
         do {
             request.httpBody = try JSONEncoder().encode(body)
         } catch {
             throw APIError.encodingError(error)
         }
-
+        
         let createdEntry: ReadPlanEntry = try await performRequest(for: request)
-
+        
         return createdEntry
+    }
+    
+    func fetchShoppingLists(page: Int = 1, perPage: Int = 50) async throws -> ShoppingListPagination {
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/households/shopping/lists"), resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "perPage", value: "\(perPage)"),
+            URLQueryItem(name: "orderBy", value: "updatedAt"),
+            URLQueryItem(name: "orderDirection", value: "desc")
+        ]
+        guard let url = components?.url else { throw APIError.invalidURL }
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+    
+    func fetchShoppingListDetail(listId: UUID) async throws -> ShoppingListDetail {
+        let url = baseURL.appendingPathComponent("api/households/shopping/lists/\(listId.uuidString.lowercased())")
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+    
+    func createShoppingList(name: String?) async throws -> ShoppingListDetail {
+        let url = baseURL.appendingPathComponent("api/households/shopping/lists")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = ShoppingListCreate(name: name)
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        return try await performRequest(for: request)
+    }
+    
+    func updateShoppingList(list: ShoppingListSummary, name: String?) async throws -> ShoppingListDetail {
+        let url = baseURL.appendingPathComponent("api/households/shopping/lists/\(list.id.uuidString.lowercased())")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = ShoppingListUpdate(
+            name: name,
+            id: list.id,
+            groupId: list.groupId,
+            userId: list.userId
+        )
+        do {
+            let encoder = JSONEncoder()
+            request.httpBody = try encoder.encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        return try await performRequest(for: request)
+    }
+    
+    func deleteShoppingList(listId: UUID) async throws {
+        let url = baseURL.appendingPathComponent("api/households/shopping/lists/\(listId.uuidString.lowercased())")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let _: NoReply = try await performRequest(for: request)
+    }
+    
+    func addShoppingListItem(listId: UUID, note: String, quantity: Double = 1.0) async throws -> ShoppingListItemsCollectionResponse {
+        let url = baseURL.appendingPathComponent("api/households/shopping/items")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = ShoppingListItemCreatePayload(shoppingListId: listId.uuidString.lowercased(), note: note, quantity: quantity)
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        return try await performRequest(for: request)
+    }
+    
+    func updateShoppingListItem(item: ShoppingListItem) async throws -> ShoppingListItemsCollectionResponse {
+        let url = baseURL.appendingPathComponent("api/households/shopping/items/\(item.id.uuidString.lowercased())")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        
+        let body = ShoppingListItemUpdatePayload(
+            id: item.id.uuidString.lowercased(),
+            shoppingListId: item.shoppingListId.uuidString.lowercased(),
+            note: item.note,
+            quantity: item.quantity,
+            checked: item.checked
+        )
+        
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        return try await performRequest(for: request)
+    }
+
+    func updateShoppingListItemsBulk(items: [ShoppingListItem]) async throws -> ShoppingListItemsCollectionResponse {
+        let url = baseURL.appendingPathComponent("api/households/shopping/items")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let bodyPayloads = items.map { item in
+            ShoppingListItemUpdatePayload(
+                id: item.id.uuidString.lowercased(),
+                shoppingListId: item.shoppingListId.uuidString.lowercased(),
+                note: item.note,
+                quantity: item.quantity,
+                checked: item.checked
+            )
+        }
+        
+        do {
+            request.httpBody = try JSONEncoder().encode(bodyPayloads)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        return try await performRequest(for: request)
+    }
+
+    func deleteShoppingListItem(itemId: UUID) async throws {
+        let url = baseURL.appendingPathComponent("api/households/shopping/items/\(itemId.uuidString.lowercased())")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let _: NoReply = try await performRequest(for: request)
     }
 }
