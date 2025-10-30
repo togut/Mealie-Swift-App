@@ -1,5 +1,41 @@
 import Foundation
 
+struct DecodableQuantity: Codable, Hashable {
+    let parsedValue: Double
+
+    init(from decoder: Decoder) throws {
+        if let container = try? decoder.singleValueContainer() {
+            if let doubleValue = try? container.decode(Double.self) {
+                self.parsedValue = doubleValue
+            } else if let intValue = try? container.decode(Int.self) {
+                self.parsedValue = Double(intValue)
+            } else if container.decodeNil() {
+                self.parsedValue = 0.0
+            } else {
+                throw DecodingError.typeMismatch(DecodableQuantity.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected Double, Int, or object for quantity, but found something else"))
+            }
+        } else {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let doubleValue = try? container.decode(Double.self, forKey: .parsedValue) {
+                self.parsedValue = doubleValue
+            } else if let intValue = try? container.decode(Int.self, forKey: .parsedValue) {
+                self.parsedValue = Double(intValue)
+            } else {
+                throw DecodingError.dataCorruptedError(forKey: .parsedValue, in: container, debugDescription: "parsedValue is not a valid Double or Int")
+            }
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+         var container = encoder.singleValueContainer()
+         try container.encode(parsedValue)
+     }
+    
+    enum CodingKeys: String, CodingKey {
+        case source, parsedValue
+    }
+}
+
 struct ShoppingListSummary: Codable, Identifiable, Hashable {
     let id: UUID
     var name: String?
@@ -10,11 +46,12 @@ struct ShoppingListSummary: Codable, Identifiable, Hashable {
     let householdId: UUID
 
     static func == (lhs: ShoppingListSummary, rhs: ShoppingListSummary) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id && lhs.name == rhs.name
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+        hasher.combine(name)
     }
 }
 
@@ -35,11 +72,7 @@ struct ShoppingListDetail: Codable, Identifiable {
     let userId: UUID
     let householdId: UUID
     var listItems: [ShoppingListItem] = []
-
-
-    enum CodingKeys: String, CodingKey {
-        case id, name, createdAt, updatedAt, groupId, userId, householdId, listItems
-    }
+    var recipeReferences: [ShoppingListTopLevelRecipeRef]?
 }
 
 
@@ -54,17 +87,34 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
     var foodId: UUID?
     var unitId: UUID?
     var labelId: UUID?
-
+    var recipeReferences: [ShoppingListItemNestedRef]?
 
     static func == (lhs: ShoppingListItem, rhs: ShoppingListItem) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id && lhs.checked == rhs.checked
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+        hasher.combine(checked)
     }
 }
 
+
+struct ShoppingListItemNestedRef: Codable, Identifiable, Hashable {
+    let id: UUID
+    let shoppingListItemId: UUID
+    let recipeId: UUID
+    let recipeQuantity: DecodableQuantity?
+}
+
+
+struct ShoppingListTopLevelRecipeRef: Codable, Identifiable, Hashable {
+    let id: UUID
+    let shoppingListId: UUID
+    let recipeId: UUID
+    let recipeQuantity: DecodableQuantity?
+    let recipe: RecipeSummary?
+}
 
 struct ShoppingListCreate: Codable {
     var name: String?
@@ -81,7 +131,6 @@ struct ShoppingListItemCreatePayload: Codable {
     var shoppingListId: String
     var note: String? = ""
     var quantity: Double? = 1.0
-    
 }
 
 struct ShoppingListItemUpdatePayload: Codable {
@@ -90,7 +139,7 @@ struct ShoppingListItemUpdatePayload: Codable {
     var note: String?
     var quantity: Double?
     var checked: Bool?
-    
+
 }
 
 struct ShoppingListItemsCollectionResponse: Codable {
@@ -106,7 +155,7 @@ extension ShoppingListSummary {
     var displayUpdatedAt: String? {
         formatDateString(updatedAt)
     }
-
+    
     private func formatDateString(_ dateString: String?) -> String? {
         guard let dateString = dateString else { return nil }
         let formatter = ISO8601DateFormatter()
@@ -114,7 +163,7 @@ extension ShoppingListSummary {
         if let date = formatter.date(from: dateString) {
             return date.formatted(date: .numeric, time: .shortened)
         }
-
+        
         formatter.formatOptions = [.withInternetDateTime]
         if let date = formatter.date(from: dateString) {
             return date.formatted(date: .numeric, time: .shortened)

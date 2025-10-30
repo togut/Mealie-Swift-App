@@ -285,3 +285,13 @@ struct CommentStub: Codable, Hashable {}
 struct CreateIngredientFood: Codable, Hashable {
     let name: String
 }
+
+struct ShoppingListAddRecipeParamsBulkPayload: Codable {
+    var recipeId: String
+    var scale: Double = 1.0
+    
+    enum CodingKeys: String, CodingKey {
+        case recipeId = "recipeId"
+        case scale
+    }
+}

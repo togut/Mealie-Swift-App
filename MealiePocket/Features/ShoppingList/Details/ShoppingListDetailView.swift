@@ -5,7 +5,7 @@ struct ShoppingListDetailView: View {
     @Environment(AppState.self) private var appState
     @State private var localEditMode: EditMode = .inactive
     @Namespace var buttonNamespace
-    
+
     init(listSummary: ShoppingListSummary) {
         _viewModel = State(initialValue: ShoppingListDetailViewModel(listSummary: listSummary))
     }
@@ -17,37 +17,67 @@ struct ShoppingListDetailView: View {
     private var hasCheckedItems: Bool {
         viewModel.shoppingListDetail?.listItems.contains { $0.checked } ?? false
     }
-    
+
     var body: some View {
         List {
+             Section {
+                  HStack {
+                       Button {
+                            Task { await viewModel.importCurrentWeekIngredients() }
+                       } label: {
+                            Label("Import Current Week", systemImage: "calendar.badge.plus")
+                       }
+                       .disabled(viewModel.isLoadingImport || viewModel.isLoading)
+                       .buttonStyle(.bordered)
+                       .tint(.accentColor)
+
+                       Spacer()
+
+                       Button {
+                           viewModel.showingDateRangePicker = true
+                       } label: {
+                            Label("Import Date Range", systemImage: "calendar")
+                       }
+                       .disabled(viewModel.isLoadingImport || viewModel.isLoading)
+                       .buttonStyle(.bordered)
+                  }
+                  .padding(.vertical, 5)
+
+                  if viewModel.isLoadingImport {
+                       ProgressView("Importing...")
+                           .frame(maxWidth: .infinity)
+                           .padding(.vertical, 5)
+                  }
+             }
+
             if viewModel.isLoading && viewModel.shoppingListDetail?.listItems.isEmpty ?? true {
-                ProgressView().frame(maxWidth: .infinity)
+                 ProgressView().frame(maxWidth: .infinity)
             } else if let errorMessage = viewModel.errorMessage {
-                Section {
-                    Text("Error: \(errorMessage)")
-                        .foregroundColor(.red)
-                }
+                 Section {
+                     Text("Error: \(errorMessage)")
+                         .foregroundColor(.red)
+                 }
             }
-            
+
             if let detail = viewModel.shoppingListDetail {
                 Section("Items") {
-                    if detail.listItems.isEmpty && !viewModel.isLoading {
+                    if detail.listItems.isEmpty && !viewModel.isLoading && !viewModel.isLoadingImport {
                         Text("No items in this list yet.")
                             .foregroundColor(.secondary)
                     } else {
                         ForEach(detail.listItems) { item in
-                            ShoppingListItemRow(item: item, viewModel: viewModel)
+                             ShoppingListItemRow(item: item, viewModel: viewModel)
                         }
                         .onDelete { indexSet in
-                            Task {
-                                await viewModel.deleteItems(at: indexSet)
-                            }
+                             Task {
+                                 await viewModel.deleteItems(at: indexSet)
+                             }
                         }
                     }
                 }
             } else if !viewModel.isLoading {
-                Text("Could not load list details.")
-                    .foregroundColor(.secondary)
+                 Text("Could not load list details.")
+                     .foregroundColor(.secondary)
             }
         }
         .navigationTitle(viewModel.shoppingListDetail?.name ?? "Shopping List")
@@ -69,18 +99,22 @@ struct ShoppingListDetailView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .disabled(viewModel.isLoading)
+                .disabled(viewModel.isLoading || viewModel.isLoadingImport)
             }
         }
         .environment(\.editMode, $localEditMode)
         .sheet(isPresented: $viewModel.showingAddItemSheet) {
             AddShoppingItemView(viewModel: viewModel)
         }
+        .sheet(isPresented: $viewModel.showingDateRangePicker) {
+             DateRangePickerView(viewModel: viewModel)
+        }
         .task {
             await viewModel.loadListDetails(apiClient: appState.apiClient)
         }
     }
 }
+
 
 struct ShoppingListItemRow: View {
     let item: ShoppingListItem
@@ -95,20 +129,43 @@ struct ShoppingListItemRow: View {
     }
 
     var body: some View {
-        HStack {
+        HStack(alignment: .top) {
             Image(systemName: isCheckedLocal ? "checkmark.circle.fill" : "circle")
                  .foregroundColor(isCheckedLocal ? .green : .secondary)
                  .font(.title3)
+                 .padding(.top, 2)
 
-            VStack(alignment: .leading){
-                Text(item.note ?? item.display ?? "Unknown Item")
+            VStack(alignment: .leading, spacing: 3){
+                Text(item.display ?? "Unknown Item")
                      .strikethrough(isCheckedLocal, color: .secondary)
                      .foregroundColor(isCheckedLocal ? .secondary : .primary)
-                 if let qty = item.quantity, qty != 1 {
-                      Text("Qty: \(formattedQuantity(qty))")
-                           .font(.caption)
-                           .foregroundColor(.secondary)
+
+                 HStack(spacing: 8) {
+                      if let qty = item.quantity, qty != 1 {
+                           Text("Qty: \(formattedQuantity(qty))")
+                      } else if item.quantity != nil && item.quantity == 1 {
+                          
+                      } else if item.quantity == 0 {
+                          
+                      } else {
+                           
+                      }
+
+
+                      if let references = item.recipeReferences, !references.isEmpty {
+                           ForEach(references) { ref in
+                                if let recipeName = viewModel.recipeNameMap[ref.recipeId] {
+                                     HStack(spacing: 3) {
+                                         Image(systemName: "book.closed")
+                                         Text(recipeName)
+                                             .lineLimit(1)
+                                     }
+                                }
+                           }
+                      }
                  }
+                 .font(.caption)
+                 .foregroundColor(.secondary)
             }
 
             Spacer()
@@ -138,7 +195,7 @@ struct ShoppingListItemRow: View {
 struct AddShoppingItemView: View {
     @Bindable var viewModel: ShoppingListDetailViewModel
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             Form {
@@ -176,7 +233,7 @@ struct AddShoppingItemView: View {
             }
         }
     }
-    
+
     private func formattedQuantity(_ quantity: Double) -> String {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0

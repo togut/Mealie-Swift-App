@@ -516,7 +516,7 @@ class MealieAPIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        
         let body = ShoppingListUpdate(
             name: name,
             id: list.id,
@@ -580,13 +580,13 @@ class MealieAPIClient {
         
         return try await performRequest(for: request)
     }
-
+    
     func updateShoppingListItemsBulk(items: [ShoppingListItem]) async throws -> ShoppingListItemsCollectionResponse {
         let url = baseURL.appendingPathComponent("api/households/shopping/items")
         var request = URLRequest(url: url)
         request.httpMethod = "PUT"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        
         let bodyPayloads = items.map { item in
             ShoppingListItemUpdatePayload(
                 id: item.id.uuidString.lowercased(),
@@ -605,12 +605,34 @@ class MealieAPIClient {
         
         return try await performRequest(for: request)
     }
-
+    
     func deleteShoppingListItem(itemId: UUID) async throws {
         let url = baseURL.appendingPathComponent("api/households/shopping/items/\(itemId.uuidString.lowercased())")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         
         let _: NoReply = try await performRequest(for: request)
+    }
+    
+    func addRecipesToShoppingListBulk(listId: UUID, recipeIds: [UUID]) async throws -> ShoppingListDetail {
+        guard !recipeIds.isEmpty else {
+            
+            throw APIError.invalidURL
+        }
+        
+        let url = baseURL.appendingPathComponent("api/households/shopping/lists/\(listId.uuidString.lowercased())/recipe")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let payload = recipeIds.map { ShoppingListAddRecipeParamsBulkPayload(recipeId: $0.uuidString.lowercased()) }
+        
+        do {
+            request.httpBody = try JSONEncoder().encode(payload)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+        
+        return try await performRequest(for: request)
     }
 }

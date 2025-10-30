@@ -4,17 +4,23 @@ import SwiftUI
 @Observable
 class ShoppingListDetailViewModel {
     var shoppingListDetail: ShoppingListDetail?
+    var recipeNameMap: [UUID: String] = [:]
     var isLoading = false
     var isLoadingBulkUpdate = false
+    var isLoadingImport = false
     var errorMessage: String?
     
     var showingAddItemSheet = false
     var newItemNote: String = ""
     var newItemQuantity: Double = 1.0
     
+    var showingDateRangePicker = false
+    var dateRangeStart = Date()
+    var dateRangeEnd = Date()
+    
     private let listSummary: ShoppingListSummary
     private var apiClient: MealieAPIClient?
-
+    
     var hasUncheckedItems: Bool {
         shoppingListDetail?.listItems.contains { !$0.checked } ?? false
     }
@@ -29,8 +35,14 @@ class ShoppingListDetailViewModel {
             groupId: listSummary.groupId,
             userId: listSummary.userId,
             householdId: listSummary.householdId,
-            listItems: []
+            listItems: [],
+            recipeReferences: []
         )
+        
+        if let weekInterval = Calendar.current.dateInterval(of: .weekOfYear, for: Date()) {
+            self.dateRangeStart = weekInterval.start
+            self.dateRangeEnd = weekInterval.end > weekInterval.start ? Calendar.current.date(byAdding: .day, value: -1, to: weekInterval.end)! : weekInterval.start
+        }
     }
     
     @MainActor
@@ -45,13 +57,26 @@ class ShoppingListDetailViewModel {
             return
         }
         
-        isLoading = true
+        if !isLoadingImport {
+            isLoading = true
+        }
         errorMessage = nil
+        recipeNameMap = [:]
         
         do {
             let fullDetails = try await apiClient.fetchShoppingListDetail(listId: listSummary.id)
             var items = fullDetails.listItems
             items.sort { !$0.checked && $1.checked }
+            
+            var nameMap: [UUID: String] = [:]
+            if let topLevelRefs = fullDetails.recipeReferences {
+                for ref in topLevelRefs {
+                    if let recipe = ref.recipe {
+                        nameMap[ref.recipeId] = recipe.name
+                    }
+                }
+            }
+            self.recipeNameMap = nameMap
             
             self.shoppingListDetail = ShoppingListDetail(
                 id: fullDetails.id,
@@ -61,8 +86,10 @@ class ShoppingListDetailViewModel {
                 groupId: fullDetails.groupId,
                 userId: fullDetails.userId,
                 householdId: fullDetails.householdId,
-                listItems: items
+                listItems: items,
+                recipeReferences: fullDetails.recipeReferences
             )
+            
             
         } catch APIError.unauthorized {
             
@@ -71,6 +98,7 @@ class ShoppingListDetailViewModel {
         }
         
         isLoading = false
+        isLoadingImport = false
     }
     
     @MainActor
@@ -91,8 +119,11 @@ class ShoppingListDetailViewModel {
             let response = try await apiClient.addShoppingListItem(listId: listId, note: newItemNote, quantity: newItemQuantity)
             if let newItem = response.createdItems?.first {
                 if shoppingListDetail != nil {
-                    shoppingListDetail!.listItems.insert(newItem, at: 0)
-                    shoppingListDetail!.listItems.sort { !$0.checked && $1.checked }
+                    var currentItems = shoppingListDetail!.listItems
+                    currentItems.insert(newItem, at: 0)
+                    currentItems.sort { !$0.checked && $1.checked }
+                    shoppingListDetail!.listItems = currentItems
+                    
                 }
             }
             showingAddItemSheet = false
@@ -114,11 +145,16 @@ class ShoppingListDetailViewModel {
         }
         
         if shoppingListDetail!.listItems[index].checked != isChecked {
-            shoppingListDetail!.listItems[index].checked = isChecked
-            let updatedItem = shoppingListDetail!.listItems[index]
+            var updatedItems = shoppingListDetail!.listItems
+            updatedItems[index].checked = isChecked
+            updatedItems.sort { !$0.checked && $1.checked }
+            shoppingListDetail!.listItems = updatedItems
+            
+            let itemToSend = updatedItems.first { $0.id == itemId } ?? updatedItems[index]
+            
             
             Task {
-                await updateItem(updatedItem)
+                await updateItem(itemToSend)
             }
         }
     }
@@ -131,53 +167,82 @@ class ShoppingListDetailViewModel {
         }
         errorMessage = nil
         
+        var itemToSend = item
+        itemToSend.quantity = nil
+        
         do {
-            _ = try await apiClient.updateShoppingListItem(item: item)
+            _ = try await apiClient.updateShoppingListItem(item: itemToSend)
         } catch APIError.unauthorized {
             
         } catch {
             errorMessage = "Failed to update item: \(error.localizedDescription)"
             print("Error saving item update, local state might be inconsistent.")
         }
-    }    
+    }
     
     @MainActor
-    func toggleAllItems() async {
-        guard let apiClient, shoppingListDetail != nil, !shoppingListDetail!.listItems.isEmpty else {
+    func importMealPlanIngredients(startDate: Date, endDate: Date) async {
+        guard let apiClient, let listId = shoppingListDetail?.id else {
+            errorMessage = "Cannot import: API Client or List ID missing."
             return
         }
         
-        let targetState = hasUncheckedItems
-        
-        isLoadingBulkUpdate = true
+        isLoadingImport = true
         errorMessage = nil
         
-        var updatedItems = shoppingListDetail!.listItems
-        var changed = false
-        for i in updatedItems.indices {
-            if updatedItems[i].checked != targetState {
-                updatedItems[i].checked = targetState
-                changed = true
-            }
-        }
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: startDate)
         
-        if changed {
-            updatedItems.sort { !$0.checked && $1.checked }
-            shoppingListDetail!.listItems = updatedItems
+        
+        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: endDate) ?? endDate
+        
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        
+        let startDateString = dateFormatter.string(from: startOfDay)
+        let endDateString = dateFormatter.string(from: endOfDay)
+        
+        do {
+            let mealPlanResponse = try await apiClient.fetchMealPlanEntries(startDate: startDateString, endDate: endDateString)
+            let recipeIds = mealPlanResponse.items.compactMap { $0.recipeId }
+            let uniqueRecipeIds = Array(Set(recipeIds))
             
-            do {
-                _ = try await apiClient.updateShoppingListItemsBulk(items: updatedItems)
-            } catch APIError.unauthorized {
+            if !uniqueRecipeIds.isEmpty {
+                _ = try await apiClient.addRecipesToShoppingListBulk(listId: listId, recipeIds: uniqueRecipeIds)
                 
-            } catch {
-                errorMessage = "Failed to update all items: \(error.localizedDescription)"
+                await loadListDetails(apiClient: apiClient)
+            } else {
+                
+                isLoadingImport = false
             }
-        } else {
             
+        } catch APIError.unauthorized {
+            isLoadingImport = false
+        } catch {
+            errorMessage = "Failed to import meal plan ingredients: \(error.localizedDescription)"
+            isLoadingImport = false
         }
         
-        isLoadingBulkUpdate = false
+        
     }
+    
+    @MainActor
+    func importCurrentWeekIngredients() async {
+        let calendar = Calendar.current
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: Date()) else {
+            errorMessage = "Could not determine current week interval."
+            return
+        }
+        
+        let startDate = weekInterval.start
+        
+        
+        let endDate = calendar.date(byAdding: .day, value: -1, to: weekInterval.end) ?? weekInterval.start
+        
+        await importMealPlanIngredients(startDate: startDate, endDate: endDate)
+    }
+    
     
     @MainActor
     func deleteItems(at offsets: IndexSet) async {
@@ -187,23 +252,27 @@ class ShoppingListDetailViewModel {
         }
         
         let itemsToDelete = offsets.map { items[$0] }
+        let originalIndices = offsets.map { $0 }
         
         shoppingListDetail?.listItems.remove(atOffsets: offsets)
         
-        for item in itemsToDelete {
+        for (idx, item) in itemsToDelete.enumerated() {
             errorMessage = nil
             do {
                 try await apiClient.deleteShoppingListItem(itemId: item.id)
             } catch APIError.unauthorized {
-                
                 if shoppingListDetail != nil {
-                    shoppingListDetail!.listItems.insert(item, at: offsets.first!)
+                    let originalIndex = originalIndices[idx]
+                    let insertPos = min(originalIndex, shoppingListDetail!.listItems.count)
+                    shoppingListDetail!.listItems.insert(item, at: insertPos)
                 }
                 break
             } catch {
                 errorMessage = "Failed to delete item '\(item.display ?? item.note ?? "")': \(error.localizedDescription)"
                 if shoppingListDetail != nil {
-                    shoppingListDetail!.listItems.insert(item, at: offsets.first!)
+                    let originalIndex = originalIndices[idx]
+                    let insertPos = min(originalIndex, shoppingListDetail!.listItems.count)
+                    shoppingListDetail!.listItems.insert(item, at: insertPos)
                 }
                 break
             }
