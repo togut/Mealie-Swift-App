@@ -108,6 +108,7 @@ struct ShoppingListDetailView: View {
         }
         .sheet(isPresented: $viewModel.showingDateRangePicker) {
              DateRangePickerView(viewModel: viewModel)
+                .presentationDetents([.height(300)])
         }
         .task {
             await viewModel.loadListDetails(apiClient: appState.apiClient)
@@ -135,23 +136,12 @@ struct ShoppingListItemRow: View {
                  .font(.title3)
                  .padding(.top, 2)
 
-            VStack(alignment: .leading, spacing: 3){
+            VStack(alignment: .leading, spacing: 4){
                 Text(item.display ?? "Unknown Item")
                      .strikethrough(isCheckedLocal, color: .secondary)
                      .foregroundColor(isCheckedLocal ? .secondary : .primary)
 
-                 HStack(spacing: 8) {
-                      if let qty = item.quantity, qty != 1 {
-                           Text("Qty: \(formattedQuantity(qty))")
-                      } else if item.quantity != nil && item.quantity == 1 {
-                          
-                      } else if item.quantity == 0 {
-                          
-                      } else {
-                           
-                      }
-
-
+                VStack(alignment: .leading, spacing: 4) {
                       if let references = item.recipeReferences, !references.isEmpty {
                            ForEach(references) { ref in
                                 if let recipeName = viewModel.recipeNameMap[ref.recipeId] {

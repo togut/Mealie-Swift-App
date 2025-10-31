@@ -14,7 +14,6 @@ struct ShoppingListView: View {
                 } else if viewModel.shoppingLists.isEmpty {
                     ContentUnavailableView("No Shopping Lists", systemImage: "list.bullet.clipboard", description: Text("Create your first shopping list."))
                 } else {
-                    
                     ForEach(viewModel.shoppingLists) { list in
                         NavigationLink(value: list) {
                             ShoppingListRow(list: list)
