@@ -74,8 +74,8 @@ struct ShoppingListView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showingCreateSheet) {
-                
                 EditShoppingListView(viewModel: viewModel)
+                    .presentationDetents([.height(180)])
             }
             .navigationDestination(for: ShoppingListSummary.self) { listSummary in
                 ShoppingListDetailView(listSummary: listSummary)
@@ -117,8 +117,8 @@ struct EditShoppingListView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section {
-                    TextField("List Name (optional)", text: $viewModel.nameForNewOrEditList)
+                Section(viewModel.listToEdit == nil ? "Create a new list" : "Edit list name") {
+                    TextField("List Name", text: $viewModel.nameForNewOrEditList)
                 }
                 
                 if let errorMessage = viewModel.errorMessage {

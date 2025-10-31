@@ -234,15 +234,28 @@ class ShoppingListDetailViewModel {
             errorMessage = "Could not determine current week interval."
             return
         }
-        
+        print(weekInterval)
         let startDate = weekInterval.start
-        
         
         let endDate = calendar.date(byAdding: .day, value: -1, to: weekInterval.end) ?? weekInterval.start
         
         await importMealPlanIngredients(startDate: startDate, endDate: endDate)
     }
-    
+
+    @MainActor
+    func importNextWeekIngredients() async {
+        let calendar = Calendar.current
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: (Date() + (3600 * 24 * 8))) else {
+            errorMessage = "Could not determine current week interval."
+            return
+        }
+        print(weekInterval)
+        let startDate = weekInterval.start
+        
+        let endDate = calendar.date(byAdding: .day, value: -1, to: weekInterval.end) ?? weekInterval.start
+        
+        await importMealPlanIngredients(startDate: startDate, endDate: endDate)
+    }
     
     @MainActor
     func deleteItems(at offsets: IndexSet) async {

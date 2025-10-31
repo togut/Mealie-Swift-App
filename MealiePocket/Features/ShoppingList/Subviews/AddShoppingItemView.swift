@@ -1,15 +1,15 @@
 import SwiftUI
 
-struct DateRangePickerView: View {
+struct AddShoppingItemView: View {
     @Bindable var viewModel: ShoppingListDetailViewModel
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             Form {
-                Section("Select dates to import") {
-                    DatePicker("Start Date", selection: $viewModel.dateRangeStart, displayedComponents: .date)
-                    DatePicker("End Date", selection: $viewModel.dateRangeEnd, in: viewModel.dateRangeStart..., displayedComponents: .date)
+                Section("New Item") {
+                    TextField("Name or Note", text: $viewModel.newItemNote)
+                    Stepper("Quantity: \(formattedQuantity(viewModel.newItemQuantity))", value: $viewModel.newItemQuantity, in: 0.1...100, step: 0.1)
                 }
                 if let errorMessage = viewModel.errorMessage {
                     Section {
@@ -17,29 +17,35 @@ struct DateRangePickerView: View {
                     }
                 }
             }
-            .navigationTitle("Select Date Range")
+            .navigationTitle("Add Item")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
+                        viewModel.resetNewItemFields()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if viewModel.isLoadingImport {
+                    if viewModel.isLoading {
                         ProgressView()
                     } else {
-                        Button("Import") {
+                        Button("Add") {
                             Task {
-                                await viewModel.importMealPlanIngredients(startDate: viewModel.dateRangeStart, endDate: viewModel.dateRangeEnd)
-                                if viewModel.errorMessage == nil {
-                                    dismiss()
-                                }
+                                await viewModel.addItem()
                             }
                         }
+                        .disabled(viewModel.newItemNote.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                 }
             }
         }
+    }
+
+    private func formattedQuantity(_ quantity: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: NSNumber(value: quantity)) ?? "\(quantity)"
     }
 }
