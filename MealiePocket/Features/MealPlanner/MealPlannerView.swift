@@ -40,7 +40,11 @@ struct MealPlannerView: View {
             ToolbarItem(placement: .principal) {
                 Picker("Vue", selection: Binding(
                     get: { viewModel.viewMode },
-                    set: { viewModel.viewMode = $0 }
+                    set: { newMode in
+                        withAnimation(.easeInOut) {
+                            viewModel.viewMode = newMode
+                        }
+                    }
                 )) {
                     ForEach(MealPlannerViewModel.ViewMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
@@ -53,74 +57,6 @@ struct MealPlannerView: View {
                     viewModel.goToToday(apiClient: appState.apiClient)
                 }
             }
-        }
-        .overlay(alignment: .bottom) {
-            GlassEffectContainer(spacing: 20.0) {
-                HStack {
-                    if viewModel.viewMode == .day {
-                        Button {
-                            viewModel.addDay(apiClient: appState.apiClient)
-                        } label: {
-                            Image(systemName: "text.badge.plus")
-                                .font(.title2)
-                                .foregroundStyle(Color.primary)
-                                .padding()
-                        }
-                        .glassEffect(.regular.tint(.clear).interactive())
-                        
-                        Spacer()
-                        
-                        Button {
-                            hapticImpact(style: .light)
-                            viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
-                        } label: {
-                            Image(systemName: "dice")
-                                .font(.title2)
-                                .foregroundStyle(Color.primary)
-                                .padding()
-                        }
-                        .glassEffect(.regular.tint(.clear).interactive())
-                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
-
-                        Button {
-                            hapticImpact(style: .light)
-                            viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.title2)
-                                .foregroundStyle(Color.accentColor)
-                                .padding()
-                        }
-                        .glassEffect(.regular.tint(.clear).interactive())
-                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
-                    } else if viewModel.viewMode == .week {
-                        Spacer()
-                        Button {
-                            viewModel.addWeek(apiClient: appState.apiClient)
-                        } label: {
-                            Image(systemName: "text.badge.plus")
-                                .font(.title2)
-                                .foregroundStyle(Color.primary)
-                                .padding()
-                        }
-                        .glassEffect(.regular.tint(.clear).interactive())
-                    } else {
-                        Spacer()
-                        Button {
-                            viewModel.addRange()
-                        } label: {
-                            Image(systemName: "text.badge.plus")
-                                .font(.title2)
-                                .foregroundStyle(Color.primary)
-                                .padding()
-                        }
-                        .glassEffect(.regular.tint(.clear).interactive())
-                    }
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 10)
-
         }
         .task {
             currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
@@ -237,66 +173,87 @@ struct MealPlannerView: View {
     }
     
     private var calendarContent: some View {
-        Group {
-            if viewModel.viewMode == .month {
-                GeometryReader { scrollViewProxy in
-                    ScrollViewReader { scrollProxy in
-                        ScrollView {
-                            LazyVStack(spacing: 20) {
-                                ForEach(viewModel.displayedMonths, id: \.self) { monthStart in
-                                    GeometryReader { monthProxy in
-                                        CalendarMonthView(
-                                            days: viewModel.daysInSpecificMonth(monthStart),
-                                            mealPlanEntries: viewModel.mealPlanEntries,
-                                            selectedMonthDate: monthStart,
-                                            baseURL: appState.apiClient?.baseURL,
-                                            onDateSelected: { date in
-                                                viewModel.selectDateAndView(date: date)
-                                            }
-                                        )
-                                        .id(monthStart)
-                                        .preference(key: VisibleMonthPreferenceKey.self, value: [MonthVisibilityInfo(month: monthStart, frame: monthProxy.frame(in: .global))])
+        TabView(selection: Binding(
+            get: { viewModel.viewMode },
+            set: { newMode in
+                viewModel.viewMode = newMode
+            }
+        )) {
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    dayView
+                }
+                dayViewOverlay
+            }
+            .tag(MealPlannerViewModel.ViewMode.day)
+            
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    weekView
+                }
+                weekViewOverlay
+            }
+            .tag(MealPlannerViewModel.ViewMode.week)
+            
+            ZStack(alignment: .bottom) {
+                monthViewContent
+                monthViewOverlay
+            }
+            .tag(MealPlannerViewModel.ViewMode.month)
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+    }
+    
+    private var monthViewContent: some View {
+        GeometryReader { scrollViewProxy in
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    LazyVStack(spacing: 20) {
+                        ForEach(viewModel.displayedMonths, id: \.self) { monthStart in
+                            GeometryReader { monthProxy in
+                                CalendarMonthView(
+                                    days: viewModel.daysInSpecificMonth(monthStart),
+                                    mealPlanEntries: viewModel.mealPlanEntries,
+                                    selectedMonthDate: monthStart,
+                                    baseURL: appState.apiClient?.baseURL,
+                                    onDateSelected: { date in
+                                        viewModel.selectDateAndView(date: date)
                                     }
-                                    .frame(height: CGFloat(viewModel.daysInSpecificMonth(monthStart).count / 7) * 100)
-                                }
-                                
-                                Color.clear
-                                    .frame(height: 1)
-                                    .onAppear {
-                                        Task {
-                                            await viewModel.loadMoreMonths(direction: 1, apiClient: appState.apiClient)
-                                        }
-                                    }
+                                )
+                                .id(monthStart)
+                                .preference(key: VisibleMonthPreferenceKey.self, value: [MonthVisibilityInfo(month: monthStart, frame: monthProxy.frame(in: .global))])
                             }
+                            .frame(height: CGFloat(viewModel.daysInSpecificMonth(monthStart).count / 7) * 100)
                         }
-                        .coordinateSpace(name: "scrollView")
-                        .onPreferenceChange(VisibleMonthPreferenceKey.self) { preferences in
-                            updateVisibleMonth(preferences: preferences, scrollFrame: scrollViewProxy.frame(in: .global))
-                        }
-                        .onChange(of: viewModel.selectedDate) { _, newDate in
-                            if viewModel.viewMode == .month {
-                                let targetMonth = newDate.startOfMonth()
-                                currentlyVisibleMonth = targetMonth
-                                withAnimation {
-                                    scrollProxy.scrollTo(targetMonth, anchor: .top)
+                        
+                        Color.clear
+                            .frame(height: 1)
+                            .onAppear {
+                                Task {
+                                    await viewModel.loadMoreMonths(direction: 1, apiClient: appState.apiClient)
                                 }
                             }
-                        }
-                        .onAppear {
-                            scrollViewFrame = scrollViewProxy.frame(in: .global)
-                        }
-                        .onChange(of: scrollViewProxy.frame(in: .global)) { _, newFrame in
-                            scrollViewFrame = newFrame
+                    }
+                    .padding(.bottom, 100)
+                }
+                .coordinateSpace(name: "scrollView")
+                .onPreferenceChange(VisibleMonthPreferenceKey.self) { preferences in
+                    updateVisibleMonth(preferences: preferences, scrollFrame: scrollViewProxy.frame(in: .global))
+                }
+                .onChange(of: viewModel.selectedDate) { _, newDate in
+                    if viewModel.viewMode == .month {
+                        let targetMonth = newDate.startOfMonth()
+                        currentlyVisibleMonth = targetMonth
+                        withAnimation {
+                            scrollProxy.scrollTo(targetMonth, anchor: .top)
                         }
                     }
                 }
-            } else {
-                ScrollView {
-                    if viewModel.viewMode == .week {
-                        weekView
-                    } else {
-                        dayView
-                    }
+                .onAppear {
+                    scrollViewFrame = scrollViewProxy.frame(in: .global)
+                }
+                .onChange(of: scrollViewProxy.frame(in: .global)) { _, newFrame in
+                    scrollViewFrame = newFrame
                 }
             }
         }
@@ -370,6 +327,7 @@ struct MealPlannerView: View {
                     Divider()
                 }
             }
+            Spacer(minLength: 100)
         }
         .padding()
     }
@@ -379,6 +337,7 @@ struct MealPlannerView: View {
         return VStack(alignment: .leading) {
             mealEntriesList(for: date, showType: true)
             Spacer()
+            Spacer(minLength: 100)
         }
         .padding()
     }
@@ -564,6 +523,90 @@ struct MealPlannerView: View {
         case "side": return "fork.knife"
         default: return "note.text"
         }
+    }
+    
+    // MARK: - Overlays for TabView Pages
+    
+    private var dayViewOverlay: some View {
+        GlassEffectContainer(spacing: 20.0) {
+            HStack {
+                Button {
+                    viewModel.addDay(apiClient: appState.apiClient)
+                } label: {
+                    Image(systemName: "text.badge.plus")
+                        .font(.title2)
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive())
+                
+                Spacer()
+                
+                Button {
+                    hapticImpact(style: .light)
+                    viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
+                } label: {
+                    Image(systemName: "dice")
+                        .font(.title2)
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive())
+                .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+                
+                Button {
+                    hapticImpact(style: .light)
+                    viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .foregroundStyle(Color.accentColor)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive())
+                .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 10)
+    }
+    
+    private var weekViewOverlay: some View {
+        GlassEffectContainer(spacing: 20.0) {
+            HStack {
+                Spacer()
+                Button {
+                    viewModel.addWeek(apiClient: appState.apiClient)
+                } label: {
+                    Image(systemName: "text.badge.plus")
+                        .font(.title2)
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive())
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 10)
+    }
+    
+    private var monthViewOverlay: some View {
+        GlassEffectContainer(spacing: 20.0) {
+            HStack {
+                Spacer()
+                Button {
+                    viewModel.addRange()
+                } label: {
+                    Image(systemName: "text.badge.plus")
+                        .font(.title2)
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive())
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 10)
     }
 }
 
