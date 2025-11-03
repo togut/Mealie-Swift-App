@@ -10,47 +10,33 @@ struct MainTabView: View {
                 .ignoresSafeArea()
 
             TabView(selection: $selectedTab) {
-                NavigationStack {
-                    HomeView(selectedTab: $selectedTab)
-                        .environment(mealPlannerViewModel)
+                Tab("Home", systemImage: "house.fill", value: 0) {
+                    NavigationStack {
+                        HomeView(selectedTab: $selectedTab)
+                            .environment(mealPlannerViewModel)
+                    }
                 }
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                Tab("Recipes", systemImage: "book.fill", value: 1) {
+                    NavigationStack {
+                        RecipeListView()
+                    }
                 }
-                .tag(0)
-
-                NavigationStack {
-                    RecipeListView()
+                Tab("Planner", systemImage: "calendar", value: 2) {
+                    NavigationStack {
+                        MealPlannerView()
+                            .environment(mealPlannerViewModel)
+                    }
                 }
-                .tabItem {
-                    Label("Recipes", systemImage: "book.fill")
+                Tab("List", systemImage: "list.bullet", value: 3) {
+                    NavigationStack {
+                        ShoppingListView()
+                    }
                 }
-                .tag(1)
-
-                NavigationStack {
-                    MealPlannerView()
-                        .environment(mealPlannerViewModel)
+                Tab("Settings", systemImage: "gearshape.fill", value: 4) {
+                    NavigationStack {
+                        SettingsView()
+                    }
                 }
-                .tabItem {
-                    Label("Planner", systemImage: "calendar")
-                }
-                .tag(2)
-
-                NavigationStack {
-                    ShoppingListView()
-                }
-                .tabItem {
-                    Label("List", systemImage: "list.bullet")
-                }
-                .tag(3)
-
-                NavigationStack {
-                    SettingsView()
-                }
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
-                }
-                .tag(4)
             }
         }
     }
