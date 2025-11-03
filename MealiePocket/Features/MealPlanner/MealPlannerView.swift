@@ -8,15 +8,15 @@ struct MealPlannerView: View {
     @State private var currentlyVisibleMonth: Date = Date().startOfMonth()
     @State private var scrollViewFrame: CGRect = .zero
     private let daysOfWeek = ["L", "M", "M", "J", "V", "S", "D"]
-
+    
     @State private var showingMealTypeSelection = false
     @State private var selectedMealType = "Dinner"
     let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
-
+    
     @Environment(\.dismiss) var dismiss
-
+    
     @Namespace var unionNamespace
-
+    
     var body: some View {
         VStack {
             header
@@ -48,16 +48,28 @@ struct MealPlannerView: View {
                 }
                 .pickerStyle(.segmented)
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Aujourd'hui") {
                     viewModel.goToToday(apiClient: appState.apiClient)
                 }
             }
         }
-        .overlay(alignment: .bottomTrailing) {
-            if viewModel.viewMode == .day {
-                GlassEffectContainer(spacing: 20.0) {
-                    HStack {
+        .overlay(alignment: .bottom) {
+            GlassEffectContainer(spacing: 20.0) {
+                HStack {
+                    if viewModel.viewMode == .day {
+                        Button {
+                            viewModel.addDay(apiClient: appState.apiClient)
+                        } label: {
+                            Image(systemName: "text.badge.plus")
+                                .font(.title2)
+                                .foregroundStyle(Color.primary)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                        
+                        Spacer()
+                        
                         Button {
                             hapticImpact(style: .light)
                             viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
@@ -81,11 +93,34 @@ struct MealPlannerView: View {
                         }
                         .glassEffect(.regular.tint(.clear).interactive())
                         .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+                    } else if viewModel.viewMode == .week {
+                        Spacer()
+                        Button {
+                            viewModel.addWeek(apiClient: appState.apiClient)
+                        } label: {
+                            Image(systemName: "text.badge.plus")
+                                .font(.title2)
+                                .foregroundStyle(Color.primary)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                    } else {
+                        Spacer()
+                        Button {
+                            viewModel.addRange()
+                        } label: {
+                            Image(systemName: "text.badge.plus")
+                                .font(.title2)
+                                .foregroundStyle(Color.primary)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
                     }
-                    .padding(.trailing, 20)
-                    .padding(.bottom, 10)
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 10)
+
         }
         .task {
             currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
@@ -137,6 +172,18 @@ struct MealPlannerView: View {
             } else {
                 Text("Erreur: Date non sélectionnée.")
             }
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingDateRangePicker },
+            set: { viewModel.showingDateRangePicker = $0}
+        )) {
+            MealPlannerDateRangePickerView(viewModel: viewModel)
+        }
+        .sheet(isPresented: Binding (
+            get : { viewModel.showingShoppingListSelection },
+            set : { viewModel.showingShoppingListSelection = $0}
+        )) {
+            ShoppingListSelectionView(viewModel: viewModel, apiClient: appState.apiClient)
         }
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in
             Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient) }
@@ -287,7 +334,7 @@ struct MealPlannerView: View {
                             .font(.headline)
                             .bold(Calendar.current.isDateInToday(date))
                         Spacer()
-
+                        
                         HStack(spacing: 12) {
                             Button {
                                 hapticImpact(style: .light)
@@ -484,7 +531,7 @@ struct MealPlannerView: View {
             return dateToShow.formatted(.dateTime.month(.wide).year())
         }
     }
-
+    
     private func deleteEntry(at offsets: IndexSet) {
         let dateKey = Calendar.current.startOfDay(for: viewModel.selectedDate)
         guard let entries = viewModel.mealPlanEntries[dateKey] else { return }

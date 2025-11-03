@@ -39,6 +39,17 @@ class MealPlannerViewModel {
     private var totalPagesForSelection = 1
     var canLoadMoreForSelection: Bool { currentPageForSelection < totalPagesForSelection }
     
+    var showingShoppingListSelection = false
+    var availableShoppingLists: [ShoppingListSummary] = []
+    var isLoadingShoppingLists = false
+    var showingDateRangePicker = false
+    var dateRangeStart = Date()
+    var dateRangeEnd = Date()
+    var importErrorMessage: String?
+    var isImporting = false
+    var importingListId: UUID? = nil
+    var importSuccess = false
+    
     init() {
         setupInitialMonths()
     }
@@ -233,7 +244,7 @@ class MealPlannerViewModel {
         isLoadingMoreRecipesForSelection = false
         showingAddRecipeSheet = true
     }
-
+    
     func presentRandomMealTypeSheet(for date: Date) {
         dateForAddingRecipe = date
         showingMealTypeSelection = true
@@ -374,6 +385,122 @@ class MealPlannerViewModel {
                 errorMessage = "Erreur lors de la suppression : \(error.localizedDescription)"
                 isLoading = false
             }
+        }
+    }
+    
+    @MainActor
+    private func prepareImport(startDate: Date, endDate: Date, apiClient: MealieAPIClient?) {
+        guard apiClient != nil else {
+            errorMessage = "API Client not available."
+            return
+        }
+        
+        self.apiClient = apiClient
+        self.dateRangeStart = startDate
+        self.dateRangeEnd = endDate
+        
+        importErrorMessage = nil
+        isImporting = false
+        importSuccess = false
+        
+        Task {
+            await loadShoppingLists()
+            showingShoppingListSelection = true
+        }
+    }
+    
+    @MainActor
+    func addDay(apiClient: MealieAPIClient?) {
+        prepareImport(startDate: selectedDate, endDate: selectedDate, apiClient: apiClient)
+    }
+    
+    @MainActor
+    func addWeek(apiClient: MealieAPIClient?) {
+        let calendar = Calendar.current
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: selectedDate) else {
+            errorMessage = "Could not determine week interval."
+            return
+        }
+        let endDate = calendar.date(byAdding: .day, value: -1, to: weekInterval.end) ?? weekInterval.start
+        prepareImport(startDate: weekInterval.start, endDate: endDate, apiClient: apiClient)
+    }
+    
+    @MainActor
+    func addRange() {
+        let calendar = Calendar.current
+        let monthInterval = calendar.dateInterval(of: .month, for: selectedDate) ?? DateInterval(start: selectedDate, end: selectedDate)
+        dateRangeStart = monthInterval.start
+        dateRangeEnd = calendar.date(byAdding: .day, value: -1, to: monthInterval.end) ?? monthInterval.start
+        
+        importErrorMessage = nil
+        isImporting = false
+        importSuccess = false
+        
+        showingDateRangePicker = true
+    }
+    
+    @MainActor
+    func loadShoppingLists() async {
+        guard let apiClient else {
+            importErrorMessage = "API Client not available."
+            return
+        }
+        
+        isLoadingShoppingLists = true
+        importErrorMessage = nil
+        
+        do {
+            let response = try await apiClient.fetchShoppingLists(page: 1, perPage: 500)
+            self.availableShoppingLists = response.items
+        } catch {
+            self.importErrorMessage = "Failed to load shopping lists: \(error.localizedDescription)"
+        }
+        
+        isLoadingShoppingLists = false
+    }
+    
+    @MainActor
+    func importMealsToShoppingList(list: ShoppingListSummary) async {
+        guard let apiClient else {
+            importErrorMessage = "API Client not available."
+            return
+        }
+        
+        isImporting = true
+        importingListId = list.id
+        importErrorMessage = nil
+        importSuccess = false
+        
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: dateRangeStart)
+        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: dateRangeEnd) ?? dateRangeEnd
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        
+        let startDateString = dateFormatter.string(from: startOfDay)
+        let endDateString = dateFormatter.string(from: endOfDay)
+        
+        do {
+            let mealPlanResponse = try await apiClient.fetchMealPlanEntries(startDate: startDateString, endDate: endDateString)
+            let recipeIds = mealPlanResponse.items.compactMap { $0.recipeId }
+            let uniqueRecipeIds = Array(Set(recipeIds))
+            
+            if !uniqueRecipeIds.isEmpty {
+                _ = try await apiClient.addRecipesToShoppingListBulk(listId: list.id, recipeIds: uniqueRecipeIds)
+                importSuccess = true
+            } else {
+                importErrorMessage = "No recipes found in the selected date range."
+            }
+            
+        } catch {
+            importErrorMessage = "Failed to import ingredients: \(error.localizedDescription)"
+        }
+        
+        isImporting = false
+        importingListId = nil
+        if importSuccess {
+            showingShoppingListSelection = false
         }
     }
 }
