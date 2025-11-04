@@ -11,6 +11,12 @@ struct ShoppingListSelectionView: View {
                 if viewModel.isLoadingShoppingLists {
                     ProgressView("Loading Lists...")
                     Spacer()
+                } else if viewModel.availableShoppingLists.isEmpty {
+                    ContentUnavailableView(
+                        "No list found",
+                        systemImage: "list.bullet.clipboard",
+                        description: Text("First, create a shopping list in the Lists tab.")
+                    )
                 } else if let error = viewModel.importErrorMessage, !viewModel.isImporting {
                     ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
                 } else {

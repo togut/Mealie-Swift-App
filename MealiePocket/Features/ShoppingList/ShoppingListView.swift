@@ -7,55 +7,64 @@ struct ShoppingListView: View {
     var body: some View {
         NavigationStack {
             List {
-                if viewModel.isLoading && viewModel.shoppingLists.isEmpty {
+                ForEach(viewModel.shoppingLists) { list in
+                    NavigationLink(value: list) {
+                        ShoppingListRow(list: list)
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            Task {
+                                if let index = viewModel.shoppingLists.firstIndex(where: { $0.id == list.id }) {
+                                    await viewModel.deleteShoppingList(at: IndexSet(integer: index), apiClient: appState.apiClient)
+                                }
+                            }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        
+                        Button {
+                            viewModel.prepareEditSheet(list: list)
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .tint(.blue)
+                    }
+                }
+                .id(viewModel.listVersion)
+                
+                if viewModel.canLoadMore {
                     ProgressView()
-                } else if let errorMessage = viewModel.errorMessage, viewModel.shoppingLists.isEmpty {
-                    ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
-                } else if viewModel.shoppingLists.isEmpty {
-                    ContentUnavailableView("No Shopping Lists", systemImage: "list.bullet.clipboard", description: Text("Create your first shopping list."))
-                } else {
-                    ForEach(viewModel.shoppingLists) { list in
-                        NavigationLink(value: list) {
-                            ShoppingListRow(list: list)
+                        .frame(maxWidth: .infinity)
+                        .onAppear {
+                            Task {
+                                await viewModel.loadShoppingLists(apiClient: appState.apiClient, loadMore: true)
+                            }
                         }
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                Task {
-                                    if let index = viewModel.shoppingLists.firstIndex(where: { $0.id == list.id }) {
-                                        await viewModel.deleteShoppingList(at: IndexSet(integer: index), apiClient: appState.apiClient)
-                                    }
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                            
-                            Button {
-                                viewModel.prepareEditSheet(list: list)
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            .tint(.blue)
-                        }
-                    }
-                    .id(viewModel.listVersion)
-                    
-                    if viewModel.canLoadMore {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .onAppear {
-                                Task {
-                                    await viewModel.loadShoppingLists(apiClient: appState.apiClient, loadMore: true)
-                                }
-                            }
-                    }
-                    if let errorMessage = viewModel.errorMessage, !viewModel.shoppingLists.isEmpty {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                            .listRowBackground(Color.clear)
-                    }
+                }
+                if let errorMessage = viewModel.errorMessage, !viewModel.shoppingLists.isEmpty {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .listRowBackground(Color.clear)
                 }
             }
             .navigationTitle("Shopping Lists")
+            .overlay {
+                if viewModel.isLoading && viewModel.shoppingLists.isEmpty {
+                    ProgressView()
+                } else if viewModel.shoppingLists.isEmpty {
+                    ContentUnavailableView(
+                        "No Shopping Lists",
+                        systemImage: "list.bullet.clipboard",
+                        description: Text("Create your first shopping list.")
+                    )
+                } else if let errorMessage = viewModel.errorMessage, viewModel.shoppingLists.isEmpty {
+                    ContentUnavailableView(
+                        "Error",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text(errorMessage)
+                    )
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {

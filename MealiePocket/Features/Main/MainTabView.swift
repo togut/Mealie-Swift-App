@@ -27,7 +27,7 @@ struct MainTabView: View {
                             .environment(mealPlannerViewModel)
                     }
                 }
-                Tab("List", systemImage: "list.bullet", value: 3) {
+                Tab("Lists", systemImage: "list.bullet", value: 3) {
                     NavigationStack {
                         ShoppingListView()
                     }
