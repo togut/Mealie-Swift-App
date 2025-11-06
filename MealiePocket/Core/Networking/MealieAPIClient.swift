@@ -635,4 +635,16 @@ class MealieAPIClient {
         
         return try await performRequest(for: request)
     }
+
+    func fetchAppInfo() async throws -> AppInfo {
+        let url = baseURL.appendingPathComponent("api/app/about")
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+
+    func fetchHouseholdStatistics() async throws -> HouseholdStatistics {
+        let url = baseURL.appendingPathComponent("api/households/statistics")
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
 }

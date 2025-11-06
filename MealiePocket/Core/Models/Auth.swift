@@ -8,8 +8,13 @@ struct TokenResponse: Decodable {
     }
 }
 
-struct User: Decodable {
+struct User: Codable {
     let id: String
+    let fullName: String?
+    let email: String
+    let group: String
+    let household: String
+    let admin: Bool
 }
 
 struct UserRating: Decodable, Hashable {

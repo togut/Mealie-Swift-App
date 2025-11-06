@@ -4,47 +4,89 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) var dismiss
     @State private var isAlertPresented = false
-
+    @State private var viewModel = SettingsViewModel()
+    
     var body: some View {
-        List {
-            Section("Server Information") {
-                ServerInfoRow(
-                    title: "Server URL",
-                    value: appState.apiClient?.baseURL.absoluteString ?? "N/A",
-                    onCopy: {
-                        if let url = appState.apiClient?.baseURL.absoluteString {
-                            UIPasteboard.general.string = url
-                            hapticImpact(style: .light)
-                            isAlertPresented = true
+        Group {
+            if viewModel.isLoading {
+                ProgressView("Loading...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List {
+                    Section("Server Information") {
+                        ServerInfoRow(
+                            title: "Server URL",
+                            value: appState.apiClient?.baseURL.absoluteString ?? "N/A",
+                            onCopy: {
+                                if let url = appState.apiClient?.baseURL.absoluteString {
+                                    UIPasteboard.general.string = url
+                                    hapticImpact(style: .light)
+                                    isAlertPresented = true
+                                }
+                            }
+                        )
+                        ServerInfoRow(
+                            title: "User ID",
+                            value: appState.currentUserID ?? "N/A",
+                            onCopy: {
+                                if let currentUserID = appState.currentUserID {
+                                    UIPasteboard.general.string = currentUserID
+                                    hapticImpact(style: .light)
+                                    isAlertPresented = true
+                                }
+                            }
+                        )
+                        ServerInfoRow(title: "Auth Method", value: appState.authMethod?.rawValue.capitalized ?? "N/A")
+                        ServerInfoRow(title: "Last Auth", value: appState.loginTime?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")
+                    }
+
+                    if let appInfo = viewModel.appInfo {
+                        Section("Application") {
+                            ServerInfoRow(title: "Mealie Version", value: appInfo.version)
+                            ServerInfoRow(title: "Demo Mode", value: appInfo.demoStatus ? "Yes" : "No")
+                            ServerInfoRow(title: "Allow Signups", value: appInfo.allowSignup ? "Yes" : "No")
                         }
                     }
-                )
-                ServerInfoRow(
-                    title: "User ID",
-                    value: appState.currentUserID ?? "N/A",
-                    onCopy: {
-                        if let currentUserID = appState.currentUserID {
-                            UIPasteboard.general.string = currentUserID
-                            hapticImpact(style: .light)
-                            isAlertPresented = true
+
+                    if let user = appState.currentUser {
+                        Section("User") {
+                            ServerInfoRow(title: "Full Name", value: user.fullName ?? "N/A")
+                            ServerInfoRow(title: "Username", value: user.email)
+                            ServerInfoRow(title: "Group", value: user.group)
+                            ServerInfoRow(title: "Household", value: user.household)
+                            ServerInfoRow(title: "Admin", value: user.admin ? "Yes" : "No")
                         }
                     }
-                )
-                ServerInfoRow(title: "Auth Method", value: appState.authMethod?.rawValue.capitalized ?? "N/A")
-                ServerInfoRow(title: "Last Auth", value: appState.loginTime?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")
-            }
-            
-            Section {
-                Button("Logout", role: .destructive) {
-                    appState.logout()
+
+                    if let stats = viewModel.householdStats {
+                        Section("Household Statistics") {
+                            ServerInfoRow(title: "Total Recipes", value: "\(stats.totalRecipes)")
+                            ServerInfoRow(title: "Total Categories", value: "\(stats.totalCategories)")
+                            ServerInfoRow(title: "Total Tags", value: "\(stats.totalTags)")
+                        }
+                    }
+                    
+                    Section {
+                        Button("Logout", role: .destructive) {
+                            appState.logout()
+                        }
+                    }
+                    
+                    if let errorMessage = viewModel.errorMessage {
+                        Section {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
             }
         }
         .navigationTitle("Settings")
         .alert("Copied!", isPresented: $isAlertPresented) {
-            Button("OK", role: .cancel) {
-                dismiss()
-            }
+            Button("OK", role: .cancel) { }
+        }
+        .task {
+            await viewModel.loadInfo(apiClient: appState.apiClient)
         }
     }
 }
@@ -53,7 +95,7 @@ struct ServerInfoRow: View {
     let title: String
     let value: String
     let onCopy: (() -> Void)?
-
+    
     init(title: String, value: String, onCopy: (() -> Void)? = nil) {
         self.title = title
         self.value = value

@@ -6,19 +6,23 @@ import Combine
 class AppState {
     var apiClient: MealieAPIClient?
     var isAuthenticated: Bool = false
-    var currentUserID: String?
+    var currentUser: User?
     var authMethod: AuthMethod?
     var loginTime: Date?
     
     private let tokenKey = "com.nohitdev.MealiePocket.apiToken"
     private let baseURLKey = "com.nohitdev.MealiePocket.baseURL"
-    private let userIDKey = "com.nohitdev.MealiePocket.userID"
+    private let userKey = "com.nohitdev.MealiePocket.user"
     private let authMethodKey = "com.nohitdev.MealiePocket.authMethod"
     private let loginTimeKey = "com.nohitdev.MealiePocket.loginTime"
     
     enum AuthMethod: String {
         case token = "Password"
         case apiKey = "API Key"
+    }
+
+    var currentUserID: String? {
+        currentUser?.id
     }
     
     private var cancellables = Set<AnyCancellable>()
@@ -38,8 +42,19 @@ class AppState {
             return
         }
         
-        let userIDData = KeychainHelper.load(key: userIDKey)
-        let userID = userIDData != nil ? String(data: userIDData!, encoding: .utf8) : nil
+        if let userData = KeychainHelper.load(key: userKey) {
+            do {
+                self.currentUser = try JSONDecoder().decode(User.self, from: userData)
+            } catch {
+                print("Failed to decode user from Keychain")
+                self.currentUser = nil
+                logout()
+                return
+            }
+        } else {
+            logout()
+            return
+        }
         
         if let loginTimeData = KeychainHelper.load(key: loginTimeKey) {
             do {
@@ -56,7 +71,6 @@ class AppState {
         client.setToken(token)
         
         self.apiClient = client
-        self.currentUserID = userID
         self.isAuthenticated = true
         self.authMethod = authMethod
         
@@ -96,11 +110,11 @@ class AppState {
         
         do {
             let user = try await apiClient.fetchCurrentUser()
-            await saveCredentials(baseURL: baseURL, token: token, userID: user.id, authMethod: .token)
+            await saveCredentials(baseURL: baseURL, token: token, user: user, authMethod: .token)
             
             await MainActor.run {
                 self.apiClient = apiClient
-                self.currentUserID = user.id
+                self.currentUser = user
                 self.isAuthenticated = true
             }
         } catch {
@@ -115,11 +129,11 @@ class AppState {
         do {
             let user = try await apiClient.fetchCurrentUser()
             
-            await saveCredentials(baseURL: baseURL, token: apiKey, userID: user.id, authMethod: .apiKey)
+            await saveCredentials(baseURL: baseURL, token: apiKey, user: user, authMethod: .apiKey)
             
             await MainActor.run {
                 self.apiClient = apiClient
-                self.currentUserID = user.id
+                self.currentUser = user
                 self.isAuthenticated = true
             }
         } catch {
@@ -129,12 +143,12 @@ class AppState {
         }
     }
     
-    private func saveCredentials(baseURL: URL, token: String, userID: String, authMethod: AuthMethod) async {
+    private func saveCredentials(baseURL: URL, token: String, user: User, authMethod: AuthMethod) async {
         let loginDate = Date()
         
         guard let tokenData = token.data(using: .utf8),
               let urlData = baseURL.absoluteString.data(using: .utf8),
-              let userIDData = userID.data(using: .utf8),
+              let userData = try? JSONEncoder().encode(user),
               let authMethodData = authMethod.rawValue.data(using: .utf8),
               let loginTimeData = try? JSONEncoder().encode(loginDate)
         else {
@@ -144,14 +158,14 @@ class AppState {
         
         let tokenStatus = KeychainHelper.save(key: tokenKey, data: tokenData)
         let urlStatus = KeychainHelper.save(key: baseURLKey, data: urlData)
-        let userStatus = KeychainHelper.save(key: userIDKey, data: userIDData)
+        let userStatus = KeychainHelper.save(key: userKey, data: userData)
         let authMethodStatus = KeychainHelper.save(key: authMethodKey, data: authMethodData)
         let loginTimeStatus = KeychainHelper.save(key: loginTimeKey, data: loginTimeData)
         
         guard tokenStatus == noErr, urlStatus == noErr, userStatus == noErr, authMethodStatus == noErr, loginTimeStatus == noErr else {
             _ = KeychainHelper.delete(key: tokenKey)
             _ = KeychainHelper.delete(key: baseURLKey)
-            _ = KeychainHelper.delete(key: userIDKey)
+            _ = KeychainHelper.delete(key: userKey)
             _ = KeychainHelper.delete(key: authMethodKey)
             _ = KeychainHelper.delete(key: loginTimeKey)
             await MainActor.run { logout() }
@@ -168,13 +182,13 @@ class AppState {
     func logout() {
         _ = KeychainHelper.delete(key: tokenKey)
         _ = KeychainHelper.delete(key: baseURLKey)
-        _ = KeychainHelper.delete(key: userIDKey)
+        _ = KeychainHelper.delete(key: userKey)
         _ = KeychainHelper.delete(key: authMethodKey)
         _ = KeychainHelper.delete(key: loginTimeKey)
         
         self.apiClient?.setToken(nil)
         self.apiClient = nil
-        self.currentUserID = nil
+        self.currentUser = nil
         self.isAuthenticated = false
         self.authMethod = nil
         self.loginTime = nil
