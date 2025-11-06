@@ -30,13 +30,27 @@ struct LoginView: View {
             .padding(.bottom)
 
             VStack {
-                TextField("Server URL", text: $viewModel.serverURL)
-                    .keyboardType(.URL)
-                    .textContentType(.URL)
-                    .autocapitalization(.none)
-                    .padding()
+                HStack(spacing: 10) {
+                    Picker("Scheme", selection: $viewModel.selectedScheme) {
+                        ForEach(LoginViewModel.ServerScheme.allCases) { scheme in
+                            Text(scheme.rawValue).tag(scheme)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(height: 54)
                     .background(.thinMaterial)
                     .cornerRadius(10)
+                    .tint(Color.primary)
+                    
+                    TextField("Server Address", text: $viewModel.serverAddress)
+                        .keyboardType(.URL)
+                        .textContentType(.URL)
+                        .autocapitalization(.none)
+                        .padding()
+                        .background(.thinMaterial)
+                        .cornerRadius(10)
+                }
+
                 Group{
                     if selectedMode == .password {
                         TextField("Username", text: $viewModel.username)

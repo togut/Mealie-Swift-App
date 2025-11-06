@@ -3,18 +3,32 @@ import SwiftUI
 
 @Observable
 class LoginViewModel {
-    var serverURL = ""
+    
+    enum ServerScheme: String, CaseIterable, Identifiable {
+        case http = "http://"
+        case https = "https://"
+        
+        var id: String { self.rawValue }
+    }
+    
+    var selectedScheme: ServerScheme = .https
+    var serverAddress = ""
     var username = ""
     var password = ""
     var apiKey = ""
     var isLoading = false
     var errorMessage: String?
-
+    
     func performLogin(appState: AppState, mode: LoginView.LoginMode) async {
         isLoading = true
         errorMessage = nil
-
-        guard let url = URL(string: serverURL), var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+        
+        let fullURLString = selectedScheme.rawValue + serverAddress
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "http://", with: "")
+            .replacingOccurrences(of: "https://", with: "")
+        
+        guard let url = URL(string: fullURLString), var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             errorMessage = "Invalid server URL format."
             isLoading = false
             return
@@ -26,13 +40,13 @@ class LoginViewModel {
             isLoading = false
             return
         }
-
+        
         switch mode {
         case .password:
             guard !username.isEmpty, !password.isEmpty else {
-                 errorMessage = "Username and password are required."
-                 isLoading = false
-                 return
+                errorMessage = "Username and password are required."
+                isLoading = false
+                return
             }
             let client = MealieAPIClient(baseURL: baseURL)
             do {
@@ -49,14 +63,14 @@ class LoginViewModel {
                 return
             }
             await appState.loginWithApiKey(baseURL: baseURL, apiKey: apiKey)
-
+            
             if !appState.isAuthenticated {
-                 errorMessage = "Login with API Key failed. Check the key and server URL."
+                errorMessage = "Login with API Key failed. Check the key and server URL."
             }
         }
-
-         if errorMessage != nil {
-              isLoading = false
-         }
+        
+        if errorMessage != nil {
+            isLoading = false
+        }
     }
 }
