@@ -179,6 +179,11 @@ class MealPlannerViewModel {
         selectedDate = date
         viewMode = .day
     }
+
+    func goToWeek(date: Date) {
+        selectedDate = date
+        viewMode = .week
+    }
     
     func loadMealPlan(apiClient: MealieAPIClient? = nil) async {
         if let apiClient = apiClient {

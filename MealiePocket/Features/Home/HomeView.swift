@@ -2,81 +2,127 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = HomeViewModel()
-    @State private var mealPlannerViewModel = MealPlannerViewModel()
+    @Environment(MealPlannerViewModel.self) private var mealPlannerViewModel
     @Environment(AppState.self) private var appState
 
     @Binding var selectedTab: Int
     let plannerTabIndex = 2
 
+    enum HomeNavigation: Hashable {
+        case favoritesList
+    }
+
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Section {
-                        if viewModel.isLoading && viewModel.favoriteRecipes.isEmpty {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                        } else if let errorMessage = viewModel.errorMessage {
-                            Text(errorMessage)
-                                .foregroundColor(.red)
-                                .padding()
-                        } else if !viewModel.favoriteRecipes.isEmpty {
-                            Text("Favoris")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Section {
+                    if viewModel.isLoading && viewModel.favoriteRecipes.isEmpty {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    } else if let errorMessage = viewModel.errorMessage {
+                        ContentUnavailableView(
+                            "Error",
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(errorMessage)
+                        )
+                        .padding(.vertical, 40)
+                    } else if !viewModel.favoriteRecipes.isEmpty {
+                        HStack {
+                            Text("Favorites")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                                .padding(.horizontal)
                             
-                            favoritesCarousel
-                        } else {
-                            ContentUnavailableView("Aucun Favori", systemImage: "heart.slash", description: Text("Vos recettes favorites apparaîtront ici."))
-                                .padding(.vertical, 40)
+                            Spacer()
+                            
+                            NavigationLink(value: HomeNavigation.favoritesList) {
+                                Image(systemName: "chevron.right")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(Color.primary)
+                            }
                         }
+                        .padding(.horizontal)
+                        
+                        favoritesCarousel
+                    } else {
+                        Text("Favorites")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .padding(.horizontal)
+                        
+                        ContentUnavailableView(
+                            "No favorites found",
+                            systemImage: "heart.slash",
+                            description: Text("Your favorite recipes will appear here.")
+                        )
                     }
-
-                    Section {
-                        if let weeklyError = viewModel.weeklyMealsErrorMessage {
-                            Text(weeklyError)
-                                .foregroundColor(.red)
-                                .padding(.horizontal)
-                        }
-
-                        if !viewModel.isLoadingWeeklyMeals || !viewModel.weeklyMeals.isEmpty {
-                            Text("Cette semaine")
+                }
+                
+                Section {
+                    if let weeklyError = viewModel.weeklyMealsErrorMessage {
+                        ContentUnavailableView(
+                            "Error",
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(weeklyError)
+                        )
+                        .padding(.vertical, 40)
+                    }
+                    
+                    if !viewModel.isLoadingWeeklyMeals || !viewModel.weeklyMeals.isEmpty {
+                        HStack {
+                            Text("This week")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                                .padding(.horizontal)
-
-                            weeklyMealsCarousel
-                        } else if viewModel.isLoadingWeeklyMeals {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                                .padding()
+                            
+                            Spacer()
+                            
+                            Button {
+                                hapticImpact(style: .light)
+                                mealPlannerViewModel.goToWeek(date: Date())
+                                selectedTab = plannerTabIndex
+                            } label: {
+                                Image(systemName: "chevron.right")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(Color.primary)
+                            }
                         }
+                        .padding(.horizontal)
+                        
+                        weeklyMealsCarousel
+                    } else if viewModel.isLoadingWeeklyMeals {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
                     }
                 }
-                .padding(.vertical)
             }
-            .navigationTitle("Home")
-            .task {
-                await viewModel.loadHomeData(apiClient: appState.apiClient, userID: appState.currentUserID)
+            .padding(.vertical)
+        }
+        .navigationTitle("Home")
+        .task {
+            await viewModel.loadHomeData(apiClient: appState.apiClient, userID: appState.currentUserID)
+        }
+        .refreshable {
+            await viewModel.loadHomeData(apiClient: appState.apiClient, userID: appState.currentUserID)
+        }
+        .navigationDestination(for: HomeNavigation.self) { destination in
+            switch destination {
+            case .favoritesList:
+                FavoritesListView()
             }
-            .refreshable {
-                await viewModel.loadHomeData(apiClient: appState.apiClient, userID: appState.currentUserID)
+        }
+        .navigationDestination(for: RecipeSummary.self) { recipe in
+            RecipeDetailView(recipeSummary: recipe)
+        }
+        .sheet(isPresented: $viewModel.showingAddRecipeSheet) {
+            if let date = viewModel.dateForAddingRecipe {
+                SelectRecipeForHomeSheetView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
+            } else {
+                Text("Erreur: Date non sélectionnée.")
             }
-            .navigationDestination(for: RecipeSummary.self) { recipe in
-                RecipeDetailView(recipeSummary: recipe)
-            }
-            .sheet(isPresented: $viewModel.showingAddRecipeSheet) {
-                if let date = viewModel.dateForAddingRecipe {
-                    SelectRecipeForHomeSheetView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
-                } else {
-                    Text("Erreur: Date non sélectionnée.")
-                }
-            }
-            .onChange(of: viewModel.searchQueryForSelection) { _, _ in
-                Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient, loadMore: false) }
-            }
+        }
+        .onChange(of: viewModel.searchQueryForSelection) { _, _ in
+            Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient, loadMore: false) }
         }
     }
 

@@ -11,7 +11,7 @@ struct MainTabView: View {
 
             TabView(selection: $selectedTab) {
                 Tab("Home", systemImage: "house.fill", value: 0) {
-                    NavigationStack {
+                    NavigationStack() {
                         HomeView(selectedTab: $selectedTab)
                             .environment(mealPlannerViewModel)
                     }

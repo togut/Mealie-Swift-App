@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct RecipeListView: View {
-    @State private var viewModel = RecipeListViewModel()
+struct FavoritesListView: View {
+    @State private var viewModel = FavoritesListViewModel()
     @Environment(AppState.self) private var appState
 
     var body: some View {
@@ -12,14 +12,14 @@ struct RecipeListView: View {
             } else if let errorMessage = viewModel.errorMessage {
                 contentUnavailable(title: "Error", message: errorMessage)
             } else if viewModel.recipes.isEmpty && !viewModel.searchText.isEmpty {
-                contentUnavailable(title: "No Results", message: "No recipes match \"\(viewModel.searchText)\".", systemImage: "magnifyingglass")
+                contentUnavailable(title: "No Results", message: "No favorites match \"\(viewModel.searchText)\".", systemImage: "magnifyingglass")
             } else if viewModel.recipes.isEmpty && viewModel.searchText.isEmpty {
-                contentUnavailable(title: "No Recipes", message: "Your recipe book is empty.", systemImage: "book")
+                contentUnavailable(title: "No Favorites", message: "Your favorite recipes will appear here.", systemImage: "heart")
             } else {
                 recipeGrid
             }
         }
-        .navigationTitle("Recipes")
+        .navigationTitle("Favorites")
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 sortMenu
@@ -34,13 +34,6 @@ struct RecipeListView: View {
         }
         .refreshable {
             await viewModel.loadInitialOrRefreshRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
-        }
-        .navigationDestination(for: RecipeSummary.self) { recipe in
-            if let currentRecipe = viewModel.recipes.first(where: { $0.id == recipe.id }) {
-                RecipeDetailView(recipeSummary: currentRecipe)
-            } else {
-                Text("Recipe not found anymore.")
-            }
         }
     }
 
@@ -81,16 +74,14 @@ struct RecipeListView: View {
     private var sortMenu: some View {
         Menu {
             Picker("Sort By", selection: $viewModel.sortOption) {
-                ForEach(SortOption.allCases) { option in
+                ForEach(FavoritesListViewModel.SortOption.allCases) { option in
                     Text(option.displayName).tag(option)
                 }
             }
             
-            if viewModel.sortOption != .random {
-                Picker("Direction", selection: $viewModel.sortDirection) {
-                    Text("Ascending").tag(SortDirection.asc)
-                    Text("Descending").tag(SortDirection.desc)
-                }
+            Picker("Direction", selection: $viewModel.sortDirection) {
+                Text("Ascending").tag(FavoritesListViewModel.SortDirection.asc)
+                Text("Descending").tag(FavoritesListViewModel.SortDirection.desc)
             }
             
         } label: {
