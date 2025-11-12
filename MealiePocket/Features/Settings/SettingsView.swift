@@ -65,7 +65,44 @@ struct SettingsView: View {
                             ServerInfoRow(title: "Total Tags", value: "\(stats.totalTags)")
                         }
                     }
-                    
+
+                    if appState.currentUser?.admin == true {
+                        Section("Admin & Maintenance") {
+                            NavigationLink(destination: ReportsListView()) {
+                                Label("Server Logs (Reports)", systemImage: "text.book.closed")
+                            }
+
+                            Button {
+                                Task { await viewModel.createBackup(apiClient: appState.apiClient) }
+                            } label: {
+                                Label("Create Backup", systemImage: "archivebox")
+                            }
+                            .disabled(viewModel.isCleaning || viewModel.isCreatingBackup)
+                            
+                            Button {
+                                Task { await viewModel.runCleanImages(apiClient: appState.apiClient) }
+                            } label: {
+                                Label("Clean Images", systemImage: "sparkles")
+                            }
+                            .disabled(viewModel.isCleaning || viewModel.isCreatingBackup)
+                            
+                            Button {
+                                Task { await viewModel.runCleanTemp(apiClient: appState.apiClient) }
+                            } label: {
+                                Label("Clean Temp Files", systemImage: "trash")
+                            }
+                            .disabled(viewModel.isCleaning || viewModel.isCreatingBackup)
+
+                            if viewModel.isCleaning || viewModel.isCreatingBackup {
+                                ProgressView()
+                            } else if let message = viewModel.maintenanceMessage {
+                                Text(message)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
                     Section {
                         Button("Logout", role: .destructive) {
                             appState.logout()

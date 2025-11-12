@@ -7,6 +7,10 @@ class SettingsViewModel {
     var isLoading = false
     var errorMessage: String?
     
+    var isCleaning = false
+    var isCreatingBackup = false
+    var maintenanceMessage: String?
+    
     @MainActor
     func loadInfo(apiClient: MealieAPIClient?) async {
         guard let apiClient else {
@@ -29,5 +33,59 @@ class SettingsViewModel {
         }
         
         isLoading = false
+    }
+
+    @MainActor
+    func createBackup(apiClient: MealieAPIClient?) async {
+        guard let apiClient else {
+            maintenanceMessage = "API Client not available."
+            return
+        }
+        isCreatingBackup = true
+        maintenanceMessage = nil
+        
+        do {
+            let response = try await apiClient.createBackup()
+            maintenanceMessage = response.message
+        } catch {
+            maintenanceMessage = "Error creating backup: \(error.localizedDescription)"
+        }
+        isCreatingBackup = false
+    }
+
+    @MainActor
+    func runCleanImages(apiClient: MealieAPIClient?) async {
+        guard let apiClient else {
+            maintenanceMessage = "API Client not available."
+            return
+        }
+        isCleaning = true
+        maintenanceMessage = nil
+        
+        do {
+            let response = try await apiClient.cleanImages()
+            maintenanceMessage = response.message
+        } catch {
+            maintenanceMessage = "Error cleaning images: \(error.localizedDescription)"
+        }
+        isCleaning = false
+    }
+
+    @MainActor
+    func runCleanTemp(apiClient: MealieAPIClient?) async {
+        guard let apiClient else {
+            maintenanceMessage = "API Client not available."
+            return
+        }
+        isCleaning = true
+        maintenanceMessage = nil
+        
+        do {
+            let response = try await apiClient.cleanTempFiles()
+            maintenanceMessage = response.message
+        } catch {
+            maintenanceMessage = "Error cleaning temp files: \(error.localizedDescription)"
+        }
+        isCleaning = false
     }
 }

@@ -8,7 +8,33 @@ enum APIError: Error {
     case unauthorized
     case encodingError(Error)
     case tokenRefreshFailed
+    case timeout
     case unknown(Error)
+}
+
+extension APIError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return NSLocalizedString("Invalid URL provided.", comment: "API Error")
+        case .requestFailed(let statusCode, _):
+            return NSLocalizedString("Request failed with status code: \(statusCode).", comment: "API Error")
+        case .invalidResponse:
+            return NSLocalizedString("Received an invalid response from the server.", comment: "API Error")
+        case .decodingError(let error):
+            return NSLocalizedString("Failed to decode response: \(error.localizedDescription)", comment: "API Error")
+        case .unauthorized:
+            return NSLocalizedString("Unauthorized. Please check credentials.", comment: "API Error")
+        case .encodingError:
+            return NSLocalizedString("Failed to encode request body.", comment: "API Error")
+        case .tokenRefreshFailed:
+            return NSLocalizedString("Session expired and token refresh failed. Please log in again.", comment: "API Error")
+        case .timeout:
+            return NSLocalizedString("The request timed out. The server is still working in the background.", comment: "API Error")
+        case .unknown(let error):
+            return NSLocalizedString("An unknown error occurred: \(error.localizedDescription)", comment: "API Error")
+        }
+    }
 }
 
 extension Notification.Name {
@@ -21,6 +47,7 @@ class MealieAPIClient {
     private var token: String?
     private let defaultRecipesPerPage = 20
     private let session: URLSession
+    private let longTaskSession: URLSession
     private var isRefreshingToken = false
     private var requestQueue: [(URLRequest, (Result<Data, Error>) -> Void)] = []
     
@@ -87,6 +114,11 @@ class MealieAPIClient {
     init(baseURL: URL, session: URLSession = .shared) {
         self.baseURL = baseURL
         self.session = session
+
+        let longTaskConfig = URLSessionConfiguration.default
+        longTaskConfig.timeoutIntervalForRequest = 300
+        longTaskConfig.timeoutIntervalForResource = 600
+        self.longTaskSession = URLSession(configuration: longTaskConfig)
     }
     
     func setToken(_ token: String?) {
@@ -96,21 +128,21 @@ class MealieAPIClient {
     func getToken() -> String? {
         return self.token
     }
-    
-    private func performRequest<T: Decodable>(for request: URLRequest) async throws -> T {
+
+    private func _performRequest<T: Decodable>(for request: URLRequest, on session: URLSession) async throws -> T {
         var mutableRequest = request
-        
+
         if let token = self.token {
             mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        
+
         do {
             let (data, response) = try await session.data(for: mutableRequest)
             
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw APIError.invalidResponse
             }
-            
+
             if httpResponse.statusCode == 401 {
                 do {
                     let newToken = try await refreshToken()
@@ -136,8 +168,7 @@ class MealieAPIClient {
                     throw APIError.tokenRefreshFailed
                 }
             }
-            
-            
+
             guard (200...299).contains(httpResponse.statusCode) else {
                 throw APIError.requestFailed(statusCode: httpResponse.statusCode, error: nil)
             }
@@ -146,12 +177,23 @@ class MealieAPIClient {
         } catch let error as APIError {
             throw error
         } catch let urlError as URLError {
+            if urlError.code == .timedOut {
+                throw APIError.timeout
+            }
             throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
         } catch {
             throw APIError.unknown(error)
         }
     }
-    
+
+    private func performRequest<T: Decodable>(for request: URLRequest) async throws -> T {
+        return try await _performRequest(for: request, on: self.session)
+    }
+
+    private func performLongTaskRequest<T: Decodable>(for request: URLRequest) async throws -> T {
+        return try await _performRequest(for: request, on: self.longTaskSession)
+    }
+
     private func decodeResponseData<T: Decodable>(_ data: Data) throws -> T {
         if T.self == NoReply.self {
             if let noReply = NoReply() as? T {
@@ -170,8 +212,7 @@ class MealieAPIClient {
             throw APIError.decodingError(error)
         }
     }
-    
-    
+
     func refreshToken() async throws -> String {
         let url = baseURL.appendingPathComponent("api/auth/refresh")
         var request = URLRequest(url: url)
@@ -210,7 +251,6 @@ class MealieAPIClient {
             throw APIError.unknown(error)
         }
     }
-    
     
     func login(username: String, password: String) async throws -> String {
         let url = baseURL.appendingPathComponent("api/auth/token")
@@ -646,5 +686,38 @@ class MealieAPIClient {
         let url = baseURL.appendingPathComponent("api/households/statistics")
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
+    }
+
+    func fetchReports() async throws -> [ReportSummary] {
+        let url = baseURL.appendingPathComponent("api/groups/reports")
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+
+    func fetchReportDetail(id: UUID) async throws -> ReportOut {
+        let url = baseURL.appendingPathComponent("api/groups/reports/\(id.uuidString.lowercased())")
+        let request = URLRequest(url: url)
+        return try await performRequest(for: request)
+    }
+
+    func cleanImages() async throws -> SuccessResponse {
+        let url = baseURL.appendingPathComponent("api/admin/maintenance/clean/images")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        return try await performLongTaskRequest(for: request)
+    }
+
+    func cleanTempFiles() async throws -> SuccessResponse {
+        let url = baseURL.appendingPathComponent("api/admin/maintenance/clean/temp")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        return try await performLongTaskRequest(for: request)
+    }
+ 
+    func createBackup() async throws -> SuccessResponse {
+        let url = baseURL.appendingPathComponent("api/admin/backups")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        return try await performLongTaskRequest(for: request)
     }
 }
