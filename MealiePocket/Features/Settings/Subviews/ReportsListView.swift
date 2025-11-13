@@ -11,21 +11,46 @@ struct ReportsListView: View {
             } else if let errorMessage = viewModel.errorMessage {
                 ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
             } else if viewModel.reports.isEmpty {
-                ContentUnavailableView("No Reports", systemImage: "text.book.closed", description: Text("No server reports were found."))
+                ContentUnavailableView(
+                    "No Reports",
+                    systemImage: "text.book.closed",
+                    description: Text(viewModel.selectedCategory == nil ? "No reports found on the server." : "No reports found for this category.")
+                )
             } else {
                 List(viewModel.reports) { report in
-                    NavigationLink(value: report) {
+                    NavigationLink(destination: ReportDetailView(viewModel: ReportDetailViewModel(reportSummary: report))) {
                         ReportRowView(report: report)
                     }
+                }
+                .refreshable {
+                    await viewModel.loadReports(apiClient: appState.apiClient)
                 }
             }
         }
         .navigationTitle("Server Logs")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Picker("Filter", selection: $viewModel.selectedCategory) {
+                        Text("All").tag(nil as ReportCategory?)
+                        
+                        ForEach(ReportCategory.allCases) { category in
+                            Text(category.displayName).tag(category as ReportCategory?)
+                        }
+                    }
+                } label: {
+                    Image(systemName: viewModel.selectedCategory == nil ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                }
+            }
+        }
         .task {
             await viewModel.loadReports(apiClient: appState.apiClient)
         }
-        .navigationDestination(for: ReportSummary.self) { report in
-            ReportDetailView(viewModel: ReportDetailViewModel(reportSummary: report))
+        .onChange(of: viewModel.selectedCategory) { _, _ in
+            Task {
+                await viewModel.loadReports(apiClient: appState.apiClient)
+            }
         }
     }
 }
@@ -38,15 +63,10 @@ struct ReportRowView: View {
             Image(systemName: iconForStatus(report.status))
                 .font(.title2)
                 .foregroundStyle(colorForStatus(report.status))
-            
-            VStack(alignment: .leading) {
-                Text(report.name)
-                    .font(.headline)
-                Text(report.category.rawValue.capitalized)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            
+
+            Text(report.name)
+                .font(.headline)
+
             Spacer()
             
             Text(formattedDate(report.timestamp))

@@ -41,8 +41,8 @@ struct LoginView: View {
                     .background(.thinMaterial)
                     .cornerRadius(10)
                     .tint(Color.primary)
-                    
-                    TextField("Server Address", text: $viewModel.serverAddress)
+
+                    TextField("mealie.domain.tld", text: $viewModel.serverAddress)
                         .keyboardType(.URL)
                         .textContentType(.URL)
                         .autocapitalization(.none)

@@ -25,8 +25,19 @@ struct ReportEntryOut: Codable, Identifiable, Hashable {
     let exception: String?
 }
 
-enum ReportCategory: String, Codable {
+enum ReportCategory: String, Codable, CaseIterable, Identifiable {
     case backup, restore, migration, bulk_import
+    
+    var id: String { self.rawValue }
+    
+    var displayName: String {
+        switch self {
+        case .backup: return "Backup"
+        case .restore: return "Restore"
+        case .migration: return "Migration"
+        case .bulk_import: return "Bulk Import"
+        }
+    }
 }
 
 enum ReportSummaryStatus: String, Codable {

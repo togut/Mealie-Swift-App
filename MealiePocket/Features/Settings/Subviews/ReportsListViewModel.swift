@@ -5,6 +5,8 @@ class ReportsListViewModel {
     var reports: [ReportSummary] = []
     var isLoading = false
     var errorMessage: String?
+
+    var selectedCategory: ReportCategory? = nil
     
     @MainActor
     func loadReports(apiClient: MealieAPIClient?) async {
@@ -17,11 +19,32 @@ class ReportsListViewModel {
         errorMessage = nil
         
         do {
-            self.reports = try await apiClient.fetchReports()
+            if let category = selectedCategory {
+                self.reports = try await apiClient.fetchReports(type: category)
+            } else {
+                self.reports = try await fetchAllReportsMerged(apiClient: apiClient)
+            }
         } catch {
             errorMessage = "Failed to load reports: \(error.localizedDescription)"
         }
         
         isLoading = false
+    }
+
+    private func fetchAllReportsMerged(apiClient: MealieAPIClient) async throws -> [ReportSummary] {
+        var allReports: [ReportSummary] = []
+        
+        try await withThrowingTaskGroup(of: [ReportSummary].self) { group in
+            for category in ReportCategory.allCases {
+                group.addTask {
+                    try await apiClient.fetchReports(type: category)
+                }
+            }
+            
+            for try await categoryReports in group {
+                allReports.append(contentsOf: categoryReports)
+            }
+        }
+        return allReports.sorted { $0.timestamp > $1.timestamp }
     }
 }

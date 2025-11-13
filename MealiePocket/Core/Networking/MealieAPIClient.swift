@@ -688,8 +688,15 @@ class MealieAPIClient {
         return try await performRequest(for: request)
     }
 
-    func fetchReports() async throws -> [ReportSummary] {
-        let url = baseURL.appendingPathComponent("api/groups/reports")
+    func fetchReports(type: ReportCategory? = nil) async throws -> [ReportSummary] {
+        var components = URLComponents(url: baseURL.appendingPathComponent("api/groups/reports"), resolvingAgainstBaseURL: false)
+        
+        if let type = type {
+            components?.queryItems = [URLQueryItem(name: "report_type", value: type.rawValue)]
+        }
+        
+        guard let url = components?.url else { throw APIError.invalidURL }
+        
         let request = URLRequest(url: url)
         return try await performRequest(for: request)
     }
