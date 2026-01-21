@@ -15,7 +15,7 @@ struct LoginView: View {
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
-            Text("Welcome to MealiePocket")
+            Text("Welcome to Pocket for Mealie")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)

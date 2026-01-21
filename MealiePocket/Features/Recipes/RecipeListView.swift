@@ -82,14 +82,14 @@ struct RecipeListView: View {
         Menu {
             Picker("Sort By", selection: $viewModel.sortOption) {
                 ForEach(SortOption.allCases) { option in
-                    Text(option.displayName).tag(option)
+                    Text(LocalizedStringKey(option.displayName)).tag(option)
                 }
             }
             
             if viewModel.sortOption != .random {
                 Picker("Sort", selection: $viewModel.sortDirection) {
-                    Text("Ascending").tag(SortDirection.asc)
-                    Text("Descending").tag(SortDirection.desc)
+                    Text(LocalizedStringKey("Ascending")).tag(SortDirection.asc)
+                    Text(LocalizedStringKey("Descending")).tag(SortDirection.desc)
                 }
             }
             

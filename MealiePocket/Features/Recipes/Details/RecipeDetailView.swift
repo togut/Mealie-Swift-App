@@ -340,7 +340,7 @@ struct AddToMealPlanView: View {
                 
                 Picker("Meal Type", selection: $selectedMealType) {
                     ForEach(mealTypes, id: \.self) { type in
-                        Text(type).tag(type)
+                        Text(LocalizedStringKey(type)).tag(type)
                     }
                 }
             }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "2600"
-   version = "1.7">
+   version = "2.2">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
@@ -13,13 +13,8 @@
             buildForProfiling = "YES"
             buildForArchiving = "YES"
             buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "87226E082EA6C90E00FBF5C7"
-               BuildableName = "MealiePocket.app"
-               BlueprintName = "MealiePocket"
-               ReferencedContainer = "container:MealiePocket.xcodeproj">
-            </BuildableReference>
+            <AutocreatedTestPlanReference>
+            </AutocreatedTestPlanReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
@@ -53,16 +48,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "87226E082EA6C90E00FBF5C7"
-            BuildableName = "MealiePocket.app"
-            BlueprintName = "MealiePocket"
-            ReferencedContainer = "container:MealiePocket.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -70,16 +55,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "87226E082EA6C90E00FBF5C7"
-            BuildableName = "MealiePocket.app"
-            BlueprintName = "MealiePocket"
+            BlueprintIdentifier = "87C130662F20FD7B0042B975"
+            BuildableName = "FastlaneSnapshot.xctest"
+            BlueprintName = "FastlaneSnapshot"
             ReferencedContainer = "container:MealiePocket.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

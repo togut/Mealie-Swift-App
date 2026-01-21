@@ -75,13 +75,13 @@ struct FavoritesListView: View {
         Menu {
             Picker("Sort By", selection: $viewModel.sortOption) {
                 ForEach(FavoritesListViewModel.SortOption.allCases) { option in
-                    Text(option.displayName).tag(option)
+                    Text(LocalizedStringKey(option.displayName)).tag(option)
                 }
             }
             
             Picker("Sort", selection: $viewModel.sortDirection) {
-                Text("Ascending").tag(FavoritesListViewModel.SortDirection.asc)
-                Text("Descending").tag(FavoritesListViewModel.SortDirection.desc)
+                Text(LocalizedStringKey("Ascending")).tag(FavoritesListViewModel.SortDirection.asc)
+                Text(LocalizedStringKey("Descending")).tag(FavoritesListViewModel.SortDirection.desc)
             }
             
         } label: {
