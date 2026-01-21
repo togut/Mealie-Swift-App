@@ -16,13 +16,13 @@ It lets you browse recipes, manage meal plans, and keep shopping lists in sync w
 
 ## Overview
 
-| Home | Recipes | Planner | Lists |
-| :--: | :-----: | :-----: | :---: |
-| ![Home](screenshots/Home.png) | ![Recipes](screenshots/Recipes.png) | ![Planner](screenshots/Planner.png) | ![Lists](screenshots/Lists.png) |
+| Login | Home | Recipes | Recipe Detail |
+| :---: | :--: | :-----: | :-----------: |
+| ![Login](screenshots/Login.png) | ![Home](screenshots/Home.png) | ![Recipes](screenshots/Recipes.png) | ![Recipe Detail](screenshots/Recipe%20Detail.png) |
 
-| Login | Recipe Detail | List Detail | Settings |
-| :---: | :-----------: | :---------: | :------: |
-| ![Login](screenshots/Login.png) | ![Recipe Detail](screenshots/Recipe%20Detail.png) | ![List Detail](screenshots/List%20Detail.png) | ![Settings](screenshots/Settings.png) |
+| Planner | Lists | List Detail | Settings |
+| :-----: | :---: | :---------: | :------: |
+| ![Planner](screenshots/Planner.png) | ![Lists](screenshots/Lists.png) | ![List Detail](screenshots/List%20Detail.png) | ![Settings](screenshots/Settings.png) |
 
 ## Key Features
 
