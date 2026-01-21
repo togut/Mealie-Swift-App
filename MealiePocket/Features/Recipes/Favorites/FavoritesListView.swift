@@ -79,7 +79,7 @@ struct FavoritesListView: View {
                 }
             }
             
-            Picker("Direction", selection: $viewModel.sortDirection) {
+            Picker("Sort", selection: $viewModel.sortDirection) {
                 Text("Ascending").tag(FavoritesListViewModel.SortDirection.asc)
                 Text("Descending").tag(FavoritesListViewModel.SortDirection.desc)
             }

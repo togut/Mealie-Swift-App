@@ -37,7 +37,7 @@ struct MealDayCardView: View {
                         mealPlannerViewModel.selectDateAndView(date: date)
                         selectedTab = plannerTabIndex
                     } label: {
-                        Text("Voir plus")
+                        Text("View more")
                             .font(.subheadline)
                             .padding(.horizontal, 10)
                             .frame(height: 25)
@@ -61,7 +61,7 @@ struct MealDayCardView: View {
             .frame(minWidth: 150)
 
             if sortedEntries.isEmpty {
-                Text("Rien de prévu")
+                Text("Nothing planned")
                     .font(.callout)
                     .padding(.bottom, 10)
                     .foregroundColor(.secondary)

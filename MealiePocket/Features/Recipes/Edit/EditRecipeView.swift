@@ -44,13 +44,13 @@ struct EditRecipeView: View {
                         
                         VStack(alignment: .leading) {
                             HStack(spacing: 12) {
-                                TextField("Qté", value: $ingredient.quantity.bound, formatter: numberFormatter)
+                                TextField("Qty", value: $ingredient.quantity.bound, formatter: numberFormatter)
                                     .keyboardType(.decimalPad)
                                     .frame(width: 60)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                 
-                                Picker("Unité", selection: $ingredient.unit) {
-                                    Text("(optionnel)").tag(nil as RecipeIngredient.IngredientUnitStub?)
+                                Picker("Unit", selection: $ingredient.unit) {
+                                    Text("(optional)").tag(nil as RecipeIngredient.IngredientUnitStub?)
                                     ForEach(viewModel.allUnits) { unit in
                                         Text(unit.name).tag(unit as RecipeIngredient.IngredientUnitStub?)
                                     }
@@ -63,7 +63,7 @@ struct EditRecipeView: View {
                                 Button(action: {
                                     self.editingIngredientID = IdentifiableUUID(id: ingredient.id)
                                 }) {
-                                    Text(ingredient.food?.name ?? "Choisir...")
+                                    Text(ingredient.food?.name ?? "Select...")
                                         .foregroundColor(ingredient.food == nil ? .gray : .primary)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 }

@@ -33,7 +33,7 @@ struct RecipeDetailView: View {
                     VStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .resizable().scaledToFit().frame(width: 50, height: 50).foregroundColor(.orange)
-                        Text("Erreur").font(.title2).fontWeight(.bold)
+                        Text("Error").font(.title2).fontWeight(.bold)
                         Text(errorMessage).font(.callout).multilineTextAlignment(.center).foregroundColor(.secondary).padding(.horizontal)
                     }
                     .frame(maxWidth: .infinity)
@@ -119,10 +119,10 @@ struct RecipeDetailView: View {
                     
                     let servingsValue: Double? = detail.recipeServings
                     let isSingular: Bool = servingsValue == 1.0
-                    
-                    let servingsLabel: String = isSingular ? "Portion" : "Portions"
+
+                    let servingsLabel: LocalizedStringKey = isSingular ? "Portion" : "Portions"
                     let servingsIcon: String = isSingular ? "person" : "person.2"
-                    
+
                     if let servingsValue, servingsValue > 0 {
                         TimeInfoView(
                             icon: servingsIcon,
@@ -194,7 +194,7 @@ struct RecipeDetailView: View {
     
     private func ingredientsSection(ingredients: [RecipeIngredient]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Ingrédients").font(.title2.weight(.semibold)).padding(.horizontal)
+            Text("Ingredients").font(.title2.weight(.semibold)).padding(.horizontal)
             LazyVStack(alignment: .leading, spacing: 10) {
                 ForEach(ingredients) { ingredient in
                     IngredientRow(text: ingredient.display)
@@ -219,17 +219,17 @@ struct RecipeDetailView: View {
 }
 
 private struct TimeInfoView: View {
-    let label: String
+    let label: LocalizedStringKey
     let text: String
     let icon: String
     
-    init(icon: String = "clock", label: String, value: String?) {
+    init(icon: String = "clock", label: LocalizedStringKey, value: String?) {
         self.label = label
         self.text = value ?? "N/A"
         self.icon = icon
     }
     
-    init(icon: String, label: String, value: Double?) {
+    init(icon: String, label: LocalizedStringKey, value: Double?) {
         self.label = label
         self.icon = icon
         

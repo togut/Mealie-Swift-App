@@ -29,7 +29,7 @@ struct FoodSearchView: View {
                     }) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
-                            Text("Créer l'aliment \"\(searchQuery)\"")
+                            Text("Creating missing food \"\(searchQuery)\"")
                         }
                     }
                     .foregroundColor(.accentColor)
@@ -40,15 +40,15 @@ struct FoodSearchView: View {
                 Section {
                     HStack {
                         ProgressView()
-                        Text("Création en cours...")
+                        Text("Creating...")
                             .foregroundColor(.secondary)
                     }
                 }
             }
 
-            Section(header: Text("Résultats de la recherche")) {
+            Section(header: Text("Search results")) {
                 if searchResults.isEmpty && !searchQuery.isEmpty && !isCreating {
-                    Text("Aucun résultat pour \"\(searchQuery)\"")
+                    Text("No result for \"\(searchQuery)\"")
                         .foregroundStyle(.secondary)
                 }
 
@@ -61,9 +61,9 @@ struct FoodSearchView: View {
                 }
             }
         }
-        .navigationTitle("Rechercher un aliment")
+        .navigationTitle("Search for a food")
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $searchQuery, prompt: "Tapez pour rechercher...")
+        .searchable(text: $searchQuery, prompt: "Type to search...")
         .onChange(of: searchQuery) { _, newValue in
             Task {
                 await onSearchQueryChanged(newValue)

@@ -54,12 +54,12 @@ struct SelectRecipeForDayView: View {
                 }
             }
             .listStyle(.plain)
-            .searchable(text: $viewModel.searchQueryForSelection, prompt: "Rechercher une recette...")
-            .navigationTitle("Ajouter au \(date.formatted(date: .abbreviated, time: .omitted))")
+            .searchable(text: $viewModel.searchQueryForSelection, prompt: "Search for a recipe...")
+            .navigationTitle("Add to \(date.formatted(date: .abbreviated, time: .omitted))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
+                    Button("Cancel") {
                         dismiss()
                     }
                 }
@@ -139,7 +139,7 @@ struct MealTypeSelectionView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Picker("Type de repas", selection: $selectedMealType) {
+                Picker("Meal Type", selection: $selectedMealType) {
                     ForEach(mealTypes, id: \.self) { type in
                         Text(type).tag(type)
                     }
@@ -148,14 +148,14 @@ struct MealTypeSelectionView: View {
                 
                 Spacer()
             }
-            .navigationTitle("Choisir le repas")
+            .navigationTitle("Select meal type")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler", action: onCancel)
+                    Button("Cancel", action: onCancel)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Ajouter", action: onConfirm)
+                    Button("Add", action: onConfirm)
                 }
             }
         }

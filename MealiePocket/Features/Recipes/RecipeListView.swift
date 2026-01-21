@@ -87,7 +87,7 @@ struct RecipeListView: View {
             }
             
             if viewModel.sortOption != .random {
-                Picker("Direction", selection: $viewModel.sortDirection) {
+                Picker("Sort", selection: $viewModel.sortDirection) {
                     Text("Ascending").tag(SortDirection.asc)
                     Text("Descending").tag(SortDirection.desc)
                 }

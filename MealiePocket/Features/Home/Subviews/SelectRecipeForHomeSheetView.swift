@@ -41,11 +41,11 @@ struct SelectRecipeForHomeSheetView: View {
                 }
             }
             .listStyle(.plain)
-            .searchable(text: $viewModel.searchQueryForSelection, prompt: "Rechercher une recette...")
-            .navigationTitle("Ajouter au \(date.formatted(date: .abbreviated, time: .omitted))")
+            .searchable(text: $viewModel.searchQueryForSelection, prompt: "Search for a recipe...")
+            .navigationTitle("Add to \(date.formatted(date: .abbreviated, time: .omitted))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .navigationBarLeading) { Button("Cancel") { dismiss() } }
             }
             .sheet(isPresented: $showingMealTypeSelection) {
                  MealTypeSelectionView(

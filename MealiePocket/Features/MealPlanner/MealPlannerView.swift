@@ -27,7 +27,7 @@ struct MealPlannerView: View {
                 ProgressView()
                 Spacer()
             } else if let errorMessage = viewModel.errorMessage {
-                ContentUnavailableView("Erreur", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
+                ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
             } else {
                 calendarContent
             }
@@ -38,7 +38,7 @@ struct MealPlannerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .principal) {
-                Picker("Vue", selection: Binding(
+                Picker("View mode", selection: Binding(
                     get: { viewModel.viewMode },
                     set: { viewModel.viewMode = $0 }
                 )) {
@@ -51,7 +51,7 @@ struct MealPlannerView: View {
         }
         .overlay(alignment: .bottom) {
             HStack {
-                Button("Aujourd'hui") {
+                Button("Today") {
                     viewModel.goToToday(apiClient: appState.apiClient)
                 }
                 .font(.headline)
@@ -150,7 +150,7 @@ struct MealPlannerView: View {
             if let date = viewModel.dateForAddingRecipe {
                 SelectRecipeForDayView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
             } else {
-                Text("Erreur: Date non sélectionnée.")
+                Text("Error: Date not selected.")
             }
         }
         .sheet(isPresented: Binding(
@@ -173,7 +173,7 @@ struct MealPlannerView: View {
                 )
                 .presentationDetents([.height(200)])
             } else {
-                Text("Erreur: Date non sélectionnée.")
+                Text("Error: Date not selected.")
             }
         }
         .sheet(isPresented: Binding(
@@ -405,7 +405,7 @@ struct MealPlannerView: View {
         
         if entries.isEmpty {
             if viewModel.viewMode == .day {
-                Text("Rien de prévu pour ce jour.")
+                Text("Nothing planned that day.")
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top)
@@ -444,7 +444,7 @@ struct MealPlannerView: View {
                     await viewModel.deleteMealEntry(entryID: entry.id)
                 }
             } label: {
-                Label("Supprimer", systemImage: "trash")
+                Label("Delete", systemImage: "trash")
             }
         }
     }

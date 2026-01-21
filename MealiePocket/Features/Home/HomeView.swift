@@ -118,7 +118,7 @@ struct HomeView: View {
             if let date = viewModel.dateForAddingRecipe {
                 SelectRecipeForHomeSheetView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
             } else {
-                Text("Erreur: Date non sélectionnée.")
+                Text("Error: Date not selected.")
             }
         }
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in
