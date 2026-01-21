@@ -4,6 +4,63 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = SettingsViewModel()
     
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
+        return "\(version) (\(build))"
+    }
+    
+    private var bugReportTemplate: String {
+            """
+            ## Bug Description
+            <!-- Describe the bug clearly and concisely -->
+            
+            
+            ## Steps to Reproduce
+            1.
+            2.
+            3.
+            
+            ## Expected Behavior
+            <!-- What did you expect to happen? -->
+            
+            
+            ## Actual Behavior
+            <!-- What actually happened? -->
+            
+            
+            ## Screenshots
+            <!-- If applicable, add screenshots to help explain the issue -->
+            
+            
+            ## Device Information
+            - App Version: \(appVersion)
+            - iOS Version: \(UIDevice.current.systemVersion)
+            - Device: \(UIDevice.current.model)
+            """
+    }
+    
+    private static let fallbackGitHubURL = URL(string: "https://github.com/Loriage/Mealie-Swift-App/issues")!
+    private static let fallbackEmailURL = URL(string: "mailto:contact@nohit.dev")!
+        
+    private var bugReportGitHubURL: URL {
+        var components = URLComponents(string: "https://github.com/Loriage/Mealie-Swift-App/issues/new")
+        components?.queryItems = [
+            URLQueryItem(name: "title", value: "[Bug] "),
+            URLQueryItem(name: "body", value: bugReportTemplate)
+        ]
+        return components?.url ?? Self.fallbackGitHubURL
+    }
+        
+    private var bugReportEmailURL: URL {
+        var components = URLComponents(string: "mailto:contact@nohit.dev")
+        components?.queryItems = [
+            URLQueryItem(name: "subject", value: "[Bug Report] Beszel Companion"),
+            URLQueryItem(name: "body", value: bugReportTemplate)
+        ]
+        return components?.url ?? Self.fallbackEmailURL
+    }
+    
     var body: some View {
         Group {
             List {
@@ -58,6 +115,30 @@ struct SettingsView: View {
                 }
                 
                 Section {
+                    Link(destination: bugReportGitHubURL) {
+                        HStack {
+                            Image(systemName: "ant")
+                            Text("settings.support.reportBug.github")
+                            Spacer()
+                            Image(systemName: "arrow.up.forward.app")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Link(destination: bugReportEmailURL) {
+                        HStack {
+                            Image(systemName: "envelope")
+                            Text("settings.support.reportBug.email")
+                            Spacer()
+                            Image(systemName: "arrow.up.forward.app")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("settings.support")
+                }
+
+                Section {
                     Button(role: .destructive) {
                         appState.logout()
                     } label: {
@@ -67,6 +148,10 @@ struct SettingsView: View {
                             Spacer()
                         }
                     }
+                } footer: {
+                    Text("Version \(appVersion)")
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 8)
                 }
             }
         }
