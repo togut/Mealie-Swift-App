@@ -25,6 +25,9 @@
 # Do not retry failed snapshot runs.
  number_of_retries(0)
 
+# Avoid simulator clones which can fail to launch the test runner.
+ concurrent_simulators(false)
+
 # Remove the '#' to set the status bar to 9:41 AM, and show full battery and reception. See also override_status_bar_arguments for custom options.
 # override_status_bar(true)
 
