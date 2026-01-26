@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
 [![Made with SwiftUI](https://img.shields.io/badge/Made%20with-SwiftUI-blue.svg?logo=swift)](https://developer.apple.com/xcode/swiftui/)
 
-**MealiePocket** is an unofficial, native iOS client for the [Mealie](https://github.com/mealie-recipes/mealie) recipe manager.
+**Pocket for Mealie** is an unofficial, native iOS client for the [Mealie](https://github.com/mealie-recipes/mealie) recipe manager.
 
 It lets you browse recipes, manage meal plans, and keep shopping lists in sync with your Mealie server.
 
