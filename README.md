@@ -10,7 +10,7 @@
 It lets you browse recipes, manage meal plans, and keep shopping lists in sync with your Mealie server.
 
 > [!IMPORTANT]
-> **A working Mealie instance reachable from your device is required to use MealiePocket.**
+> **A working Mealie instance reachable from your device is required to use Pocket for Mealie.**
 >
 > You can authenticate with an API key or user token, and credentials are stored securely in the iOS Keychain.
 
