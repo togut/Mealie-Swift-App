@@ -209,7 +209,7 @@ struct RecipeDetailView: View {
             Text("Instructions").font(.title2.weight(.semibold)).padding(.horizontal)
             LazyVStack(alignment: .leading, spacing: 15) {
                 ForEach(Array(instructions.enumerated()), id: \.element.id) { index, instruction in
-                    InstructionRow(index: index, instruction: instruction)
+                    InstructionRow(index: index, instruction: instruction, baseURL: appState.apiClient?.baseURL)
                 }
             }
             .padding(.horizontal)
@@ -279,8 +279,14 @@ private struct IngredientRow: View {
 private struct InstructionRow: View {
     let index: Int
     let instruction: RecipeInstruction
+    let baseURL: URL?
     @State private var isCompleted = false
-    
+
+    private enum StepSegment {
+        case text(String)
+        case image(URL)
+    }
+
     private var stepTitle: String {
         if let summary = instruction.summary, !summary.isEmpty {
             return summary
@@ -290,7 +296,65 @@ private struct InstructionRow: View {
             return "Step \(index + 1)"
         }
     }
-    
+
+    private static let imgRegex = try? NSRegularExpression(
+        pattern: #"<img[^>]+src="([^"]+)"[^>]*/?>"#,
+        options: [.caseInsensitive]
+    )
+
+    private var segments: [StepSegment] {
+        let text = instruction.text
+        guard let regex = Self.imgRegex else {
+            return [.text(text)]
+        }
+
+        let matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
+        guard !matches.isEmpty else { return [.text(text)] }
+
+        var result: [StepSegment] = []
+        var lastEnd = text.startIndex
+
+        for match in matches {
+            guard let matchRange = Range(match.range, in: text) else { continue }
+
+            if lastEnd < matchRange.lowerBound {
+                let part = String(text[lastEnd..<matchRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !part.isEmpty { result.append(.text(part)) }
+            }
+
+            if let srcRange = Range(match.range(at: 1), in: text) {
+                let src = String(text[srcRange])
+                if let url = resolveURL(src) { result.append(.image(url)) }
+            }
+
+            lastEnd = matchRange.upperBound
+        }
+
+        if lastEnd < text.endIndex {
+            let part = String(text[lastEnd...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !part.isEmpty { result.append(.text(part)) }
+        }
+
+        return result.isEmpty ? [.text(text)] : result
+    }
+
+    private func resolveURL(_ src: String) -> URL? {
+        if src.hasPrefix("http://") || src.hasPrefix("https://") {
+            return URL(string: src)
+        }
+        guard let base = baseURL else { return nil }
+        var baseString = base.absoluteString
+        if baseString.hasSuffix("/") { baseString.removeLast() }
+        return URL(string: baseString + src)
+    }
+
+    private func makeAttributedString(from markdown: String) -> AttributedString {
+        (try? AttributedString(
+            markdown: markdown,
+            options: .init(interpretedSyntax: .full)
+        )) ?? AttributedString(markdown)
+    }
+
     var body: some View {
         Button(action: {
             withAnimation(.spring()) {
@@ -306,11 +370,14 @@ private struct InstructionRow: View {
                         .foregroundColor(.green)
                         .opacity(isCompleted ? 1 : 0)
                 }
-                
+
                 if !isCompleted {
-                    Text(instruction.text)
-                        .font(.body)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                            segmentView(segment)
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .foregroundColor(.primary)
@@ -320,6 +387,147 @@ private struct InstructionRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func segmentView(_ segment: StepSegment) -> some View {
+        switch segment {
+        case .text(let content):
+            Text(makeAttributedString(from: content))
+                .font(.body)
+        case .image(let url):
+            StepImageView(url: url)
+        }
+    }
+}
+
+private struct StepImageView: View {
+    let url: URL
+    @State private var isExpanded = false
+
+    var body: some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .empty:
+                ZStack {
+                    Color(.secondarySystemBackground)
+                    ProgressView()
+                }
+                .frame(width: 120, height: 120)
+                .cornerRadius(8)
+            case .success(let image):
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 120, height: 120)
+                    .clipped()
+                    .cornerRadius(8)
+                    .overlay(alignment: .topTrailing) {
+                        Button {
+                            isExpanded = true
+                        } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.caption.bold())
+                                .padding(6)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .padding(5)
+                        }
+                        .buttonStyle(.plain)
+                    }
+            case .failure:
+                EmptyView()
+            @unknown default:
+                EmptyView()
+            }
+        }
+        .fullScreenCover(isPresented: $isExpanded) {
+            ZoomableImageViewer(url: url, isPresented: $isExpanded)
+        }
+    }
+}
+
+private struct ZoomableImageViewer: View {
+    let url: URL
+    @Binding var isPresented: Bool
+
+    @State private var scale: CGFloat = 1
+    @State private var lastScale: CGFloat = 1
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .scaleEffect(scale)
+                        .offset(offset)
+                        .gesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    scale = max(1, lastScale * value)
+                                }
+                                .onEnded { _ in
+                                    if scale <= 1 {
+                                        withAnimation(.spring()) {
+                                            scale = 1
+                                            offset = .zero
+                                            lastOffset = .zero
+                                        }
+                                        lastScale = 1
+                                    } else {
+                                        lastScale = scale
+                                    }
+                                }
+                                .simultaneously(with:
+                                    DragGesture()
+                                        .onChanged { value in
+                                            guard scale > 1 else { return }
+                                            offset = CGSize(
+                                                width: lastOffset.width + value.translation.width,
+                                                height: lastOffset.height + value.translation.height
+                                            )
+                                        }
+                                        .onEnded { _ in
+                                            lastOffset = offset
+                                        }
+                                )
+                        )
+                        .onTapGesture(count: 2) {
+                            withAnimation(.spring()) {
+                                if scale > 1 {
+                                    scale = 1
+                                    lastScale = 1
+                                    offset = .zero
+                                    lastOffset = .zero
+                                } else {
+                                    scale = 2.5
+                                    lastScale = 2.5
+                                }
+                            }
+                        }
+                default:
+                    ProgressView()
+                }
+            }
+
+            Button {
+                isPresented = false
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title)
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, .black.opacity(0.5))
+                    .padding()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        }
     }
 }
 
