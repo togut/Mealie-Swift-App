@@ -160,28 +160,51 @@ struct RecipeInstruction: Codable, Identifiable, Hashable {
 }
 
 struct RecipeNote: Codable, Identifiable, Hashable {
-    var id = UUID()
+    var id: UUID
     var title: String?
     var text: String?
-    
+
     init(id: UUID = UUID(), title: String? = nil, text: String? = nil) {
         self.id = id
         self.title = title ?? ""
         self.text = text ?? ""
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, text
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.title = try container.decodeIfPresent(String.self, forKey: .title)
+        self.text = try container.decodeIfPresent(String.self, forKey: .text)
+    }
 }
 
 struct RecipeAsset: Codable, Identifiable, Hashable {
-    var id = UUID()
+    var id: UUID
     var name: String?
     var icon: String?
     var fileName: String?
-    
+
     init(id: UUID = UUID(), name: String? = nil, icon: String? = nil, fileName: String? = nil) {
         self.id = id
         self.name = name
         self.icon = icon
         self.fileName = fileName
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, icon, fileName
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.name = try container.decodeIfPresent(String.self, forKey: .name)
+        self.icon = try container.decodeIfPresent(String.self, forKey: .icon)
+        self.fileName = try container.decodeIfPresent(String.self, forKey: .fileName)
     }
 }
 
