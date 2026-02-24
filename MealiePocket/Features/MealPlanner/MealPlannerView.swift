@@ -7,11 +7,16 @@ struct MealPlannerView: View {
     @State private var selectedTabIndex = 1
     @State private var currentlyVisibleMonth: Date = Date().startOfMonth()
     @State private var scrollViewFrame: CGRect = .zero
-    private var daysOfWeek: [String] {
+    
+    private var localizedCalendar: Calendar {
         var cal = Calendar.current
         cal.locale = locale
-        let symbols = cal.veryShortWeekdaySymbols
-        let first = cal.firstWeekday - 1
+        return cal
+    }
+    
+    private var daysOfWeek: [String] {
+        let symbols = localizedCalendar.veryShortWeekdaySymbols
+        let first = localizedCalendar.firstWeekday - 1
         return Array(symbols[first...]) + Array(symbols[..<first])
     }
     
@@ -254,12 +259,14 @@ struct MealPlannerView: View {
                         ScrollView {
                             LazyVStack(spacing: 20) {
                                 ForEach(viewModel.displayedMonths, id: \.self) { monthStart in
+                                    let monthDays = localizedCalendar.generateDaysInMonth(for: monthStart)
                                     GeometryReader { monthProxy in
                                         CalendarMonthView(
-                                            days: viewModel.daysInSpecificMonth(monthStart),
+                                            days: monthDays,
                                             mealPlanEntries: viewModel.mealPlanEntries,
                                             selectedMonthDate: monthStart,
                                             baseURL: appState.apiClient?.baseURL,
+                                            calendar: localizedCalendar,
                                             onDateSelected: { date in
                                                 viewModel.selectDateAndView(date: date)
                                             }
@@ -267,7 +274,7 @@ struct MealPlannerView: View {
                                         .id(monthStart)
                                         .preference(key: VisibleMonthPreferenceKey.self, value: [MonthVisibilityInfo(month: monthStart, frame: monthProxy.frame(in: .global))])
                                     }
-                                    .frame(height: CGFloat(viewModel.daysInSpecificMonth(monthStart).count / 7) * 100)
+                                    .frame(height: CGFloat(monthDays.count / 7) * 100)
                                 }
                                 
                                 Color.clear
@@ -485,9 +492,15 @@ struct MealPlannerView: View {
             
             VStack(alignment: .leading, spacing: isMonthView ? 0 : 2) {
                 if !isMonthView && (showType || viewModel.viewMode == .day) {
-                    Text(entry.entryType.capitalized)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let mealTypeKey = localizedMealTypeKey(entry.entryType) {
+                        Text(mealTypeKey)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text(verbatim: entry.entryType.capitalized)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 Text(recipeName ?? (entry.title.isEmpty ? entry.text : entry.title))
                     .font(isMonthView ? .system(size: 9) : .body)
@@ -575,6 +588,16 @@ struct MealPlannerView: View {
         case "dinner": return "moon.fill"
         case "side": return "fork.knife"
         default: return "note.text"
+        }
+    }
+    
+    private func localizedMealTypeKey(_ type: String) -> LocalizedStringKey? {
+        switch type.lowercased() {
+        case "breakfast": return "Breakfast"
+        case "lunch": return "Lunch"
+        case "dinner": return "Dinner"
+        case "side": return "Side"
+        default: return nil
         }
     }
 }
