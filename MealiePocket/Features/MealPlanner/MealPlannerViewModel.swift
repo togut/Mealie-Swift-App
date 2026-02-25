@@ -55,6 +55,10 @@ class MealPlannerViewModel {
     var importingListId: UUID? = nil
     var importSuccess = false
     
+    var showingRescheduleSheet = false
+    var selectedRescheduleEntryID: Int? = nil
+    var selectedRescheduleRecipeID: UUID? = nil
+    
     init() {
         setupInitialMonths()
     }
@@ -399,6 +403,42 @@ class MealPlannerViewModel {
         } catch {
             await MainActor.run {
                 errorMessage = String(localized: "error.deletingMeal") + ": " + error.localizedDescription
+                isLoading = false
+            }
+        }
+    }
+
+    @MainActor
+    func presentRescheduleSheet(for entry: ReadPlanEntry) {
+        guard let recipeId = entry.recipeId else { return }
+        selectedRescheduleEntryID = entry.id
+        selectedRescheduleRecipeID = recipeId
+        showingRescheduleSheet = true
+    }
+
+    func rescheduleMealEntry(entryID: Int, toDate: Date, recipeId: UUID, mealType: String) async {
+        guard let client = self.apiClient else {
+            await MainActor.run {
+                errorMessage = String(localized: "error.apiClientUnavailable")
+            }
+            return
+        }
+        
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+        
+        do {
+            try await client.rescheduleMealPlanEntry(entryID: entryID, toDate: toDate, recipeId: recipeId, entryType: mealType)
+            await loadMealPlan(apiClient: client)
+            await MainActor.run {
+                showingRescheduleSheet = false
+                isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = String(localized: "error.reschedulingMeal") + ": " + error.localizedDescription
                 isLoading = false
             }
         }

@@ -22,6 +22,8 @@ struct MealPlannerView: View {
     
     @State private var showingMealTypeSelection = false
     @State private var selectedMealType = "Dinner"
+    @State private var selectedRescheduleDate = Date()
+    @State private var selectedReschedueMealType = "Dinner"
     let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
     
     @Environment(\.locale) private var locale
@@ -30,9 +32,18 @@ struct MealPlannerView: View {
     @Namespace var unionNamespace
     
     var body: some View {
+        mainContent
+    }
+    
+    private var mainContent: some View {
         VStack {
             header
-            
+            contentView
+        }
+    }
+    
+    private var contentView: some View {
+        Group {
             if viewModel.isLoadingPast { ProgressView().progressViewStyle(.circular) }
             
             if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
@@ -199,6 +210,34 @@ struct MealPlannerView: View {
             set : { viewModel.showingShoppingListSelection = $0}
         )) {
             ShoppingListSelectionView(viewModel: viewModel, apiClient: appState.apiClient)
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingRescheduleSheet },
+            set: { viewModel.showingRescheduleSheet = $0 }
+        )) {
+            if viewModel.selectedRescheduleEntryID != nil, let recipeId = viewModel.selectedRescheduleRecipeID {
+                RescheduleSheet(
+                    selectedDate: $selectedRescheduleDate,
+                    selectedMealType: $selectedReschedueMealType,
+                    mealTypes: mealTypes,
+                    onConfirm: {
+                        if let entryID = viewModel.selectedRescheduleEntryID {
+                            Task {
+                                await viewModel.rescheduleMealEntry(
+                                    entryID: entryID,
+                                    toDate: selectedRescheduleDate,
+                                    recipeId: recipeId,
+                                    mealType: selectedReschedueMealType.lowercased()
+                                )
+                            }
+                        }
+                    },
+                    onCancel: {
+                        viewModel.showingRescheduleSheet = false
+                    }
+                )
+                .presentationDetents([.height(650)])
+            }
         }
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in
             Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient) }
@@ -453,6 +492,18 @@ struct MealPlannerView: View {
             }
         }
         .contextMenu {
+            Button {
+                // Extract date and meal type from entry
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                selectedRescheduleDate = dateFormatter.date(from: entry.date) ?? Date()
+                selectedReschedueMealType = entry.entryType.capitalized
+                
+                viewModel.presentRescheduleSheet(for: entry)
+            } label: {
+                Label("Reschedule", systemImage: "calendar")
+            }
+            
             Button(role: .destructive) {
                 Task {
                     await viewModel.deleteMealEntry(entryID: entry.id)
@@ -598,6 +649,73 @@ struct MealPlannerView: View {
         case "dinner": return "Dinner"
         case "side": return "Side"
         default: return nil
+        }
+    }
+}
+
+struct RescheduleSheet: View {
+    @Binding var selectedDate: Date
+    @Binding var selectedMealType: String
+    let mealTypes: [String]
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    DatePicker(
+                        "Date",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                }
+                .padding()
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Meal Type")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+                    
+                    let columns = [GridItem(.flexible()), GridItem(.flexible())]
+                    LazyVGrid(columns: columns, spacing: 8) {
+                        ForEach(mealTypes, id: \.self) { type in
+                            if selectedMealType == type {
+                                Button {
+                                    selectedMealType = type
+                                } label: {
+                                    Text(LocalizedStringKey(type))
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                            } else {
+                                Button {
+                                    selectedMealType = type
+                                } label: {
+                                    Text(LocalizedStringKey(type))
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
+                    }
+                }
+                .padding()
+                
+                Spacer()
+            }
+            .navigationTitle("Reschedule Meal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Move", action: onConfirm)
+                }
+            }
         }
     }
 }
