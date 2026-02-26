@@ -209,7 +209,7 @@ class MealPlannerViewModel {
         }
         
         guard let client = self.apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             isLoading = false
             isLoadingPast = false
             isLoadingFuture = false
@@ -248,7 +248,7 @@ class MealPlannerViewModel {
             }
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.loadingPlan") + ": " + error.localizedDescription
+                errorMessage = "error.loadingPlan"
                 self.isLoading = false
                 self.isLoadingPast = false
                 self.isLoadingFuture = false
@@ -344,7 +344,7 @@ class MealPlannerViewModel {
     
     func addSelectedRecipeToPlan(recipe: RecipeSummary, mealType: String, apiClient: MealieAPIClient?) async {
         guard let date = dateForAddingRecipe, let apiClient = apiClient else {
-            errorMessage = String(localized: "error.missingDateOrClient")
+            errorMessage = "error.missingDateOrClient"
             return
         }
         
@@ -360,7 +360,7 @@ class MealPlannerViewModel {
             }
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.addingMeal") + ": " + error.localizedDescription
+                errorMessage = "error.addingMeal"
                 isLoading = false
             }
         }
@@ -368,7 +368,7 @@ class MealPlannerViewModel {
 
     func addRandomMeal(date: Date, mealType: String) async {
         guard let date = dateForAddingRecipe, let apiClient = apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -384,7 +384,7 @@ class MealPlannerViewModel {
             }
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.randomMeal") + ": " + error.localizedDescription
+                errorMessage = "error.randomMeal"
                 isLoading = false
             }
         }
@@ -392,7 +392,7 @@ class MealPlannerViewModel {
 
     func deleteMealEntry(entryID: Int) async {
         guard let client = self.apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -404,7 +404,7 @@ class MealPlannerViewModel {
             await loadMealPlan(apiClient: client)
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.deletingMeal") + ": " + error.localizedDescription
+                errorMessage = "error.deletingMeal"
                 isLoading = false
             }
         }
@@ -427,7 +427,7 @@ class MealPlannerViewModel {
     @MainActor
     func rescheduleMealEntry(entryID: Int, toDate: Date, recipeId: UUID, mealType: String) async {
         guard let client = self.apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -440,7 +440,7 @@ class MealPlannerViewModel {
             showingRescheduleSheet = false
             isLoading = false
         } catch {
-            errorMessage = String(localized: "error.reschedulingMeal") + ": " + error.localizedDescription
+            errorMessage = "error.reschedulingMeal"
             isLoading = false
         }
     }
@@ -448,7 +448,7 @@ class MealPlannerViewModel {
     @MainActor
     private func prepareImport(startDate: Date, endDate: Date, apiClient: MealieAPIClient?) {
         guard apiClient != nil else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -499,7 +499,7 @@ class MealPlannerViewModel {
     @MainActor
     func loadShoppingLists() async {
         guard let apiClient else {
-            importErrorMessage = String(localized: "error.apiClientUnavailable")
+            importErrorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -519,7 +519,7 @@ class MealPlannerViewModel {
     @MainActor
     func importMealsToShoppingList(list: ShoppingListSummary) async {
         guard let apiClient else {
-            importErrorMessage = String(localized: "error.apiClientUnavailable")
+            importErrorMessage = "error.apiClientUnavailable"
             return
         }
         

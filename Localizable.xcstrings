@@ -630,6 +630,23 @@
         }
       }
     },
+    "Dessert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessert"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessert"
+          }
+        }
+      }
+    },
     "Dinner" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -659,6 +676,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Désactiver les commentaires"
+          }
+        }
+      }
+    },
+    "Drink" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drink"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boisson"
           }
         }
       }
@@ -2770,6 +2804,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accompagnement"
+          }
+        }
+      }
+    },
+    "Snack" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snack"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En-cas"
           }
         }
       }

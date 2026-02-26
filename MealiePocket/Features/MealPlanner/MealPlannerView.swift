@@ -645,6 +645,9 @@ struct MealPlannerView: View {
         case "lunch": return "Lunch"
         case "dinner": return "Dinner"
         case "side": return "Side"
+        case "drink": return "Drink"
+        case "dessert": return "Dessert"
+        case "snack": return "Snack"
         default: return nil
         }
     }
