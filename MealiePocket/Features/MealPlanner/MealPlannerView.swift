@@ -32,10 +32,6 @@ struct MealPlannerView: View {
     @Namespace var unionNamespace
     
     var body: some View {
-        mainContent
-    }
-    
-    private var mainContent: some View {
         VStack {
             header
             contentView
@@ -221,6 +217,7 @@ struct MealPlannerView: View {
                     selectedMealType: $selectedReschedueMealType,
                     mealTypes: mealTypes,
                     onConfirm: {
+                        viewModel.showingRescheduleSheet = false
                         if let entryID = viewModel.selectedRescheduleEntryID {
                             Task {
                                 await viewModel.rescheduleMealEntry(
@@ -662,7 +659,12 @@ struct RescheduleSheet: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 16) {
+            VStack(spacing: 4) {
+                Text(LocalizedStringKey("Reschedule Meal"))
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .padding(.top, 0)
+                
                 VStack(alignment: .leading, spacing: 8) {
                     DatePicker(
                         "Date",
@@ -671,43 +673,31 @@ struct RescheduleSheet: View {
                     )
                     .datePickerStyle(.graphical)
                 }
-                .padding()
+                .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Meal Type")
-                        .font(.headline)
+                        .font(.title3)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal)
+                        .padding(.top, 12)
                     
-                    let columns = [GridItem(.flexible()), GridItem(.flexible())]
-                    LazyVGrid(columns: columns, spacing: 8) {
+                    Picker("Meal Type", selection: $selectedMealType) {
                         ForEach(mealTypes, id: \.self) { type in
-                            if selectedMealType == type {
-                                Button {
-                                    selectedMealType = type
-                                } label: {
-                                    Text(LocalizedStringKey(type))
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.borderedProminent)
-                            } else {
-                                Button {
-                                    selectedMealType = type
-                                } label: {
-                                    Text(LocalizedStringKey(type))
-                                        .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.bordered)
-                            }
+                            Text(LocalizedStringKey(type))
+                                .font(.title3)
+                                .tag(type)
                         }
                     }
+                    .pickerStyle(.wheel)
                 }
-                .padding()
-                
-                Spacer()
+                .padding(.horizontal)
             }
-            .navigationTitle("Reschedule Meal")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.horizontal)
+            .padding(.top, 4)
+            .padding(.bottom)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel", action: onCancel)

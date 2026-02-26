@@ -729,10 +729,11 @@ class MealieAPIClient {
     }
 
     func rescheduleMealPlanEntry(entryID: Int, toDate: Date, recipeId: UUID, entryType: String) async throws {
-        // Delete the existing entry
-        try await deleteMealPlanEntry(entryID: entryID)
-        
-        // Create a new entry with the new date and meal type
+        do {
+            try await deleteMealPlanEntry(entryID: entryID)
+        } catch {
+            throw error
+        }
         try await addMealPlanEntry(date: toDate, recipeId: recipeId, entryType: entryType)
     }
 }

@@ -905,7 +905,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erreur lors du reschedulage du repas"
+            "value" : "Erreur lors de la reprogrammation du repas"
           }
         }
       }
