@@ -22,7 +22,7 @@ struct MealPlannerView: View {
     
     @State private var showingMealTypeSelection = false
     @State private var selectedMealType = "Dinner"
-    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
+    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side", "Drink", "Dessert", "Snack"]
     
     @Environment(\.locale) private var locale
     @Environment(\.dismiss) var dismiss
