@@ -729,11 +729,7 @@ class MealieAPIClient {
     }
 
     func rescheduleMealPlanEntry(entryID: Int, toDate: Date, recipeId: UUID, entryType: String) async throws {
-        do {
-            try await deleteMealPlanEntry(entryID: entryID)
-        } catch {
-            throw error
-        }
         try await addMealPlanEntry(date: toDate, recipeId: recipeId, entryType: entryType)
+        try await deleteMealPlanEntry(entryID: entryID)
     }
 }

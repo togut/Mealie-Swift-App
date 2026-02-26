@@ -58,6 +58,8 @@ class MealPlannerViewModel {
     var showingRescheduleSheet = false
     var selectedRescheduleEntryID: Int? = nil
     var selectedRescheduleRecipeID: UUID? = nil
+    var selectedRescheduleDate = Date()
+    var selectedRescheduleMealType = "Dinner"
     
     init() {
         setupInitialMonths()
@@ -411,36 +413,35 @@ class MealPlannerViewModel {
     @MainActor
     func presentRescheduleSheet(for entry: ReadPlanEntry) {
         guard let recipeId = entry.recipeId else { return }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        selectedRescheduleDate = dateFormatter.date(from: entry.date) ?? Date()
+        selectedRescheduleMealType = entry.entryType.capitalized
+        
         selectedRescheduleEntryID = entry.id
         selectedRescheduleRecipeID = recipeId
         showingRescheduleSheet = true
     }
 
+    @MainActor
     func rescheduleMealEntry(entryID: Int, toDate: Date, recipeId: UUID, mealType: String) async {
         guard let client = self.apiClient else {
-            await MainActor.run {
-                errorMessage = String(localized: "error.apiClientUnavailable")
-            }
+            errorMessage = String(localized: "error.apiClientUnavailable")
             return
         }
         
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
+        isLoading = true
+        errorMessage = nil
         
         do {
             try await client.rescheduleMealPlanEntry(entryID: entryID, toDate: toDate, recipeId: recipeId, entryType: mealType)
             await loadMealPlan(apiClient: client)
-            await MainActor.run {
-                showingRescheduleSheet = false
-                isLoading = false
-            }
+            showingRescheduleSheet = false
+            isLoading = false
         } catch {
-            await MainActor.run {
-                errorMessage = String(localized: "error.reschedulingMeal") + ": " + error.localizedDescription
-                isLoading = false
-            }
+            errorMessage = String(localized: "error.reschedulingMeal") + ": " + error.localizedDescription
+            isLoading = false
         }
     }
 

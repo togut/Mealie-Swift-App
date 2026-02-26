@@ -22,8 +22,6 @@ struct MealPlannerView: View {
     
     @State private var showingMealTypeSelection = false
     @State private var selectedMealType = "Dinner"
-    @State private var selectedRescheduleDate = Date()
-    @State private var selectedReschedueMealType = "Dinner"
     let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
     
     @Environment(\.locale) private var locale
@@ -213,8 +211,14 @@ struct MealPlannerView: View {
         )) {
             if viewModel.selectedRescheduleEntryID != nil, let recipeId = viewModel.selectedRescheduleRecipeID {
                 RescheduleSheet(
-                    selectedDate: $selectedRescheduleDate,
-                    selectedMealType: $selectedReschedueMealType,
+                    selectedDate: Binding(
+                        get: { viewModel.selectedRescheduleDate },
+                        set: { viewModel.selectedRescheduleDate = $0 }
+                    ),
+                    selectedMealType: Binding(
+                        get: { viewModel.selectedRescheduleMealType },
+                        set: { viewModel.selectedRescheduleMealType = $0 }
+                    ),
                     mealTypes: mealTypes,
                     onConfirm: {
                         viewModel.showingRescheduleSheet = false
@@ -222,9 +226,9 @@ struct MealPlannerView: View {
                             Task {
                                 await viewModel.rescheduleMealEntry(
                                     entryID: entryID,
-                                    toDate: selectedRescheduleDate,
+                                    toDate: viewModel.selectedRescheduleDate,
                                     recipeId: recipeId,
-                                    mealType: selectedReschedueMealType.lowercased()
+                                    mealType: viewModel.selectedRescheduleMealType.lowercased()
                                 )
                             }
                         }
@@ -489,16 +493,12 @@ struct MealPlannerView: View {
             }
         }
         .contextMenu {
-            Button {
-                // Extract date and meal type from entry
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd"
-                selectedRescheduleDate = dateFormatter.date(from: entry.date) ?? Date()
-                selectedReschedueMealType = entry.entryType.capitalized
-                
-                viewModel.presentRescheduleSheet(for: entry)
-            } label: {
-                Label("Reschedule", systemImage: "calendar")
+            if entry.recipeId != nil {
+                Button {
+                    viewModel.presentRescheduleSheet(for: entry)
+                } label: {
+                    Label("Reschedule", systemImage: "calendar")
+                }
             }
             
             Button(role: .destructive) {
@@ -658,13 +658,8 @@ struct RescheduleSheet: View {
     let onCancel: () -> Void
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 4) {
-                Text(LocalizedStringKey("Reschedule Meal"))
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .padding(.top, 0)
-                
                 VStack(alignment: .leading, spacing: 8) {
                     DatePicker(
                         "Date",
@@ -677,8 +672,7 @@ struct RescheduleSheet: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Meal Type")
-                        .font(.title3)
-                        .fontWeight(.semibold)
+                        .font(.headline)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.horizontal)
@@ -706,6 +700,8 @@ struct RescheduleSheet: View {
                     Button("Move", action: onConfirm)
                 }
             }
+            .navigationTitle("Reschedule Meal")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
