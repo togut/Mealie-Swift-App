@@ -3,6 +3,8 @@ import SwiftUI
 struct RecipeListView: View {
     @State private var viewModel = RecipeListViewModel()
     @Environment(AppState.self) private var appState
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var scrollPosition: ScrollPosition = .init(idType: UUID.self)
 
     var body: some View {
         Group {
@@ -30,7 +32,16 @@ struct RecipeListView: View {
             viewModel.triggerSearch(apiClient: appState.apiClient, userID: appState.currentUserID)
         }
         .task {
-            await viewModel.loadInitialOrRefreshRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
+            if viewModel.recipes.isEmpty {
+                await viewModel.loadInitialOrRefreshRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if oldPhase == .background && newPhase == .active {
+                Task {
+                    await viewModel.refreshIfStale(apiClient: appState.apiClient, userID: appState.currentUserID)
+                }
+            }
         }
         .refreshable {
             await viewModel.loadInitialOrRefreshRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
@@ -56,6 +67,7 @@ struct RecipeListView: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .id(recipe.id)
                 }
 
                 if viewModel.canLoadMore {
@@ -75,7 +87,9 @@ struct RecipeListView: View {
                 }
             }
             .padding()
+            .scrollTargetLayout()
         }
+        .scrollPosition($scrollPosition)
     }
 
     private var sortMenu: some View {
@@ -97,7 +111,6 @@ struct RecipeListView: View {
             Image(systemName: "arrow.up.arrow.down.circle")
         }
         .onChange(of: viewModel.sortOption) { _, _ in
-             viewModel.setSortOption(viewModel.sortOption)
              Task { await viewModel.applySort(apiClient: appState.apiClient, userID: appState.currentUserID) }
          }
          .onChange(of: viewModel.sortDirection) { _, _ in
