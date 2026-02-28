@@ -2248,6 +2248,15 @@
         }
       }
     },
+    "Remove" : {
+
+    },
+    "Remove Checked Items" : {
+
+    },
+    "Remove checked items?" : {
+
+    },
     "Reschedule" : {
       "localizations" : {
         "en" : {
@@ -3027,6 +3036,9 @@
           }
         }
       }
+    },
+    "This removes all checked items from this list." : {
+
     },
     "This week" : {
       "localizations" : {

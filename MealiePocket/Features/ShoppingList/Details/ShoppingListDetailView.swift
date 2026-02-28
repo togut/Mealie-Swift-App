@@ -4,6 +4,7 @@ struct ShoppingListDetailView: View {
     @State private var viewModel: ShoppingListDetailViewModel
     @Environment(AppState.self) private var appState
     @State private var localEditMode: EditMode = .inactive
+    @State private var showingRemoveCheckedConfirmation = false
     @Namespace var buttonNamespace
     
     init(listSummary: ShoppingListSummary) {
@@ -113,6 +114,15 @@ struct ShoppingListDetailView: View {
                         Label("Import Date Range", systemImage: "calendar")
                     }
                     .disabled(viewModel.isLoadingImport || viewModel.isLoading)
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        showingRemoveCheckedConfirmation = true
+                    } label: {
+                        Label("Remove Checked Items", systemImage: "trash")
+                    }
+                    .disabled(!hasCheckedItems || viewModel.isLoadingImport || viewModel.isLoading || viewModel.isLoadingBulkUpdate)
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -129,6 +139,14 @@ struct ShoppingListDetailView: View {
         }
         .task {
             await viewModel.loadListDetails(apiClient: appState.apiClient)
+        }
+        .alert("Remove checked items?", isPresented: $showingRemoveCheckedConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Remove", role: .destructive) {
+                Task { await viewModel.removeCheckedItems() }
+            }
+        } message: {
+            Text("This removes all checked items from this list.")
         }
         .overlay(alignment: .bottomTrailing) {
             Button {

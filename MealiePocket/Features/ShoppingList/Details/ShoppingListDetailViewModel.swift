@@ -291,6 +291,45 @@ class ShoppingListDetailViewModel {
             }
         }
     }
+
+    @MainActor
+    func removeCheckedItems() async {
+        guard let apiClient, let currentItems = shoppingListDetail?.listItems else {
+            errorMessage = "Cannot remove checked items: API client or items missing."
+            return
+        }
+
+        let checkedItems = currentItems.filter { $0.checked }
+        guard !checkedItems.isEmpty else { return }
+
+        isLoadingBulkUpdate = true
+        errorMessage = nil
+
+        shoppingListDetail?.listItems.removeAll { $0.checked }
+
+        for item in checkedItems {
+            do {
+                try await apiClient.deleteShoppingListItem(itemId: item.id)
+            } catch APIError.unauthorized {
+                var restoredItems = shoppingListDetail?.listItems ?? []
+                restoredItems.append(item)
+                restoredItems.sort { !$0.checked && $1.checked }
+                shoppingListDetail?.listItems = restoredItems
+                isLoadingBulkUpdate = false
+                break
+            } catch {
+                var restoredItems = shoppingListDetail?.listItems ?? []
+                restoredItems.append(item)
+                restoredItems.sort { !$0.checked && $1.checked }
+                shoppingListDetail?.listItems = restoredItems
+                errorMessage = "Failed to remove checked items: \(error.localizedDescription)"
+                isLoadingBulkUpdate = false
+                break
+            }
+        }
+
+        isLoadingBulkUpdate = false
+    }
     
     @MainActor
     func prepareAddItemSheet() {
