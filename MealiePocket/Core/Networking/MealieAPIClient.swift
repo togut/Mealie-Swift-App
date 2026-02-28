@@ -62,8 +62,22 @@ class MealieAPIClient {
     
     struct CreatePlanEntry: Codable {
         let date: String
-        let recipeId: String
+        let recipeId: String?
         let entryType: String
+        let title: String?
+        let text: String?
+    }
+
+    struct UpdatePlanEntry: Codable {
+        let id: Int
+        let date: String
+        let groupId: String
+        let userId: String
+        let householdId: String?
+        let recipeId: String?
+        let entryType: String
+        let title: String?
+        let text: String?
     }
     
     struct ReadPlanEntry: Codable {
@@ -136,6 +150,8 @@ class MealieAPIClient {
             mutableRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
+        DebugLogger.apiRequest(mutableRequest)
+
         do {
             let (data, response) = try await session.data(for: mutableRequest)
             
@@ -143,15 +159,20 @@ class MealieAPIClient {
                 throw APIError.invalidResponse
             }
 
+            DebugLogger.apiResponse(httpResponse, data: data, for: mutableRequest)
+
             if httpResponse.statusCode == 401 {
                 do {
                     let newToken = try await refreshToken()
                     mutableRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
+                    DebugLogger.apiRequest(mutableRequest)
                     let (newData, newResponse) = try await session.data(for: mutableRequest)
                     
                     guard let newHttpResponse = newResponse as? HTTPURLResponse else {
                         throw APIError.invalidResponse
                     }
+
+                    DebugLogger.apiResponse(newHttpResponse, data: newData, for: mutableRequest)
                     
                     guard (200...299).contains(newHttpResponse.statusCode) else {
                         if newHttpResponse.statusCode == 401 {
@@ -175,13 +196,17 @@ class MealieAPIClient {
             
             return try decodeResponseData(data)
         } catch let error as APIError {
+            DebugLogger.apiError(error, for: mutableRequest)
             throw error
         } catch let urlError as URLError {
             if urlError.code == .timedOut {
+                DebugLogger.apiError(urlError, for: mutableRequest)
                 throw APIError.timeout
             }
+            DebugLogger.apiError(urlError, for: mutableRequest)
             throw APIError.requestFailed(statusCode: urlError.code.rawValue, error: urlError)
         } catch {
+            DebugLogger.apiError(error, for: mutableRequest)
             throw APIError.unknown(error)
         }
     }
@@ -376,10 +401,25 @@ class MealieAPIClient {
             throw APIError.encodingError(error)
         }
         
-        let _: NoReply = try await performRequest(for: request)
+        do {
+            let _: NoReply = try await performRequest(for: request)
+        } catch APIError.requestFailed(let statusCode, _) where statusCode == 404 || statusCode == 405 {
+            request.httpMethod = "PATCH"
+            let _: NoReply = try await performRequest(for: request)
+        }
     }
     
     func addMealPlanEntry(date: Date, recipeId: UUID, entryType: String) async throws {
+        try await addMealPlanEntry(
+            date: date,
+            entryType: entryType,
+            title: nil,
+            text: nil,
+            recipeId: recipeId
+        )
+    }
+
+    func addMealPlanEntry(date: Date, entryType: String, title: String?, text: String?, recipeId: UUID? = nil) async throws {
         let url = baseURL.appendingPathComponent("api/households/mealplans")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -391,8 +431,10 @@ class MealieAPIClient {
         
         let body = CreatePlanEntry(
             date: dateString,
-            recipeId: recipeId.uuidString,
-            entryType: entryType.lowercased()
+            recipeId: recipeId?.uuidString,
+            entryType: entryType.lowercased(),
+            title: title,
+            text: text
         )
         
         do {
@@ -401,7 +443,43 @@ class MealieAPIClient {
             throw APIError.encodingError(error)
         }
         
-        let _: ReadPlanEntry = try await performRequest(for: request)
+        let _: NoReply = try await performRequest(for: request)
+    }
+
+    func updateMealPlanEntry(entryID: Int, date: Date, entryType: String, title: String?, text: String?, recipeId: UUID? = nil, groupId: UUID, userId: UUID, householdId: UUID?) async throws {
+        let url = baseURL.appendingPathComponent("api/households/mealplans/\(entryID)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: date)
+
+        let body = UpdatePlanEntry(
+            id: entryID,
+            date: dateString,
+            groupId: groupId.uuidString,
+            userId: userId.uuidString,
+            householdId: householdId?.uuidString,
+            recipeId: recipeId?.uuidString,
+            entryType: entryType.lowercased(),
+            title: title,
+            text: text
+        )
+
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+
+        do {
+            let _: NoReply = try await performRequest(for: request)
+        } catch APIError.requestFailed(let statusCode, _) where statusCode == 404 || statusCode == 405 {
+            request.httpMethod = "PATCH"
+            let _: NoReply = try await performRequest(for: request)
+        }
     }
     
     func updateRecipe(slug: String, payload: UpdateRecipePayload) async throws {
@@ -773,8 +851,14 @@ class MealieAPIClient {
         return try await performLongTaskRequest(for: request)
     }
 
-    func rescheduleMealPlanEntry(entryID: Int, toDate: Date, recipeId: UUID, entryType: String) async throws {
-        try await addMealPlanEntry(date: toDate, recipeId: recipeId, entryType: entryType)
+    func rescheduleMealPlanEntry(entryID: Int, toDate: Date, recipeId: UUID?, entryType: String, title: String? = nil, text: String? = nil) async throws {
+        try await addMealPlanEntry(
+            date: toDate,
+            entryType: entryType,
+            title: title,
+            text: text,
+            recipeId: recipeId
+        )
         try await deleteMealPlanEntry(entryID: entryID)
     }
 }

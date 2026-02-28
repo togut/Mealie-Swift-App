@@ -82,7 +82,8 @@ struct MealPlannerView: View {
                     GlassEffectContainer(spacing: 5) {
                         HStack {
                             Button {
-                                viewModel.addDay(apiClient: appState.apiClient)
+                                hapticImpact(style: .light)
+                                viewModel.presentAddEntrySheet(for: viewModel.selectedDate)
                             } label: {
                                 Image(systemName: "text.badge.plus")
                                     .font(.title3)
@@ -194,6 +195,74 @@ struct MealPlannerView: View {
             }
         }
         .sheet(isPresented: Binding(
+            get: { viewModel.showingAddEntrySheet },
+            set: { viewModel.showingAddEntrySheet = $0 }
+        )) {
+            PlanEntryEditorSheet(
+                selectedDate: Binding(
+                    get: { viewModel.selectedEntryDate },
+                    set: { viewModel.selectedEntryDate = $0 }
+                ),
+                selectedMealType: Binding(
+                    get: { viewModel.selectedEntryMealType },
+                    set: { viewModel.selectedEntryMealType = $0 }
+                ),
+                titleText: Binding(
+                    get: { viewModel.selectedEntryTitle },
+                    set: { viewModel.selectedEntryTitle = $0 }
+                ),
+                noteText: Binding(
+                    get: { viewModel.selectedEntryText },
+                    set: { viewModel.selectedEntryText = $0 }
+                ),
+                mealTypes: mealTypes,
+                isEditing: false,
+                onConfirm: {
+                    Task {
+                        await viewModel.addStandaloneEntry()
+                    }
+                },
+                onCancel: {
+                    viewModel.showingAddEntrySheet = false
+                }
+            )
+            .presentationDetents([.height(760), .large])
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingEditEntrySheet },
+            set: { viewModel.showingEditEntrySheet = $0 }
+        )) {
+            PlanEntryEditorSheet(
+                selectedDate: Binding(
+                    get: { viewModel.selectedEntryDate },
+                    set: { viewModel.selectedEntryDate = $0 }
+                ),
+                selectedMealType: Binding(
+                    get: { viewModel.selectedEntryMealType },
+                    set: { viewModel.selectedEntryMealType = $0 }
+                ),
+                titleText: Binding(
+                    get: { viewModel.selectedEntryTitle },
+                    set: { viewModel.selectedEntryTitle = $0 }
+                ),
+                noteText: Binding(
+                    get: { viewModel.selectedEntryText },
+                    set: { viewModel.selectedEntryText = $0 }
+                ),
+                mealTypes: mealTypes,
+                isEditing: true,
+                onConfirm: {
+                    Task {
+                        await viewModel.updateStandaloneEntry()
+                    }
+                },
+                onCancel: {
+                    viewModel.showingEditEntrySheet = false
+                }
+            )
+            .presentationDetents([.height(760), .large])
+        }
+        .sheet(isPresented: Binding(
             get: { viewModel.showingDateRangePicker },
             set: { viewModel.showingDateRangePicker = $0}
         )) {
@@ -209,7 +278,7 @@ struct MealPlannerView: View {
             get: { viewModel.showingRescheduleSheet },
             set: { viewModel.showingRescheduleSheet = $0 }
         )) {
-            if viewModel.selectedRescheduleEntryID != nil, let recipeId = viewModel.selectedRescheduleRecipeID {
+            if viewModel.selectedRescheduleEntryID != nil {
                 RescheduleSheet(
                     selectedDate: Binding(
                         get: { viewModel.selectedRescheduleDate },
@@ -227,8 +296,10 @@ struct MealPlannerView: View {
                                 await viewModel.rescheduleMealEntry(
                                     entryID: entryID,
                                     toDate: viewModel.selectedRescheduleDate,
-                                    recipeId: recipeId,
-                                    mealType: viewModel.selectedRescheduleMealType.lowercased()
+                                    recipeId: viewModel.selectedRescheduleRecipeID,
+                                    mealType: viewModel.selectedRescheduleMealType.lowercased(),
+                                    title: viewModel.selectedRescheduleTitle,
+                                    text: viewModel.selectedRescheduleText
                                 )
                             }
                         }
@@ -493,11 +564,17 @@ struct MealPlannerView: View {
             }
         }
         .contextMenu {
-            if entry.recipeId != nil {
+            Button {
+                viewModel.presentRescheduleSheet(for: entry)
+            } label: {
+                Label("Reschedule", systemImage: "calendar")
+            }
+
+            if entry.recipeId == nil {
                 Button {
-                    viewModel.presentRescheduleSheet(for: entry)
+                    viewModel.presentEditEntrySheet(for: entry)
                 } label: {
-                    Label("Reschedule", systemImage: "calendar")
+                    Label("Edit", systemImage: "pencil")
                 }
             }
             
@@ -516,6 +593,10 @@ struct MealPlannerView: View {
         let isMonthView = viewModel.viewMode == .month
         let showTimes = !isMonthView && entry.recipe != nil &&
         ((entry.recipe?.totalTime?.isEmpty == false) || (entry.recipe?.prepTime?.isEmpty == false))
+        let standaloneTitle = entry.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let standaloneNote = entry.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasStandaloneTitle = !standaloneTitle.isEmpty
+        let hasStandaloneNote = !standaloneNote.isEmpty
         
         let baseImageSize: CGFloat = isMonthView ? 16 : (showTimes ? 40 : 30)
         let placeholderSize: CGFloat = isMonthView ? 16 : 30
@@ -550,9 +631,21 @@ struct MealPlannerView: View {
                             .foregroundColor(.secondary)
                     }
                 }
-                Text(recipeName ?? (entry.title.isEmpty ? entry.text : entry.title))
-                    .font(isMonthView ? .system(size: 9) : .body)
-                    .lineLimit(1)
+                if recipeName == nil && hasStandaloneTitle && hasStandaloneNote {
+                    Text(standaloneTitle)
+                        .font(isMonthView ? .system(size: 9) : .body)
+                        .lineLimit(1)
+                    if !isMonthView {
+                        Text(standaloneNote)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                } else {
+                    Text(recipeName ?? (entry.title.isEmpty ? entry.text : entry.title))
+                        .font(isMonthView ? .system(size: 9) : .body)
+                        .lineLimit(1)
+                }
                 
                 if showTimes, let recipe = entry.recipe {
                     HStack(spacing: 6) {
@@ -649,6 +742,72 @@ struct MealPlannerView: View {
         case "dessert": return "Dessert"
         case "snack": return "Snack"
         default: return nil
+        }
+    }
+}
+
+struct PlanEntryEditorSheet: View {
+    @Binding var selectedDate: Date
+    @Binding var selectedMealType: String
+    @Binding var titleText: String
+    @Binding var noteText: String
+    let mealTypes: [String]
+    let isEditing: Bool
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    private var hasContent: Bool {
+        !titleText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+        !noteText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Title", text: $titleText)
+                        .textInputAutocapitalization(.sentences)
+
+                    TextField("Note", text: $noteText, axis: .vertical)
+                        .lineLimit(3...6)
+                        .textInputAutocapitalization(.sentences)
+
+                    DatePicker(
+                        "Date",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 2, trailing: 16))
+                    .listRowBackground(Color.clear)
+
+                    Picker("Meal Type", selection: $selectedMealType) {
+                        ForEach(mealTypes, id: \.self) { type in
+                            Text(LocalizedStringKey(type))
+                                .font(.title3)
+                                .tag(type)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(minHeight: 76)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 2, trailing: 16))
+                    .listRowBackground(Color.clear)
+                }
+            }
+            .padding(.top, -26)
+            .scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(isEditing ? "Save" : "Add", action: onConfirm)
+                        .disabled(!hasContent)
+                }
+            }
+            .navigationTitle(isEditing ? "Edit Entry" : "Add Entry")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

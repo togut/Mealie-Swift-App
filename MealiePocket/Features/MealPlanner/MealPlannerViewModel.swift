@@ -33,6 +33,8 @@ class MealPlannerViewModel {
     }
     
     var showingAddRecipeSheet = false
+    var showingAddEntrySheet = false
+    var showingEditEntrySheet = false
     var showingMealTypeSelection = false
     var dateForAddingRecipe: Date? = nil
     var recipesForSelection: [RecipeSummary] = []
@@ -58,8 +60,19 @@ class MealPlannerViewModel {
     var showingRescheduleSheet = false
     var selectedRescheduleEntryID: Int? = nil
     var selectedRescheduleRecipeID: UUID? = nil
+    var selectedRescheduleTitle: String? = nil
+    var selectedRescheduleText: String? = nil
     var selectedRescheduleDate = Date()
     var selectedRescheduleMealType = "Dinner"
+
+    var selectedEntryIDForEditing: Int? = nil
+    var selectedEntryGroupIDForEditing: UUID? = nil
+    var selectedEntryUserIDForEditing: UUID? = nil
+    var selectedEntryHouseholdIDForEditing: UUID? = nil
+    var selectedEntryDate = Date()
+    var selectedEntryMealType = "Dinner"
+    var selectedEntryTitle = ""
+    var selectedEntryText = ""
     
     init() {
         setupInitialMonths()
@@ -271,6 +284,124 @@ class MealPlannerViewModel {
         dateForAddingRecipe = date
         showingMealTypeSelection = true
     }
+
+    @MainActor
+    func presentAddEntrySheet(for date: Date) {
+        selectedEntryIDForEditing = nil
+        selectedEntryGroupIDForEditing = nil
+        selectedEntryUserIDForEditing = nil
+        selectedEntryHouseholdIDForEditing = nil
+        selectedEntryDate = date
+        selectedEntryMealType = "Dinner"
+        selectedEntryTitle = ""
+        selectedEntryText = ""
+        showingAddEntrySheet = true
+    }
+
+    @MainActor
+    func presentEditEntrySheet(for entry: ReadPlanEntry) {
+        guard entry.recipeId == nil else { return }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+
+        selectedEntryIDForEditing = entry.id
+        selectedEntryGroupIDForEditing = entry.groupId
+        selectedEntryUserIDForEditing = entry.userId
+        selectedEntryHouseholdIDForEditing = entry.householdId
+        selectedEntryDate = dateFormatter.date(from: entry.date) ?? Date()
+        selectedEntryMealType = entry.entryType.capitalized
+        selectedEntryTitle = entry.title
+        selectedEntryText = entry.text
+        showingEditEntrySheet = true
+    }
+
+    func addStandaloneEntry() async {
+        guard let client = self.apiClient else {
+            errorMessage = "error.apiClientUnavailable"
+            return
+        }
+
+        let title = normalizedValue(selectedEntryTitle)
+        let text = normalizedValue(selectedEntryText)
+        guard title != nil || text != nil else {
+            errorMessage = "Please provide a title or note."
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            try await client.addMealPlanEntry(
+                date: selectedEntryDate,
+                entryType: selectedEntryMealType.lowercased(),
+                title: title,
+                text: text
+            )
+            await loadMealPlan(apiClient: client)
+            await MainActor.run {
+                showingAddEntrySheet = false
+                isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "error.addingMeal"
+                isLoading = false
+            }
+        }
+    }
+
+    func updateStandaloneEntry() async {
+        guard let client = self.apiClient else {
+            errorMessage = "error.apiClientUnavailable"
+            return
+        }
+
+        guard let entryID = selectedEntryIDForEditing else {
+            errorMessage = "Missing meal plan entry."
+            return
+        }
+
+        guard let groupID = selectedEntryGroupIDForEditing,
+              let userID = selectedEntryUserIDForEditing else {
+            errorMessage = "Missing meal plan entry metadata."
+            return
+        }
+
+        let title = normalizedValue(selectedEntryTitle)
+        let text = normalizedValue(selectedEntryText)
+        guard title != nil || text != nil else {
+            errorMessage = "Please provide a title or note."
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            try await client.updateMealPlanEntry(
+                entryID: entryID,
+                date: selectedEntryDate,
+                entryType: selectedEntryMealType.lowercased(),
+                title: title,
+                text: text,
+                groupId: groupID,
+                userId: userID,
+                householdId: selectedEntryHouseholdIDForEditing
+            )
+            await loadMealPlan(apiClient: client)
+            await MainActor.run {
+                showingEditEntrySheet = false
+                isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "Failed to update meal entry: \(error.localizedDescription)"
+                isLoading = false
+            }
+        }
+    }
     
     func searchRecipesForSelection(apiClient: MealieAPIClient?, loadMore: Bool = false) async {
         guard let apiClient = apiClient else { return }
@@ -412,20 +543,20 @@ class MealPlannerViewModel {
 
     @MainActor
     func presentRescheduleSheet(for entry: ReadPlanEntry) {
-        guard let recipeId = entry.recipeId else { return }
-        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         selectedRescheduleDate = dateFormatter.date(from: entry.date) ?? Date()
         selectedRescheduleMealType = entry.entryType.capitalized
         
         selectedRescheduleEntryID = entry.id
-        selectedRescheduleRecipeID = recipeId
+        selectedRescheduleRecipeID = entry.recipeId
+        selectedRescheduleTitle = entry.recipeId == nil ? normalizedValue(entry.title) : nil
+        selectedRescheduleText = entry.recipeId == nil ? normalizedValue(entry.text) : nil
         showingRescheduleSheet = true
     }
 
     @MainActor
-    func rescheduleMealEntry(entryID: Int, toDate: Date, recipeId: UUID, mealType: String) async {
+    func rescheduleMealEntry(entryID: Int, toDate: Date, recipeId: UUID?, mealType: String, title: String? = nil, text: String? = nil) async {
         guard let client = self.apiClient else {
             errorMessage = "error.apiClientUnavailable"
             return
@@ -435,7 +566,14 @@ class MealPlannerViewModel {
         errorMessage = nil
         
         do {
-            try await client.rescheduleMealPlanEntry(entryID: entryID, toDate: toDate, recipeId: recipeId, entryType: mealType)
+            try await client.rescheduleMealPlanEntry(
+                entryID: entryID,
+                toDate: toDate,
+                recipeId: recipeId,
+                entryType: mealType,
+                title: title,
+                text: text
+            )
             await loadMealPlan(apiClient: client)
             showingRescheduleSheet = false
             isLoading = false
@@ -443,6 +581,11 @@ class MealPlannerViewModel {
             errorMessage = "error.reschedulingMeal"
             isLoading = false
         }
+    }
+
+    private func normalizedValue(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     @MainActor

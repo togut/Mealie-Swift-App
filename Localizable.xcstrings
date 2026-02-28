@@ -49,6 +49,9 @@
         }
       }
     },
+    "Add Entry" : {
+
+    },
     "Add Ingredient" : {
       "localizations" : {
         "en" : {
@@ -728,6 +731,9 @@
           }
         }
       }
+    },
+    "Edit Entry" : {
+
     },
     "Edit List" : {
       "localizations" : {
@@ -1781,6 +1787,9 @@
           }
         }
       }
+    },
+    "Note" : {
+
     },
     "Nothing planned" : {
       "localizations" : {
@@ -3071,6 +3080,9 @@
           }
         }
       }
+    },
+    "Title" : {
+
     },
     "Tools" : {
       "localizations" : {

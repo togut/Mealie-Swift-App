@@ -64,6 +64,12 @@ struct SelectRecipeForDayView: View {
                         dismiss()
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add Entry") {
+                        viewModel.presentAddEntrySheet(for: date)
+                        dismiss()
+                    }
+                }
             }
             .sheet(isPresented: $showingMealTypeSelection) {
                 MealTypeSelectionView(
