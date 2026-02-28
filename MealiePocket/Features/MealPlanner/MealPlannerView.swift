@@ -22,7 +22,7 @@ struct MealPlannerView: View {
     
     @State private var showingMealTypeSelection = false
     @State private var selectedMealType = "Dinner"
-    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
+    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side", "Drink", "Dessert", "Snack"]
     
     @Environment(\.locale) private var locale
     @Environment(\.dismiss) var dismiss
@@ -32,7 +32,12 @@ struct MealPlannerView: View {
     var body: some View {
         VStack {
             header
-            
+            contentView
+        }
+    }
+    
+    private var contentView: some View {
+        Group {
             if viewModel.isLoadingPast { ProgressView().progressViewStyle(.circular) }
             
             if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
@@ -199,6 +204,41 @@ struct MealPlannerView: View {
             set : { viewModel.showingShoppingListSelection = $0}
         )) {
             ShoppingListSelectionView(viewModel: viewModel, apiClient: appState.apiClient)
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingRescheduleSheet },
+            set: { viewModel.showingRescheduleSheet = $0 }
+        )) {
+            if viewModel.selectedRescheduleEntryID != nil, let recipeId = viewModel.selectedRescheduleRecipeID {
+                RescheduleSheet(
+                    selectedDate: Binding(
+                        get: { viewModel.selectedRescheduleDate },
+                        set: { viewModel.selectedRescheduleDate = $0 }
+                    ),
+                    selectedMealType: Binding(
+                        get: { viewModel.selectedRescheduleMealType },
+                        set: { viewModel.selectedRescheduleMealType = $0 }
+                    ),
+                    mealTypes: mealTypes,
+                    onConfirm: {
+                        viewModel.showingRescheduleSheet = false
+                        if let entryID = viewModel.selectedRescheduleEntryID {
+                            Task {
+                                await viewModel.rescheduleMealEntry(
+                                    entryID: entryID,
+                                    toDate: viewModel.selectedRescheduleDate,
+                                    recipeId: recipeId,
+                                    mealType: viewModel.selectedRescheduleMealType.lowercased()
+                                )
+                            }
+                        }
+                    },
+                    onCancel: {
+                        viewModel.showingRescheduleSheet = false
+                    }
+                )
+                .presentationDetents([.height(650)])
+            }
         }
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in
             Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient) }
@@ -453,6 +493,14 @@ struct MealPlannerView: View {
             }
         }
         .contextMenu {
+            if entry.recipeId != nil {
+                Button {
+                    viewModel.presentRescheduleSheet(for: entry)
+                } label: {
+                    Label("Reschedule", systemImage: "calendar")
+                }
+            }
+            
             Button(role: .destructive) {
                 Task {
                     await viewModel.deleteMealEntry(entryID: entry.id)
@@ -597,7 +645,66 @@ struct MealPlannerView: View {
         case "lunch": return "Lunch"
         case "dinner": return "Dinner"
         case "side": return "Side"
+        case "drink": return "Drink"
+        case "dessert": return "Dessert"
+        case "snack": return "Snack"
         default: return nil
+        }
+    }
+}
+
+struct RescheduleSheet: View {
+    @Binding var selectedDate: Date
+    @Binding var selectedMealType: String
+    let mealTypes: [String]
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
+                    DatePicker(
+                        "Date",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                }
+                .padding(.horizontal)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Meal Type")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal)
+                        .padding(.top, 12)
+                    
+                    Picker("Meal Type", selection: $selectedMealType) {
+                        ForEach(mealTypes, id: \.self) { type in
+                            Text(LocalizedStringKey(type))
+                                .font(.title3)
+                                .tag(type)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                }
+                .padding(.horizontal)
+            }
+            .padding(.horizontal)
+            .padding(.top, 4)
+            .padding(.bottom)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Move", action: onConfirm)
+                }
+            }
+            .navigationTitle("Reschedule Meal")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

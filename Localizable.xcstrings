@@ -630,6 +630,23 @@
         }
       }
     },
+    "Dessert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessert"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessert"
+          }
+        }
+      }
+    },
     "Dinner" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -659,6 +676,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Désactiver les commentaires"
+          }
+        }
+      }
+    },
+    "Drink" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drink"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boisson"
           }
         }
       }
@@ -889,6 +923,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erreur lors de l'ajout aléatoire"
+          }
+        }
+      }
+    },
+    "error.reschedulingMeal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error rescheduling meal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur lors de la reprogrammation du repas"
           }
         }
       }
@@ -1423,6 +1474,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "mealie.domaine.fr"
+          }
+        }
+      }
+    },
+    "Move" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer"
           }
         }
       }
@@ -2175,6 +2242,38 @@
         }
       }
     },
+    "Reschedule" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reschedule"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprogrammer"
+          }
+        }
+      }
+    },
+    "Reschedule Meal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reschedule Meal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer le repas"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "en" : {
@@ -2251,6 +2350,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Résultats de la recherche"
+          }
+        }
+      }
+    },
+    "Select Date" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Date"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionner la date"
           }
         }
       }
@@ -2688,6 +2804,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accompagnement"
+          }
+        }
+      }
+    },
+    "Snack" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snack"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En-cas"
           }
         }
       }

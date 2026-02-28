@@ -727,4 +727,9 @@ class MealieAPIClient {
         request.httpMethod = "POST"
         return try await performLongTaskRequest(for: request)
     }
+
+    func rescheduleMealPlanEntry(entryID: Int, toDate: Date, recipeId: UUID, entryType: String) async throws {
+        try await addMealPlanEntry(date: toDate, recipeId: recipeId, entryType: entryType)
+        try await deleteMealPlanEntry(entryID: entryID)
+    }
 }
