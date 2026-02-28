@@ -13,6 +13,9 @@ class RecipeListViewModel {
     var sortOption: SortOption = .name
     var sortDirection: SortDirection = .asc
     
+    private var lastFetchTime: Date?
+    private let cacheMaxAge: TimeInterval = 600
+    
     private var paginationSeed: String?
     private var searchTask: Task<Void, Never>? = nil
 
@@ -104,6 +107,7 @@ class RecipeListViewModel {
                     self.currentPage = 1
                 }
                 self.totalPages = response.totalPages
+                self.lastFetchTime = Date()
                 
                 self.isLoading = false
                 self.isLoadingMore = false
@@ -140,6 +144,23 @@ class RecipeListViewModel {
 
     func loadMoreRecipes(apiClient: MealieAPIClient?, userID: String?) async {
         await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: true)
+    }
+
+    func refreshIfStale(apiClient: MealieAPIClient?, userID: String?) async {
+        guard let lastFetch = lastFetchTime else {
+            await loadInitialOrRefreshRecipes(apiClient: apiClient, userID: userID)
+            return
+        }
+
+        let timeSinceLastFetch = Date().timeIntervalSince(lastFetch)
+        if timeSinceLastFetch > cacheMaxAge {
+            await loadInitialOrRefreshRecipes(apiClient: apiClient, userID: userID)
+        }
+    }
+
+    func clearCache() {
+        recipes = []
+        lastFetchTime = nil
     }
 
     func toggleFavorite(for recipeId: UUID, userID: String?, apiClient: MealieAPIClient?) async {
