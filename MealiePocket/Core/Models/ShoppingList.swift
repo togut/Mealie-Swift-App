@@ -97,6 +97,26 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
         hasher.combine(id)
         hasher.combine(checked)
     }
+
+    var resolvedDisplayName: String {
+        let trimmedDisplay = display?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmedDisplay, !trimmedDisplay.isEmpty {
+            return trimmedDisplay
+        }
+
+        let trimmedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmedNote, !trimmedNote.isEmpty {
+            return trimmedNote
+        }
+
+        return "Unknown Item"
+    }
+
+    var syncNoteValue: String? {
+        let trimmedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmedNote, !trimmedNote.isEmpty else { return nil }
+        return trimmedNote
+    }
 }
 
 
@@ -139,6 +159,10 @@ struct ShoppingListItemUpdatePayload: Codable {
     var note: String?
     var quantity: Double?
     var checked: Bool?
+    var foodId: String?
+    var unitId: String?
+    var labelId: String?
+    var position: Int?
 
 }
 

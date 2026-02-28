@@ -154,29 +154,36 @@ class ShoppingListDetailViewModel {
             
             
             Task {
-                await updateItem(itemToSend)
+                await persistCheckedState(item: itemToSend, isChecked: isChecked)
             }
         }
     }
     
     @MainActor
-    func updateItem(_ item: ShoppingListItem) async {
+    private func persistCheckedState(item: ShoppingListItem, isChecked: Bool) async {
         guard let apiClient else {
             errorMessage = "Cannot update item: API client missing."
             return
         }
         errorMessage = nil
         
-        var itemToSend = item
-        itemToSend.quantity = nil
-        
         do {
-            _ = try await apiClient.updateShoppingListItem(item: itemToSend)
+            _ = try await apiClient.updateShoppingListItemCheckedState(
+                itemId: item.id,
+                shoppingListId: item.shoppingListId,
+                note: item.syncNoteValue,
+                quantity: item.quantity,
+                checked: isChecked,
+                foodId: item.foodId,
+                unitId: item.unitId,
+                labelId: item.labelId,
+                position: item.position
+            )
         } catch APIError.unauthorized {
-            
+            await loadListDetails(apiClient: apiClient)
         } catch {
             errorMessage = "Failed to update item: \(error.localizedDescription)"
-            print("Error saving item update, local state might be inconsistent.")
+            await loadListDetails(apiClient: apiClient)
         }
     }
     
@@ -281,7 +288,7 @@ class ShoppingListDetailViewModel {
                 }
                 break
             } catch {
-                errorMessage = "Failed to delete item '\(item.display ?? item.note ?? "")': \(error.localizedDescription)"
+                errorMessage = "Failed to delete item '\(item.resolvedDisplayName)': \(error.localizedDescription)"
                 if shoppingListDetail != nil {
                     let originalIndex = originalIndices[idx]
                     let insertPos = min(originalIndex, shoppingListDetail!.listItems.count)

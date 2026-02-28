@@ -609,7 +609,11 @@ class MealieAPIClient {
             shoppingListId: item.shoppingListId.uuidString.lowercased(),
             note: item.note,
             quantity: item.quantity,
-            checked: item.checked
+            checked: item.checked,
+            foodId: item.foodId?.uuidString.lowercased(),
+            unitId: item.unitId?.uuidString.lowercased(),
+            labelId: item.labelId?.uuidString.lowercased(),
+            position: item.position
         )
         
         do {
@@ -618,6 +622,43 @@ class MealieAPIClient {
             throw APIError.encodingError(error)
         }
         
+        return try await performRequest(for: request)
+    }
+
+    func updateShoppingListItemCheckedState(
+        itemId: UUID,
+        shoppingListId: UUID,
+        note: String?,
+        quantity: Double?,
+        checked: Bool,
+        foodId: UUID?,
+        unitId: UUID?,
+        labelId: UUID?,
+        position: Int?
+    ) async throws -> ShoppingListItemsCollectionResponse {
+        let url = baseURL.appendingPathComponent("api/households/shopping/items/\(itemId.uuidString.lowercased())")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = ShoppingListItemUpdatePayload(
+            id: itemId.uuidString.lowercased(),
+            shoppingListId: shoppingListId.uuidString.lowercased(),
+            note: note,
+            quantity: quantity,
+            checked: checked,
+            foodId: foodId?.uuidString.lowercased(),
+            unitId: unitId?.uuidString.lowercased(),
+            labelId: labelId?.uuidString.lowercased(),
+            position: position
+        )
+
+        do {
+            request.httpBody = try JSONEncoder().encode(body)
+        } catch {
+            throw APIError.encodingError(error)
+        }
+
         return try await performRequest(for: request)
     }
     
@@ -633,7 +674,11 @@ class MealieAPIClient {
                 shoppingListId: item.shoppingListId.uuidString.lowercased(),
                 note: item.note,
                 quantity: item.quantity,
-                checked: item.checked
+                checked: item.checked,
+                foodId: item.foodId?.uuidString.lowercased(),
+                unitId: item.unitId?.uuidString.lowercased(),
+                labelId: item.labelId?.uuidString.lowercased(),
+                position: item.position
             )
         }
         

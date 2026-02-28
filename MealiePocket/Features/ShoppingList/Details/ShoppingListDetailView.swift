@@ -5,14 +5,11 @@ struct ShoppingListDetailView: View {
     @Environment(AppState.self) private var appState
     @State private var localEditMode: EditMode = .inactive
     @State private var showingRemoveCheckedConfirmation = false
-    @Namespace var buttonNamespace
+    @State private var showingSyncFailureBanner = false
+    @State private var syncFailureMessage = ""
     
     init(listSummary: ShoppingListSummary) {
         _viewModel = State(initialValue: ShoppingListDetailViewModel(listSummary: listSummary))
-    }
-    
-    private var hasUncheckedItems: Bool {
-        viewModel.shoppingListDetail?.listItems.contains { !$0.checked } ?? false
     }
     
     private var hasCheckedItems: Bool {
@@ -140,6 +137,19 @@ struct ShoppingListDetailView: View {
         .task {
             await viewModel.loadListDetails(apiClient: appState.apiClient)
         }
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            guard let newValue, newValue.contains("Failed to update item") else { return }
+            syncFailureMessage = newValue
+            withAnimation(.easeInOut(duration: 0.2)) {
+                showingSyncFailureBanner = true
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showingSyncFailureBanner = false
+                }
+            }
+        }
         .alert("Remove checked items?", isPresented: $showingRemoveCheckedConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Remove", role: .destructive) {
@@ -147,6 +157,21 @@ struct ShoppingListDetailView: View {
             }
         } message: {
             Text("This removes all checked items from this list.")
+        }
+        .overlay(alignment: .top) {
+            if showingSyncFailureBanner {
+                Text(syncFailureMessage)
+                    .font(.caption.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .foregroundStyle(.white)
+                    .background(.red)
+                    .clipShape(Capsule())
+                    .padding(.top, 8)
+                    .padding(.horizontal)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .overlay(alignment: .bottomTrailing) {
             Button {
@@ -186,7 +211,7 @@ struct ShoppingListItemRow: View {
                  .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 4){
-                Text(item.display ?? "Unknown Item")
+                Text(item.resolvedDisplayName)
                      .strikethrough(isCheckedLocal, color: .secondary)
                      .foregroundColor(isCheckedLocal ? .secondary : .primary)
 
@@ -222,14 +247,4 @@ struct ShoppingListItemRow: View {
              }
         }
     }
-
-     @Environment(\.locale) private var locale
-
-     private func formattedQuantity(_ quantity: Double) -> String {
-         let formatter = NumberFormatter()
-         formatter.minimumFractionDigits = 0
-         formatter.maximumFractionDigits = 2
-         formatter.locale = locale
-         return formatter.string(from: NSNumber(value: quantity)) ?? "\(quantity)"
-     }
 }
