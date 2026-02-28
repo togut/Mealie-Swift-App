@@ -16,6 +16,36 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Section {
+                    if let pinnedError = viewModel.pinnedShoppingListsErrorMessage {
+                        ContentUnavailableView(
+                            "Error",
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(pinnedError)
+                        )
+                        .padding(.vertical, 40)
+                    }
+                    
+                    if !viewModel.pinnedShoppingLists.isEmpty {
+                        HStack {
+                            Text("Quick Shopping Lists")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            NavigationLink(destination: ShoppingListView()) {
+                                Image(systemName: "chevron.right")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(Color.primary)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        pinnedShoppingListsGrid
+                    }
+                }
+
+                Section {
                     if viewModel.isLoading && viewModel.favoriteRecipes.isEmpty {
                         ProgressView()
                             .frame(maxWidth: .infinity)
@@ -95,6 +125,7 @@ struct HomeView: View {
                             .padding()
                     }
                 }
+                
             }
             .padding(.vertical)
         }
@@ -113,6 +144,9 @@ struct HomeView: View {
         }
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
+        }
+        .navigationDestination(for: ShoppingListSummary.self) { listSummary in
+            ShoppingListDetailView(listSummary: listSummary)
         }
         .sheet(isPresented: $viewModel.showingAddRecipeSheet) {
             if let date = viewModel.dateForAddingRecipe {
@@ -158,5 +192,35 @@ struct HomeView: View {
             }
             .padding(.horizontal)
         }
+    }
+    
+    private var pinnedShoppingListsGrid: some View {
+        let columnCount = min(max(viewModel.pinnedShoppingLists.count, 1), 4)
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: columnCount)
+
+        return LazyVGrid(columns: columns, spacing: 10) {
+            ForEach(viewModel.pinnedShoppingLists) { list in
+                NavigationLink(value: list) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "list.bullet")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+
+                        Text(list.name ?? "Untitled List")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .lineLimit(1)
+
+                        Spacer(minLength: 0)
+                    }
+                    .frame(height: 54)
+                    .padding(.horizontal, 10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal)
     }
 }

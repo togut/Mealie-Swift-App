@@ -11,6 +11,17 @@ struct ShoppingListView: View {
                     NavigationLink(value: list) {
                         ShoppingListRow(list: list)
                     }
+                    .swipeActions(edge: .leading) {
+                        Button {
+                            viewModel.togglePinShoppingList(list)
+                        } label: {
+                            Label(
+                                viewModel.isPinned(list.id) ? "Unpin" : "Pin",
+                                systemImage: viewModel.isPinned(list.id) ? "pin.slash.fill" : "pin.fill"
+                            )
+                        }
+                        .tint(.yellow)
+                    }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
                             Task {

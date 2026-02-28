@@ -168,4 +168,18 @@ class ShoppingListViewModel {
         nameForNewOrEditList = ""
         errorMessage = nil
     }
+    
+    @MainActor
+    func togglePinShoppingList(_ list: ShoppingListSummary) {
+        if UserPreferences.isPinnedShoppingList(list.id) {
+            UserPreferences.removePinnedShoppingList(list.id)
+        } else {
+            UserPreferences.addPinnedShoppingList(list.id)
+        }
+        listVersion = UUID()
+    }
+    
+    func isPinned(_ listId: UUID) -> Bool {
+        UserPreferences.isPinnedShoppingList(listId)
+    }
 }

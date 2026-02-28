@@ -680,6 +680,22 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminer"
+          }
+        }
+      }
+    },
     "Drink" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -693,22 +709,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Boisson"
-          }
-        }
-      }
-    },
-    "Done" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terminer"
           }
         }
       }
@@ -1878,6 +1878,9 @@
         }
       }
     },
+    "Pin" : {
+
+    },
     "planner.errorDateNotSelected" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2158,6 +2161,9 @@
           }
         }
       }
+    },
+    "Quick Shopping Lists" : {
+
     },
     "Random" : {
       "extractionState" : "manual",
@@ -3166,6 +3172,9 @@
           }
         }
       }
+    },
+    "Unpin" : {
+
     },
     "Updated %@" : {
       "localizations" : {
