@@ -585,6 +585,9 @@
         }
       }
     },
+    "Default View" : {
+
+    },
     "Delete" : {
       "localizations" : {
         "en" : {
@@ -1888,6 +1891,9 @@
       }
     },
     "Pin" : {
+
+    },
+    "Planner" : {
 
     },
     "planner.errorDateNotSelected" : {

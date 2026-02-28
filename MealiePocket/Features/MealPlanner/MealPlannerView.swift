@@ -3,6 +3,7 @@ import SwiftUI
 struct MealPlannerView: View {
     @Environment(MealPlannerViewModel.self) private var viewModel
     @Environment(AppState.self) private var appState
+    @Environment(DisplaySettings.self) private var displaySettings
     
     @State private var selectedTabIndex = 1
     @State private var currentlyVisibleMonth: Date = Date().startOfMonth()
@@ -144,6 +145,14 @@ struct MealPlannerView: View {
             .padding(.horizontal, 20)
         }
         .task {
+            switch displaySettings.plannerDefaultView {
+            case .day:
+                viewModel.viewMode = .day
+            case .week:
+                viewModel.viewMode = .week
+            case .month:
+                viewModel.viewMode = .month
+            }
             currentlyVisibleMonth = viewModel.selectedDate.startOfMonth()
             await viewModel.loadMealPlan(apiClient: appState.apiClient)
         }

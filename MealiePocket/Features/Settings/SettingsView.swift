@@ -124,6 +124,16 @@ struct ApplicationSettingsView: View {
                         .foregroundStyle(.primary)
                 }
             }
+            Section("Planner") {
+                Picker(selection: $settings.plannerDefaultView) {
+                    ForEach(PlannerDefaultView.allCases) { plannerView in
+                        Text(plannerView.label).tag(plannerView)
+                    }
+                } label: {
+                    Label("Default View", systemImage: "calendar")
+                        .foregroundStyle(.primary)
+                }
+            }
         }
         .navigationTitle("settings.application.title")
         .navigationBarTitleDisplayMode(.inline)
