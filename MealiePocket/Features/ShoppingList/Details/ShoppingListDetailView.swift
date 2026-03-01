@@ -128,7 +128,11 @@ struct ShoppingListDetailView: View {
         .environment(\.editMode, $localEditMode)
         .sheet(isPresented: $viewModel.showingAddItemSheet) {
             AddShoppingItemView(viewModel: viewModel)
-                .presentationDetents([.height(250)])
+                .presentationDetents([.height(620), .large])
+        }
+        .sheet(isPresented: $viewModel.showingEditItemSheet) {
+            EditShoppingItemView(viewModel: viewModel)
+                .presentationDetents([.height(620), .large])
         }
         .sheet(isPresented: $viewModel.showingDateRangePicker) {
             DateRangePickerView(viewModel: viewModel)
@@ -174,15 +178,28 @@ struct ShoppingListDetailView: View {
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            Button {
-                viewModel.prepareAddItemSheet()
-            } label: {
-                Image(systemName: "plus")
-                    .font(.title2.weight(.semibold))
-                    .padding()
-                    .foregroundStyle(Color.white)
-                    .glassEffect(.regular.tint(.accentColor).interactive())
-                    .clipShape(Circle())
+            VStack(spacing: 10) {
+                Button {
+                    viewModel.prepareAddItemSheet(addMultiple: true)
+                } label: {
+                    Image(systemName: "plus.square.on.square")
+                        .font(.title3.weight(.semibold))
+                        .padding(12)
+                        .foregroundStyle(Color.white)
+                        .glassEffect(.regular.tint(.blue).interactive())
+                        .clipShape(Circle())
+                }
+
+                Button {
+                    viewModel.prepareAddItemSheet(addMultiple: false)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2.weight(.semibold))
+                        .padding()
+                        .foregroundStyle(Color.white)
+                        .glassEffect(.regular.tint(.accentColor).interactive())
+                        .clipShape(Circle())
+                }
             }
             .disabled(viewModel.isLoading || viewModel.isLoadingImport)
             .padding(.trailing, 20)
@@ -204,37 +221,40 @@ struct ShoppingListItemRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .top) {
+        HStack(alignment: .center, spacing: 10) {
             Image(systemName: isCheckedLocal ? "checkmark.circle.fill" : "circle")
-                 .foregroundColor(isCheckedLocal ? .green : .secondary)
-                 .font(.title3)
-                 .padding(.top, 2)
+                .foregroundColor(isCheckedLocal ? .green : .secondary)
+                .font(.title3)
 
-            VStack(alignment: .leading, spacing: 4){
+            VStack(alignment: .leading, spacing: 2) {
                 Text(item.resolvedDisplayName)
-                     .strikethrough(isCheckedLocal, color: .secondary)
-                     .foregroundColor(isCheckedLocal ? .secondary : .primary)
+                    .strikethrough(isCheckedLocal, color: .secondary)
+                    .foregroundColor(isCheckedLocal ? .secondary : .primary)
 
-                VStack(alignment: .leading, spacing: 4) {
-                      if let references = item.recipeReferences, !references.isEmpty {
-                           ForEach(references) { ref in
-                                if let recipeName = viewModel.recipeNameMap[ref.recipeId] {
-                                     HStack(spacing: 3) {
-                                         Image(systemName: "book.closed")
-                                         Text(recipeName)
-                                             .lineLimit(1)
-                                     }
-                                }
-                           }
-                      }
-                 }
-                 .font(.caption)
-                 .foregroundColor(.secondary)
+                if let references = item.recipeReferences, !references.isEmpty {
+                    ForEach(references) { ref in
+                        if let recipeName = viewModel.recipeNameMap[ref.recipeId] {
+                            HStack(spacing: 3) {
+                                Image(systemName: "book.closed")
+                                Text(recipeName)
+                                    .lineLimit(1)
+                            }
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .contentShape(Rectangle())
+        .contextMenu {
+            Button {
+                viewModel.prepareEditItemSheet(item: item)
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+        }
         .onTapGesture {
             isCheckedLocal.toggle()
             hapticImpact()

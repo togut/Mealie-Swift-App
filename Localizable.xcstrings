@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "..." : {
       "localizations" : {
         "en" : {
@@ -99,6 +102,12 @@
           }
         }
       }
+    },
+    "Add Multiple Items" : {
+
+    },
+    "Add next" : {
+
     },
     "Add to %@" : {
       "localizations" : {
@@ -738,6 +747,9 @@
     "Edit Entry" : {
 
     },
+    "Edit Item" : {
+
+    },
     "Edit List" : {
       "localizations" : {
         "en" : {
@@ -1018,6 +1030,9 @@
         }
       }
     },
+    "Food" : {
+
+    },
     "Home" : {
       "localizations" : {
         "en" : {
@@ -1226,6 +1241,9 @@
           }
         }
       }
+    },
+    "Just note" : {
+
     },
     "Landscape View" : {
       "localizations" : {
@@ -1536,6 +1554,7 @@
       }
     },
     "New Item" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1630,6 +1649,9 @@
           }
         }
       }
+    },
+    "No foods found" : {
+
     },
     "No items in this list yet." : {
       "localizations" : {
@@ -1790,6 +1812,9 @@
           }
         }
       }
+    },
+    "None" : {
+
     },
     "Note" : {
 
@@ -2161,7 +2186,11 @@
         }
       }
     },
+    "Quantity" : {
+
+    },
     "Quantity: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2335,6 +2364,9 @@
           }
         }
       }
+    },
+    "Search food" : {
+
     },
     "Search for a food" : {
       "localizations" : {

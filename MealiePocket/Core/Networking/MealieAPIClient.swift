@@ -659,13 +659,19 @@ class MealieAPIClient {
         let _: NoReply = try await performRequest(for: request)
     }
     
-    func addShoppingListItem(listId: UUID, note: String, quantity: Double = 1.0) async throws -> ShoppingListItemsCollectionResponse {
+    func addShoppingListItem(listId: UUID, note: String, quantity: Double = 1.0, foodId: String? = nil, unitId: String? = nil) async throws -> ShoppingListItemsCollectionResponse {
         let url = baseURL.appendingPathComponent("api/households/shopping/items")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = ShoppingListItemCreatePayload(shoppingListId: listId.uuidString.lowercased(), note: note, quantity: quantity)
+        let body = ShoppingListItemCreatePayload(
+            shoppingListId: listId.uuidString.lowercased(),
+            note: note,
+            quantity: quantity,
+            foodId: foodId?.lowercased(),
+            unitId: unitId?.lowercased()
+        )
         do {
             request.httpBody = try JSONEncoder().encode(body)
         } catch {

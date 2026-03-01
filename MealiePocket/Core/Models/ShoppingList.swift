@@ -85,17 +85,33 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
     var note: String?
     var display: String?
     var foodId: UUID?
+    var food: RecipeIngredient.IngredientFoodStub? = nil
     var unitId: UUID?
+    var unit: RecipeIngredient.IngredientUnitStub? = nil
     var labelId: UUID?
     var recipeReferences: [ShoppingListItemNestedRef]?
 
     static func == (lhs: ShoppingListItem, rhs: ShoppingListItem) -> Bool {
-        lhs.id == rhs.id && lhs.checked == rhs.checked
+        lhs.id == rhs.id
+            && lhs.checked == rhs.checked
+            && lhs.note == rhs.note
+            && lhs.display == rhs.display
+            && lhs.quantity == rhs.quantity
+            && lhs.foodId == rhs.foodId
+            && lhs.unitId == rhs.unitId
+            && lhs.food == rhs.food
+            && lhs.unit == rhs.unit
+            && lhs.position == rhs.position
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
         hasher.combine(checked)
+        hasher.combine(note)
+        hasher.combine(display)
+        hasher.combine(quantity)
+        hasher.combine(foodId)
+        hasher.combine(unitId)
     }
 
     var resolvedDisplayName: String {
@@ -105,8 +121,35 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
         }
 
         let trimmedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let trimmedNote, !trimmedNote.isEmpty {
-            return trimmedNote
+        let foodName = food?.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let unitName = unit?.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let quantityText: String? = {
+            guard let quantity, quantity > 0 else { return nil }
+            let formatter = NumberFormatter()
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 2
+            return formatter.string(from: NSNumber(value: quantity))
+        }()
+
+        // Combine food name and note: food is primary, note appended if both exist
+        let descriptor: String? = {
+            if let foodName, !foodName.isEmpty {
+                if let trimmedNote, !trimmedNote.isEmpty {
+                    return "\(foodName) (\(trimmedNote))"
+                }
+                return foodName
+            }
+            if let trimmedNote, !trimmedNote.isEmpty { return trimmedNote }
+            return nil
+        }()
+
+        var parts: [String] = []
+        if let quantityText { parts.append(quantityText) }
+        if let unitName, !unitName.isEmpty { parts.append(unitName) }
+        if let descriptor { parts.append(descriptor) }
+
+        if !parts.isEmpty {
+            return parts.joined(separator: " ")
         }
 
         return "Unknown Item"
@@ -151,6 +194,8 @@ struct ShoppingListItemCreatePayload: Codable {
     var shoppingListId: String
     var note: String? = ""
     var quantity: Double? = 1.0
+    var foodId: String? = nil
+    var unitId: String? = nil
 }
 
 struct ShoppingListItemUpdatePayload: Codable {
