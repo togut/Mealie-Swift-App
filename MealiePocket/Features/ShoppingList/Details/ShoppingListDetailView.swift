@@ -36,17 +36,27 @@ struct ShoppingListDetailView: View {
             }
             
             if let detail = viewModel.shoppingListDetail {
-                Section("Items") {
-                    if detail.listItems.isEmpty && !viewModel.isLoading && !viewModel.isLoadingImport {
+                if detail.listItems.isEmpty && !viewModel.isLoading && !viewModel.isLoadingImport {
+                    Section("Items") {
                         Text("No items in this list yet.")
                             .foregroundColor(.secondary)
-                    } else {
-                        ForEach(detail.listItems) { item in
-                            ShoppingListItemRow(item: item, viewModel: viewModel)
-                        }
-                        .onDelete { indexSet in
-                            Task {
-                                await viewModel.deleteItems(at: indexSet)
+                    }
+                } else {
+                    let groups = viewModel.groupedItems
+                    ForEach(groups) { group in
+                        Section(groups.count > 1 ? group.title : "Items") {
+                            ForEach(group.items) { item in
+                                ShoppingListItemRow(item: item, viewModel: viewModel)
+                            }
+                            .onDelete { indexSet in
+                                let itemIds = indexSet.map { group.items[$0].id }
+                                Task {
+                                    guard let allItems = viewModel.shoppingListDetail?.listItems else { return }
+                                    let globalOffsets = IndexSet(itemIds.compactMap { id in
+                                        allItems.firstIndex(where: { $0.id == id })
+                                    })
+                                    await viewModel.deleteItems(at: globalOffsets)
+                                }
                             }
                         }
                     }
@@ -80,13 +90,37 @@ struct ShoppingListDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 if localEditMode.isEditing {
-                    Button("Done") {
+                    Button {
                         localEditMode = .inactive
+                    } label: {
+                        Image(systemName: "checkmark.circle.fill")
                     }
                 } else {
-                    Button("Edit") {
+                    Button {
                         localEditMode = .active
+                    } label: {
+                        Image(systemName: "pencil")
                     }
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    ForEach(ShoppingListSortOption.allCases) { option in
+                        Button {
+                            viewModel.selectSortOption(option)
+                        } label: {
+                            if viewModel.sortOption == option {
+                                Label(
+                                    option.rawValue,
+                                    systemImage: viewModel.sortAscending ? "chevron.up" : "chevron.down"
+                                )
+                            } else {
+                                Text(option.rawValue)
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {

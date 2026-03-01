@@ -1,5 +1,29 @@
 import Foundation
 
+enum ShoppingListSortOption: String, CaseIterable, Identifiable {
+    case position = "Time Added"
+    case name = "Name"
+    case quantity = "Amount"
+    case category = "Category"
+
+    var id: String { rawValue }
+
+    var iconName: String {
+        switch self {
+        case .position: return "clock"
+        case .name: return "textformat"
+        case .quantity: return "number"
+        case .category: return "tag"
+        }
+    }
+}
+
+struct ShoppingListGroup: Identifiable {
+    let id: String
+    let title: String
+    var items: [ShoppingListItem]
+}
+
 @Observable
 class ShoppingListDetailViewModel {
     var shoppingListDetail: ShoppingListDetail?
@@ -8,6 +32,19 @@ class ShoppingListDetailViewModel {
     var isLoadingBulkUpdate = false
     var isLoadingImport = false
     var errorMessage: String?
+
+    var sortOption: ShoppingListSortOption = .position
+    var sortAscending: Bool = true
+
+    /// Toggles sort direction if same option, otherwise switches option (ascending by default).
+    func selectSortOption(_ option: ShoppingListSortOption) {
+        if sortOption == option {
+            sortAscending.toggle()
+        } else {
+            sortOption = option
+            sortAscending = true
+        }
+    }
 
     var showingAddItemSheet = false
     var showingEditItemSheet = false
@@ -37,6 +74,55 @@ class ShoppingListDetailViewModel {
     
     var hasUncheckedItems: Bool {
         shoppingListDetail?.listItems.contains { !$0.checked } ?? false
+    }
+
+    var groupedItems: [ShoppingListGroup] {
+        guard let items = shoppingListDetail?.listItems else { return [] }
+        let asc = sortAscending
+
+        switch sortOption {
+        case .position:
+            let sorted = items.sorted { lhs, rhs in
+                if lhs.checked != rhs.checked { return !lhs.checked && rhs.checked }
+                return asc ? lhs.position < rhs.position : lhs.position > rhs.position
+            }
+            return [ShoppingListGroup(id: "all", title: "Items", items: sorted)]
+
+        case .name:
+            let sorted = items.sorted { lhs, rhs in
+                if lhs.checked != rhs.checked { return !lhs.checked && rhs.checked }
+                let result = lhs.sortKey.localizedCaseInsensitiveCompare(rhs.sortKey)
+                return asc ? result == .orderedAscending : result == .orderedDescending
+            }
+            return [ShoppingListGroup(id: "all", title: "Items", items: sorted)]
+
+        case .quantity:
+            let sorted = items.sorted { lhs, rhs in
+                if lhs.checked != rhs.checked { return !lhs.checked && rhs.checked }
+                return asc ? (lhs.quantity ?? 0) < (rhs.quantity ?? 0) : (lhs.quantity ?? 0) > (rhs.quantity ?? 0)
+            }
+            return [ShoppingListGroup(id: "all", title: "Items", items: sorted)]
+
+        case .category:
+            var grouped: [String: [ShoppingListItem]] = [:]
+            for item in items {
+                let key = item.label?.name ?? "Uncategorized"
+                grouped[key, default: []].append(item)
+            }
+            let sortedKeys = grouped.keys.sorted { lhs, rhs in
+                if lhs == "Uncategorized" { return false }
+                if rhs == "Uncategorized" { return true }
+                let result = lhs.localizedCaseInsensitiveCompare(rhs)
+                return asc ? result == .orderedAscending : result == .orderedDescending
+            }
+            return sortedKeys.map { key in
+                let items = grouped[key]!.sorted { lhs, rhs in
+                    if lhs.checked != rhs.checked { return !lhs.checked && rhs.checked }
+                    return lhs.position < rhs.position
+                }
+                return ShoppingListGroup(id: key, title: key, items: items)
+            }
+        }
     }
     
     init(listSummary: ShoppingListSummary) {

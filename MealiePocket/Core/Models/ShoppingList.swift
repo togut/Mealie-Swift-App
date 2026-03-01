@@ -76,6 +76,12 @@ struct ShoppingListDetail: Codable, Identifiable {
 }
 
 
+struct ShoppingListLabel: Codable, Identifiable, Hashable {
+    let id: UUID
+    var name: String
+    var color: String?
+}
+
 struct ShoppingListItem: Codable, Identifiable, Hashable {
     let id: UUID
     var shoppingListId: UUID
@@ -89,6 +95,7 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
     var unitId: UUID?
     var unit: RecipeIngredient.IngredientUnitStub? = nil
     var labelId: UUID?
+    var label: ShoppingListLabel? = nil
     var recipeReferences: [ShoppingListItemNestedRef]?
 
     static func == (lhs: ShoppingListItem, rhs: ShoppingListItem) -> Bool {
@@ -102,6 +109,8 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
             && lhs.food == rhs.food
             && lhs.unit == rhs.unit
             && lhs.position == rhs.position
+            && lhs.labelId == rhs.labelId
+            && lhs.label == rhs.label
     }
 
     func hash(into hasher: inout Hasher) {
@@ -112,6 +121,7 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
         hasher.combine(quantity)
         hasher.combine(foodId)
         hasher.combine(unitId)
+        hasher.combine(labelId)
     }
 
     var resolvedDisplayName: String {
@@ -159,6 +169,15 @@ struct ShoppingListItem: Codable, Identifiable, Hashable {
         let trimmedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let trimmedNote, !trimmedNote.isEmpty else { return nil }
         return trimmedNote
+    }
+
+    /// Returns the food name or note (the descriptor portion), used for name-based sorting.
+    var sortKey: String {
+        let foodName = food?.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let foodName, !foodName.isEmpty { return foodName }
+        let trimmedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmedNote, !trimmedNote.isEmpty { return trimmedNote }
+        return resolvedDisplayName
     }
 }
 
