@@ -63,7 +63,9 @@ struct RecipeCardView: View {
                     .foregroundColor(recipe.isFavorite ? .red : .white)
                     .padding(8)
                     .background(Circle().fill(.black.opacity(0.5)))
+                    .contentShape(Circle())
             }
+            .buttonStyle(.plain)
             .padding([.top, .trailing], 6)
         }
     }

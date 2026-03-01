@@ -5,6 +5,7 @@ struct RecipeListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
     @State private var scrollPosition: ScrollPosition = .init(edge: .top)
+    @State private var selectedRecipe: RecipeSummary?
 
     var body: some View {
         Group {
@@ -46,7 +47,7 @@ struct RecipeListView: View {
         .refreshable {
             await viewModel.loadInitialOrRefreshRecipes(apiClient: appState.apiClient, userID: appState.currentUserID)
         }
-        .navigationDestination(for: RecipeSummary.self) { recipe in
+        .navigationDestination(item: $selectedRecipe) { recipe in
             if let currentRecipe = viewModel.recipes.first(where: { $0.id == recipe.id }) {
                 RecipeDetailView(recipeSummary: currentRecipe)
             } else {
@@ -59,14 +60,15 @@ struct RecipeListView: View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
                 ForEach($viewModel.recipes) { $recipe in
-                    NavigationLink(value: recipe) {
-                        RecipeCardView(recipe: $recipe, baseURL: appState.apiClient?.baseURL) {
-                            Task {
-                                await viewModel.toggleFavorite(for: recipe.id, userID: appState.currentUserID, apiClient: appState.apiClient)
-                            }
+                    RecipeCardView(recipe: $recipe, baseURL: appState.apiClient?.baseURL) {
+                        Task {
+                            await viewModel.toggleFavorite(for: recipe.id, userID: appState.currentUserID, apiClient: appState.apiClient)
                         }
                     }
-                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedRecipe = recipe
+                    }
                     .id(recipe.id)
                 }
 
