@@ -121,7 +121,7 @@ struct ShoppingListDetailView: View {
                     }
                     .disabled(!hasCheckedItems || viewModel.isLoadingImport || viewModel.isLoading || viewModel.isLoadingBulkUpdate)
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
