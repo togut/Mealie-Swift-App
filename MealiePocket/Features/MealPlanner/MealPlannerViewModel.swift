@@ -55,6 +55,12 @@ class MealPlannerViewModel {
     var importingListId: UUID? = nil
     var importSuccess = false
     
+    var showingRescheduleSheet = false
+    var selectedRescheduleEntryID: Int? = nil
+    var selectedRescheduleRecipeID: UUID? = nil
+    var selectedRescheduleDate = Date()
+    var selectedRescheduleMealType: MealType = .dinner
+    
     init() {
         setupInitialMonths()
     }
@@ -203,7 +209,7 @@ class MealPlannerViewModel {
         }
         
         guard let client = self.apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             isLoading = false
             isLoadingPast = false
             isLoadingFuture = false
@@ -227,8 +233,6 @@ class MealPlannerViewModel {
             for entry in response.items {
                 if let dayStart = calendarDate(from: entry.date) {
                     groupedEntries[dayStart, default: []].append(entry)
-                } else {
-                    print("Warning: Could not parse date string \(entry.date)")
                 }
             }
             
@@ -242,7 +246,7 @@ class MealPlannerViewModel {
             }
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.loadingPlan") + ": " + error.localizedDescription
+                errorMessage = "error.loadingPlan"
                 self.isLoading = false
                 self.isLoadingPast = false
                 self.isLoadingFuture = false
@@ -323,7 +327,6 @@ class MealPlannerViewModel {
                 }
             } catch {
                 await MainActor.run {
-                    print("Error searching recipes for selection: \(error)")
                     if !loadMore { self.recipesForSelection = [] }
                     self.isLoadingRecipesForSelection = false
                     self.isLoadingMoreRecipesForSelection = false
@@ -336,9 +339,9 @@ class MealPlannerViewModel {
         await searchRecipesForSelection(apiClient: apiClient, loadMore: true)
     }
     
-    func addSelectedRecipeToPlan(recipe: RecipeSummary, mealType: String, apiClient: MealieAPIClient?) async {
+    func addSelectedRecipeToPlan(recipe: RecipeSummary, mealType: MealType, apiClient: MealieAPIClient?) async {
         guard let date = dateForAddingRecipe, let apiClient = apiClient else {
-            errorMessage = String(localized: "error.missingDateOrClient")
+            errorMessage = "error.missingDateOrClient"
             return
         }
         
@@ -354,15 +357,15 @@ class MealPlannerViewModel {
             }
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.addingMeal") + ": " + error.localizedDescription
+                errorMessage = "error.addingMeal"
                 isLoading = false
             }
         }
     }
 
-    func addRandomMeal(date: Date, mealType: String) async {
+    func addRandomMeal(date: Date, mealType: MealType) async {
         guard let date = dateForAddingRecipe, let apiClient = apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -378,7 +381,7 @@ class MealPlannerViewModel {
             }
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.randomMeal") + ": " + error.localizedDescription
+                errorMessage = "error.randomMeal"
                 isLoading = false
             }
         }
@@ -386,7 +389,7 @@ class MealPlannerViewModel {
 
     func deleteMealEntry(entryID: Int) async {
         guard let client = self.apiClient else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -398,16 +401,51 @@ class MealPlannerViewModel {
             await loadMealPlan(apiClient: client)
         } catch {
             await MainActor.run {
-                errorMessage = String(localized: "error.deletingMeal") + ": " + error.localizedDescription
+                errorMessage = "error.deletingMeal"
                 isLoading = false
             }
         }
     }
 
     @MainActor
+    func presentRescheduleSheet(for entry: ReadPlanEntry) {
+        guard let recipeId = entry.recipeId else { return }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        selectedRescheduleDate = dateFormatter.date(from: entry.date) ?? Date()
+        selectedRescheduleMealType = entry.mealType
+        
+        selectedRescheduleEntryID = entry.id
+        selectedRescheduleRecipeID = recipeId
+        showingRescheduleSheet = true
+    }
+
+    @MainActor
+    func rescheduleMealEntry(entryID: Int, toDate: Date, recipeId: UUID, mealType: MealType) async {
+        guard let client = self.apiClient else {
+            errorMessage = "error.apiClientUnavailable"
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            try await client.rescheduleMealPlanEntry(entryID: entryID, toDate: toDate, recipeId: recipeId, entryType: mealType)
+            await loadMealPlan(apiClient: client)
+            showingRescheduleSheet = false
+            isLoading = false
+        } catch {
+            errorMessage = "error.reschedulingMeal"
+            isLoading = false
+        }
+    }
+
+    @MainActor
     private func prepareImport(startDate: Date, endDate: Date, apiClient: MealieAPIClient?) {
         guard apiClient != nil else {
-            errorMessage = String(localized: "error.apiClientUnavailable")
+            errorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -434,7 +472,7 @@ class MealPlannerViewModel {
     func addWeek(apiClient: MealieAPIClient?) {
         let calendar = Calendar.current
         guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: selectedDate) else {
-            errorMessage = "Could not determine week interval."
+            errorMessage = "error.weekIntervalUnavailable"
             return
         }
         let endDate = calendar.date(byAdding: .day, value: -1, to: weekInterval.end) ?? weekInterval.start
@@ -458,7 +496,7 @@ class MealPlannerViewModel {
     @MainActor
     func loadShoppingLists() async {
         guard let apiClient else {
-            importErrorMessage = String(localized: "error.apiClientUnavailable")
+            importErrorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -469,7 +507,7 @@ class MealPlannerViewModel {
             let response = try await apiClient.fetchShoppingLists(page: 1, perPage: 500)
             self.availableShoppingLists = response.items
         } catch {
-            self.importErrorMessage = "Failed to load shopping lists: \(error.localizedDescription)"
+            self.importErrorMessage = "error.loadingShoppingLists"
         }
         
         isLoadingShoppingLists = false
@@ -478,7 +516,7 @@ class MealPlannerViewModel {
     @MainActor
     func importMealsToShoppingList(list: ShoppingListSummary) async {
         guard let apiClient else {
-            importErrorMessage = String(localized: "error.apiClientUnavailable")
+            importErrorMessage = "error.apiClientUnavailable"
             return
         }
         
@@ -506,11 +544,11 @@ class MealPlannerViewModel {
                 _ = try await apiClient.addRecipesToShoppingListBulk(listId: list.id, recipeIds: uniqueRecipeIds)
                 importSuccess = true
             } else {
-                importErrorMessage = "No recipes found in the selected date range."
+                importErrorMessage = "error.noRecipesInRange"
             }
             
         } catch {
-            importErrorMessage = "Failed to import ingredients: \(error.localizedDescription)"
+            importErrorMessage = "error.importingIngredients"
         }
         
         isImporting = false

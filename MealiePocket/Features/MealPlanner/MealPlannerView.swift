@@ -21,8 +21,7 @@ struct MealPlannerView: View {
     }
     
     @State private var showingMealTypeSelection = false
-    @State private var selectedMealType = "Dinner"
-    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
+    @State private var selectedMealType: MealType = .dinner
     
     @Environment(\.locale) private var locale
     @Environment(\.dismiss) var dismiss
@@ -32,14 +31,19 @@ struct MealPlannerView: View {
     var body: some View {
         VStack {
             header
-            
+            contentView
+        }
+    }
+    
+    private var contentView: some View {
+        Group {
             if viewModel.isLoadingPast { ProgressView().progressViewStyle(.circular) }
             
             if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
                 ProgressView()
                 Spacer()
             } else if let errorMessage = viewModel.errorMessage {
-                ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
+                ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(LocalizedStringKey(errorMessage)))
             } else {
                 calendarContent
             }
@@ -172,7 +176,6 @@ struct MealPlannerView: View {
             if let date = viewModel.dateForAddingRecipe {
                 MealTypeSelectionView(
                     selectedMealType: $selectedMealType,
-                    mealTypes: mealTypes,
                     onConfirm: {
                         Task {
                             await viewModel.addRandomMeal(date: date, mealType: selectedMealType)
@@ -199,6 +202,40 @@ struct MealPlannerView: View {
             set : { viewModel.showingShoppingListSelection = $0}
         )) {
             ShoppingListSelectionView(viewModel: viewModel, apiClient: appState.apiClient)
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showingRescheduleSheet },
+            set: { viewModel.showingRescheduleSheet = $0 }
+        )) {
+            if viewModel.selectedRescheduleEntryID != nil, let recipeId = viewModel.selectedRescheduleRecipeID {
+                RescheduleSheet(
+                    selectedDate: Binding(
+                        get: { viewModel.selectedRescheduleDate },
+                        set: { viewModel.selectedRescheduleDate = $0 }
+                    ),
+                    selectedMealType: Binding(
+                        get: { viewModel.selectedRescheduleMealType },
+                        set: { viewModel.selectedRescheduleMealType = $0 }
+                    ),
+                    onConfirm: {
+                        viewModel.showingRescheduleSheet = false
+                        if let entryID = viewModel.selectedRescheduleEntryID {
+                            Task {
+                                await viewModel.rescheduleMealEntry(
+                                    entryID: entryID,
+                                    toDate: viewModel.selectedRescheduleDate,
+                                    recipeId: recipeId,
+                                    mealType: viewModel.selectedRescheduleMealType
+                                )
+                            }
+                        }
+                    },
+                    onCancel: {
+                        viewModel.showingRescheduleSheet = false
+                    }
+                )
+                .presentationDetents([.height(650)])
+            }
         }
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in
             Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient) }
@@ -406,15 +443,10 @@ struct MealPlannerView: View {
     private func mealEntriesList(for date: Date, showType: Bool = false) -> some View {
         let entries = viewModel.mealPlanEntries[Calendar.current.startOfDay(for: date)] ?? []
         let sortedEntries = entries.sorted {
-            let typeOrder: [String: Int] = ["breakfast": 0, "lunch": 1, "dinner": 2, "side": 3]
-            let order1 = typeOrder[$0.entryType.lowercased()] ?? 4
-            let order2 = typeOrder[$1.entryType.lowercased()] ?? 4
-            if order1 != order2 {
-                return order1 < order2
-            }
-            let name1 = $0.recipe?.name ?? $0.title
-            let name2 = $1.recipe?.name ?? $1.title
-            return name1 < name2
+            let order1 = $0.mealType.sortOrder
+            let order2 = $1.mealType.sortOrder
+            if order1 != order2 { return order1 < order2 }
+            return ($0.recipe?.name ?? $0.title) < ($1.recipe?.name ?? $1.title)
         }
         
         if entries.isEmpty {
@@ -453,6 +485,14 @@ struct MealPlannerView: View {
             }
         }
         .contextMenu {
+            if entry.recipeId != nil {
+                Button {
+                    viewModel.presentRescheduleSheet(for: entry)
+                } label: {
+                    Label("Reschedule", systemImage: "calendar")
+                }
+            }
+            
             Button(role: .destructive) {
                 Task {
                     await viewModel.deleteMealEntry(entryID: entry.id)
@@ -561,17 +601,12 @@ struct MealPlannerView: View {
         let dateKey = Calendar.current.startOfDay(for: viewModel.selectedDate)
         guard let entries = viewModel.mealPlanEntries[dateKey] else { return }
         let sortedEntries = entries.sorted {
-            let typeOrder: [String: Int] = ["breakfast": 0, "lunch": 1, "dinner": 2, "side": 3]
-            let order1 = typeOrder[$0.entryType.lowercased()] ?? 4
-            let order2 = typeOrder[$1.entryType.lowercased()] ?? 4
-            if order1 != order2 {
-                return order1 < order2
-            }
-            let name1 = $0.recipe?.name ?? $0.title
-            let name2 = $1.recipe?.name ?? $1.title
-            return name1 < name2
+            let order1 = $0.mealType.sortOrder
+            let order2 = $1.mealType.sortOrder
+            if order1 != order2 { return order1 < order2 }
+            return ($0.recipe?.name ?? $0.title) < ($1.recipe?.name ?? $1.title)
         }
-        
+
         let idsToDelete = offsets.map { sortedEntries[$0].id }
         
         Task {
@@ -582,22 +617,66 @@ struct MealPlannerView: View {
     }
     
     private func iconForEntryType(_ type: String) -> String {
-        switch type.lowercased() {
-        case "breakfast": return "sun.horizon.fill"
-        case "lunch": return "sun.max.fill"
-        case "dinner": return "moon.fill"
-        case "side": return "fork.knife"
-        default: return "note.text"
-        }
+        MealType(rawValue: type.lowercased())?.icon ?? "note.text"
     }
-    
+
     private func localizedMealTypeKey(_ type: String) -> LocalizedStringKey? {
-        switch type.lowercased() {
-        case "breakfast": return "Breakfast"
-        case "lunch": return "Lunch"
-        case "dinner": return "Dinner"
-        case "side": return "Side"
-        default: return nil
+        guard let mealType = MealType(rawValue: type.lowercased()) else { return nil }
+        return LocalizedStringKey(mealType.displayName)
+    }
+}
+
+struct RescheduleSheet: View {
+    @Binding var selectedDate: Date
+    @Binding var selectedMealType: MealType
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
+                    DatePicker(
+                        "Date",
+                        selection: $selectedDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                }
+                .padding(.horizontal)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Meal Type")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal)
+                        .padding(.top, 12)
+                    
+                    Picker("Meal Type", selection: $selectedMealType) {
+                        ForEach(MealType.allCases) { type in
+                            Text(LocalizedStringKey(type.displayName))
+                                .font(.title3)
+                                .tag(type)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                }
+                .padding(.horizontal)
+            }
+            .padding(.horizontal)
+            .padding(.top, 4)
+            .padding(.bottom)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Move", action: onConfirm)
+                }
+            }
+            .navigationTitle("Reschedule Meal")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
