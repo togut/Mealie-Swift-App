@@ -10,6 +10,10 @@ class HomeViewModel {
     var daysOfWeek: [Date] = []
     var isLoadingWeeklyMeals = false
     var weeklyMealsErrorMessage: String?
+    
+    var pinnedShoppingLists: [ShoppingListSummary] = []
+    var isLoadingPinnedShoppingLists = false
+    var pinnedShoppingListsErrorMessage: String?
 
     var showingAddRecipeSheet = false
     var dateForAddingRecipe: Date? = nil
@@ -87,7 +91,8 @@ class HomeViewModel {
     func loadHomeData(apiClient: MealieAPIClient?, userID: String?) async {
         async let favoritesTask: () = loadFavorites(apiClient: apiClient, userID: userID)
         async let weeklyMealsTask: () = loadWeeklyMeals(apiClient: apiClient)
-        _ = await (favoritesTask, weeklyMealsTask)
+        async let pinnedShoppingListsTask: () = loadPinnedShoppingLists(apiClient: apiClient)
+        _ = await (favoritesTask, weeklyMealsTask, pinnedShoppingListsTask)
     }
 
     func loadWeeklyMeals(apiClient: MealieAPIClient?) async {
@@ -242,5 +247,41 @@ class HomeViewModel {
         } catch {
             await MainActor.run { isLoadingWeeklyMeals = false }
         }
+    }
+
+    @MainActor
+    func loadPinnedShoppingLists(apiClient: MealieAPIClient?) async {
+        guard let apiClient else {
+            pinnedShoppingListsErrorMessage = "error.apiClientUnavailable"
+            return
+        }
+
+        let pinnedIds = UserPreferences.getPinnedShoppingListIds()
+        guard !pinnedIds.isEmpty else {
+            pinnedShoppingLists = []
+            return
+        }
+
+        isLoadingPinnedShoppingLists = true
+        pinnedShoppingListsErrorMessage = nil
+
+        do {
+            let allLists = try await apiClient.fetchShoppingLists(page: 1, perPage: 1000)
+            let filtered = allLists.items.filter { list in
+                pinnedIds.contains(list.id)
+            }
+
+            self.pinnedShoppingLists = filtered.sorted { a, b in
+                guard let aIndex = pinnedIds.firstIndex(of: a.id),
+                      let bIndex = pinnedIds.firstIndex(of: b.id) else {
+                    return false
+                }
+                return aIndex < bIndex
+            }
+        } catch {
+            self.pinnedShoppingListsErrorMessage = "Failed to load pinned lists: \(error.localizedDescription)"
+        }
+
+        isLoadingPinnedShoppingLists = false
     }
 }

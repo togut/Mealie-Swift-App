@@ -16,6 +16,28 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Section {
+                    if let pinnedError = viewModel.pinnedShoppingListsErrorMessage {
+                        ContentUnavailableView(
+                            "Error",
+                            systemImage: "exclamationmark.triangle",
+                            description: Text(pinnedError)
+                        )
+                        .padding(.vertical, 40)
+                    }
+                    
+                    if !viewModel.pinnedShoppingLists.isEmpty {
+                        HStack {
+                            Text("Pinned Lists")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                        }
+                        .padding(.horizontal)
+                        
+                        pinnedShoppingListsGrid
+                    }
+                }
+                
+                Section {
                     if viewModel.isLoading && viewModel.favoriteRecipes.isEmpty {
                         ProgressView()
                             .frame(maxWidth: .infinity)
@@ -114,6 +136,9 @@ struct HomeView: View {
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
         }
+        .navigationDestination(for: ShoppingListSummary.self) { list in
+            ShoppingListDetailView(listSummary: list)
+        }
         .sheet(isPresented: $viewModel.showingAddRecipeSheet) {
             if let date = viewModel.dateForAddingRecipe {
                 SelectRecipeForHomeSheetView(viewModel: viewModel, date: date, apiClient: appState.apiClient)
@@ -158,5 +183,35 @@ struct HomeView: View {
             }
             .padding(.horizontal)
         }
+    }
+
+    private var pinnedShoppingListsGrid: some View {
+        let columnCount = min(max(viewModel.pinnedShoppingLists.count, 1), 4)
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount)
+
+        return LazyVGrid(columns: columns, spacing: 10) {
+            ForEach(viewModel.pinnedShoppingLists) { list in
+                NavigationLink(value: list) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "list.bullet")
+                            .font(.body)
+                            .foregroundStyle(.primary)
+
+                        Text(list.name ?? "Untitled List")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+
+                        Spacer()
+                    }
+                    .padding(16)
+                    .frame(minHeight: 67)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                }
+            }
+        }
+        .padding(.horizontal)
     }
 }
