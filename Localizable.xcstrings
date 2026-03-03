@@ -3,6 +3,12 @@
   "strings": {
     "...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -19,6 +25,12 @@
     },
     "(optional)": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(optional)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -35,6 +47,12 @@
     },
     "Add": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinzufügen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -51,6 +69,12 @@
     },
     "Add Ingredient": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zutat hinzufügen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -67,6 +91,12 @@
     },
     "Add Instruction": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anweisung hinzufügen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -83,6 +113,12 @@
     },
     "Add Item": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artikel hinzufügen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -99,6 +135,12 @@
     },
     "Add to %@": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu %@ hinzufügen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -115,6 +157,12 @@
     },
     "Add to Meal Plan": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Speiseplan hinzufügen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -131,6 +179,12 @@
     },
     "Admin": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -145,8 +199,30 @@
         }
       }
     },
+    "Admin Access": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adminzugriff"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin Access"
+          }
+        }
+      }
+    },
     "All": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -161,8 +237,30 @@
         }
       }
     },
+    "Allowed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erlaubt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed"
+          }
+        }
+      }
+    },
     "API Key": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API-Schlüssel"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -180,6 +278,12 @@
     "api.error.decodingError": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serverantwort konnte nicht dekodiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -197,6 +301,12 @@
     "api.error.encodingError": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Anfrage konnte nicht kodiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -214,6 +324,12 @@
     "api.error.invalidResponse": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültige Serverantwort."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -231,6 +347,12 @@
     "api.error.invalidURL": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültige URL angegeben."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -248,6 +370,12 @@
     "api.error.requestFailed": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anfrage fehlgeschlagen (Statuscode: %d)."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -265,6 +393,12 @@
     "api.error.timeout": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeitüberschreitung bei Anfrage."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -282,6 +416,12 @@
     "api.error.tokenRefreshFailed": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sitzung abgelaufen. Bitte erneut anmelden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -299,6 +439,12 @@
     "api.error.unauthorized": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht autorisiert. Zugangsdaten prüfen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -316,6 +462,12 @@
     "api.error.unknown": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es ist ein unbekannter Fehler aufgetreten."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -334,6 +486,12 @@
       "comment": "A section in the settings menu.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -350,6 +508,12 @@
     },
     "Application Details": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anwendungsdetails"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -366,6 +530,12 @@
     },
     "Ascending": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aufsteigend"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -380,8 +550,30 @@
         }
       }
     },
+    "Auth Method": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldemethode"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auth Method"
+          }
+        }
+      }
+    },
     "Backups": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backups"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -398,6 +590,12 @@
     },
     "Basic Info": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Basisinfo"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -415,6 +613,12 @@
     "Breakfast": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frühstück"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -431,6 +635,12 @@
     },
     "Cancel": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abbrechen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -447,6 +657,12 @@
     },
     "Categories": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kategorien"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -463,6 +679,12 @@
     },
     "Clean Temporary Files": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporäre Dateien bereinigen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -479,6 +701,12 @@
     },
     "Clean Unused Images": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungenutzte Bilder bereinigen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -493,8 +721,30 @@
         }
       }
     },
+    "Closed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geschlossen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closed"
+          }
+        }
+      }
+    },
     "Connection": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verbindung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -511,6 +761,12 @@
     },
     "Cook Time (e.g., 1h 10m)": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kochzeit (z. B. 1h 10m)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -527,6 +783,12 @@
     },
     "Cooking": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kochen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -543,6 +805,12 @@
     },
     "Copied!": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kopiert!"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -559,6 +827,12 @@
     },
     "Could not load list details.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listendetails konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -575,6 +849,12 @@
     },
     "Could not load report data.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berichtsdaten konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -591,6 +871,12 @@
     },
     "Create a new list": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Liste erstellen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -607,6 +893,12 @@
     },
     "Create New Backup": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neues Backup erstellen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -623,6 +915,12 @@
     },
     "Create your first shopping list.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstelle deine erste Einkaufsliste."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -639,6 +937,12 @@
     },
     "Created %@": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellt %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -655,6 +959,12 @@
     },
     "Creating missing food \"%@\"": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehlendes Essen „%@“ wird erstellt"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -671,6 +981,12 @@
     },
     "Creating...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellen..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -687,6 +1003,12 @@
     },
     "Date": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datum"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -704,6 +1026,12 @@
     "Date Created": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellungsdatum"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -721,6 +1049,12 @@
     "Date Updated": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisierungsdatum"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -737,6 +1071,12 @@
     },
     "Delete": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -751,8 +1091,30 @@
         }
       }
     },
+    "Demo Mode": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demomodus"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo Mode"
+          }
+        }
+      }
+    },
     "Descending": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Absteigend"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -769,6 +1131,12 @@
     },
     "Description": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beschreibung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -786,6 +1154,12 @@
     "Dessert": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nachtisch"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -803,6 +1177,12 @@
     "Dinner": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abendessen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -819,6 +1199,12 @@
     },
     "Disable Comments": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kommentare deaktivieren"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -835,6 +1221,12 @@
     },
     "Done": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -852,6 +1244,12 @@
     "Drink": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getränk"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -868,6 +1266,12 @@
     },
     "Edit": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bearbeiten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -884,6 +1288,12 @@
     },
     "Edit List": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste bearbeiten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -900,6 +1310,12 @@
     },
     "Edit list name": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listennamen bearbeiten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -914,8 +1330,15 @@
         }
       }
     },
+    "Email": {},
     "End Date": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enddatum"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -932,6 +1355,12 @@
     },
     "Error": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -949,6 +1378,12 @@
     "Error: %@": {
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler: %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -965,6 +1400,12 @@
     },
     "Error: Date not selected.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler: Datum nicht ausgewählt."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -982,6 +1423,12 @@
     "error.addingItem": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinzufügen fehlgeschlagen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -999,6 +1446,12 @@
     "error.addingMeal": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler beim Hinzufügen zum Plan"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1016,6 +1469,12 @@
     "error.addingToMealPlan": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinzufügen zum Speiseplan fehlgeschlagen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1033,6 +1492,12 @@
     "error.addToPlanMissingData": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Plan hinzufügen nicht möglich: Daten fehlen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1050,6 +1515,12 @@
     "error.apiClientOrIDUnavailable": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API-Client oder Benutzer-ID nicht verfügbar."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1067,6 +1538,12 @@
     "error.apiClientUnavailable": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API-Client nicht verfügbar."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1084,6 +1561,12 @@
     "error.cannotAddItem": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artikel kann nicht hinzugefügt werden: Daten fehlen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1101,6 +1584,12 @@
     "error.cannotDeleteItems": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elemente können nicht gelöscht werden: Daten fehlen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1118,6 +1607,12 @@
     "error.cannotImport": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import nicht möglich: fehlende Daten."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1135,6 +1630,12 @@
     "error.cannotUpdateItem": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artikel kann nicht aktualisiert werden: Daten fehlen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1152,6 +1653,12 @@
     "error.creatingList": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste konnte nicht erstellt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1169,6 +1676,12 @@
     "error.deletingItem": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Löschen des Elements fehlgeschlagen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1186,6 +1699,12 @@
     "error.deletingList": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste konnte nicht gelöscht werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1203,6 +1722,12 @@
     "error.deletingMeal": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler beim Löschen des Eintrags"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1220,6 +1745,12 @@
     "error.importingIngredients": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zutaten konnten nicht importiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1237,6 +1768,12 @@
     "error.itemNameEmpty": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Elementname darf nicht leer sein."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1254,6 +1791,12 @@
     "error.listNotInitialized": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einkaufsliste nicht initialisiert."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1271,6 +1814,12 @@
     "error.loadingFavorites": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriten konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1288,6 +1837,12 @@
     "error.loadingListDetails": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listendetails konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1305,6 +1860,12 @@
     "error.loadingPlan": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler beim Laden des Plans"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1322,6 +1883,12 @@
     "error.loadingRecipeDetails": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezeptdetails konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1339,6 +1906,12 @@
     "error.loadingRecipes": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezepte konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1356,6 +1929,12 @@
     "error.loadingReportDetails": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berichtsdetails konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1373,6 +1952,12 @@
     "error.loadingReports": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berichte konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1390,6 +1975,12 @@
     "error.loadingSettings": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1407,6 +1998,12 @@
     "error.loadingShoppingLists": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einkaufslisten konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1424,6 +2021,12 @@
     "error.loadingWeeklyMeals": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wochenmahlzeiten konnten nicht geladen werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1441,6 +2044,12 @@
     "error.login.apiKeyFailed": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldung mit API-Schlüssel fehlgeschlagen. Schlüssel und Server-URL prüfen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1458,6 +2067,12 @@
     "error.login.apiKeyRequired": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API-Schlüssel ist erforderlich."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1475,6 +2090,12 @@
     "error.login.cannotConstructURL": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Server-URL konnte nicht erstellt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1492,6 +2113,12 @@
     "error.login.credentialsRequired": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benutzername und Passwort sind erforderlich."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1509,6 +2136,12 @@
     "error.login.failed": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldung fehlgeschlagen. Zugangsdaten und Server-URL prüfen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1526,6 +2159,12 @@
     "error.login.invalidURL": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültiges Server-URL-Format."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1543,6 +2182,12 @@
     "error.maintenanceBackup": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup konnte nicht erstellt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1560,6 +2205,12 @@
     "error.maintenanceImages": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bilder konnten nicht bereinigt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1577,6 +2228,12 @@
     "error.maintenanceTemp": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporäre Dateien konnten nicht bereinigt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1594,6 +2251,12 @@
     "error.missingDateOrClient": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler: Datum oder API-Client fehlen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1611,6 +2274,12 @@
     "error.noRecipesInRange": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Im ausgewählten Datumsbereich wurden keine Rezepte gefunden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1628,6 +2297,12 @@
     "error.randomMeal": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler beim Hinzufügen einer Zufallsmahlzeit"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1645,6 +2320,12 @@
     "error.reschedulingMeal": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler beim Umplanen der Mahlzeit"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1662,6 +2343,12 @@
     "error.savingRecipe": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezept konnte nicht gespeichert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1679,6 +2366,12 @@
     "error.settingRating": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bewertung konnte nicht gesetzt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1696,6 +2389,12 @@
     "error.toggleFavoriteMissingData": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favorit kann nicht geändert werden: Daten fehlen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1713,6 +2412,12 @@
     "error.unauthorized": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht autorisiert. Bitte erneut anmelden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1730,6 +2435,12 @@
     "error.updatingFavorite": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoritenstatus konnte nicht aktualisiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1747,6 +2458,12 @@
     "error.updatingItem": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Element konnte nicht aktualisiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1764,6 +2481,12 @@
     "error.updatingList": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste konnte nicht aktualisiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1781,6 +2504,12 @@
     "error.weekIntervalUnavailable": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Wochenintervall konnte nicht ermittelt werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1799,6 +2528,12 @@
       "comment": "API Error",
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Anfragetext konnte nicht kodiert werden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1815,6 +2550,12 @@
     },
     "Favorites": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favoriten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1831,6 +2572,12 @@
     },
     "Filter": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1847,6 +2594,12 @@
     },
     "First, create a shopping list in the Lists tab.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstelle zuerst eine Einkaufsliste im Tab „Listen“."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1861,8 +2614,40 @@
         }
       }
     },
+    "Full Name": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vollständiger Name"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full Name"
+          }
+        }
+      }
+    },
+    "Group": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe"
+          }
+        }
+      }
+    },
     "Home": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1877,8 +2662,24 @@
         }
       }
     },
+    "Household": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haushalt"
+          }
+        }
+      }
+    },
     "Household Data": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haushaltsdaten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1893,8 +2694,15 @@
         }
       }
     },
+    "ID": {},
     "Identity": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identität"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1911,6 +2719,12 @@
     },
     "Import": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1927,6 +2741,12 @@
     },
     "Import Current Week": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktuelle Woche importieren"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1943,6 +2763,12 @@
     },
     "Import Date Range": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datumsbereich importieren"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1959,6 +2785,12 @@
     },
     "Import Next Week": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächste Woche importieren"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1975,6 +2807,12 @@
     },
     "Import Successful": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import erfolgreich"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1991,6 +2829,12 @@
     },
     "Importing...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importieren..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2007,6 +2851,12 @@
     },
     "Ingredients": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zutaten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2023,6 +2873,12 @@
     },
     "Instructions": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instruktionen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2041,6 +2897,12 @@
       "comment": "API Error",
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültige URL angegeben."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2057,6 +2919,12 @@
     },
     "Items": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artikel"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2073,6 +2941,12 @@
     },
     "Landscape View": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Querformat"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2087,9 +2961,31 @@
         }
       }
     },
+    "Last Login": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letzte Anmeldung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last Login"
+          }
+        }
+      }
+    },
     "Last Made": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zuletzt gekocht"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2106,6 +3002,12 @@
     },
     "List Name": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listenname"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2122,6 +3024,12 @@
     },
     "Loading Lists...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lade Listen..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2138,6 +3046,12 @@
     },
     "Loading...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laden..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2154,6 +3068,12 @@
     },
     "Locked": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesperrt"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2170,6 +3090,12 @@
     },
     "Login": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Login"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2186,6 +3112,12 @@
     },
     "Login Method": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmeldemethode"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2202,6 +3134,12 @@
     },
     "Logout": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abmelden"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2218,6 +3156,12 @@
     },
     "Logs": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logs"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2235,6 +3179,12 @@
     "Lunch": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mittagessen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2251,6 +3201,12 @@
     },
     "Maintenance": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wartung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2267,6 +3223,12 @@
     },
     "Maintenance & Logs": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wartung und Logs"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2283,6 +3245,12 @@
     },
     "Meal Type": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mahlzeittyp"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2301,6 +3269,12 @@
       "comment": "A section in the settings menu.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mealie"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2315,8 +3289,30 @@
         }
       }
     },
+    "Mealie Version": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mealie-Version"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mealie Version"
+          }
+        }
+      }
+    },
     "mealie.domain.tld": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mealie.domain.tld"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2333,6 +3329,12 @@
     },
     "Move": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verschieben"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2347,8 +3349,30 @@
         }
       }
     },
+    "N/A": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "k. A."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N/A"
+          }
+        }
+      }
+    },
     "Name": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2365,6 +3389,12 @@
     },
     "Name or Note": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name oder Notiz"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2381,6 +3411,12 @@
     },
     "New Item": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neuer Artikel"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2397,6 +3433,12 @@
     },
     "New List": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Liste"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2413,6 +3455,12 @@
     },
     "Next": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2427,8 +3475,30 @@
         }
       }
     },
+    "No": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nein"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        }
+      }
+    },
     "No Data": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Daten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2445,6 +3515,12 @@
     },
     "No Entries": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Einträge"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2463,6 +3539,12 @@
       "comment": "Title of a view that displays a message when the user has not added any favorites.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Favoriten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2479,6 +3561,12 @@
     },
     "No favorites found": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Favoriten gefunden"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2495,6 +3583,12 @@
     },
     "No items in this list yet.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Artikel in dieser Liste."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2511,6 +3605,12 @@
     },
     "No list found": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Liste gefunden"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2527,6 +3627,12 @@
     },
     "No logs match the '%@' filter.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Logs entsprechen dem Filter „%@“."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2545,6 +3651,12 @@
       "comment": "Title of an alert when the user has not created any recipes.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Rezepte"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2561,6 +3673,12 @@
     },
     "No recipes in this list yet.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Rezepte in dieser Liste."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2577,6 +3695,12 @@
     },
     "No Reports": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Berichte"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2593,6 +3717,12 @@
     },
     "No reports found for this category.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für diese Kategorie wurden keine Berichte gefunden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2609,6 +3739,12 @@
     },
     "No reports found on the server.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf dem Server wurden keine Berichte gefunden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2625,6 +3761,12 @@
     },
     "No result for \"%@\"": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein Ergebnis für „%@“"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2643,6 +3785,12 @@
       "comment": "Title of a view that is displayed when a search for favorites returns no results.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Ergebnisse"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2659,6 +3807,12 @@
     },
     "No Shopping Lists": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Einkaufslisten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2675,6 +3829,12 @@
     },
     "No Statistics": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Statistiken"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2691,6 +3851,12 @@
     },
     "Nothing planned": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts geplant"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2707,6 +3873,12 @@
     },
     "OK": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2721,8 +3893,46 @@
         }
       }
     },
+    "Open Signups": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offene Registrierung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Signups"
+          }
+        }
+      }
+    },
+    "OpenAI Enabled": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenAI aktiviert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenAI Enabled"
+          }
+        }
+      }
+    },
     "Optional Title": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optionaler Titel"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2739,6 +3949,12 @@
     },
     "Overall rating:": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesamtbewertung:"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2755,6 +3971,12 @@
     },
     "Password": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwort"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2771,6 +3993,12 @@
     },
     "Permissions": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berechtigungen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2788,6 +4016,12 @@
     "planner.errorDateNotSelected": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler: Datum nicht ausgewählt."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2805,6 +4039,12 @@
     "planner.navigationTitle": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planer"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2822,6 +4062,12 @@
     "planner.nothingPlanned": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts geplant an diesem Tag."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2839,6 +4085,12 @@
     "planner.today": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heute"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2856,6 +4108,12 @@
     "planner.viewMode.day": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2873,6 +4131,12 @@
     "planner.viewMode.month": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monat"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2890,6 +4154,12 @@
     "planner.viewMode.week": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Woche"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2908,6 +4178,12 @@
       "comment": "The name of the app.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pocket for Mealie"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2924,6 +4200,12 @@
     },
     "Portion": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portion"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2940,6 +4222,12 @@
     },
     "Portions": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portionen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2956,6 +4244,12 @@
     },
     "Prep Time (e.g., 20m)": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorbereitungszeit (z. B. 20m)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2972,6 +4266,12 @@
     },
     "Preparation": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorbereitung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2988,6 +4288,12 @@
     },
     "Processing...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird verarbeitet…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3004,6 +4310,12 @@
     },
     "Profile": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profil"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3020,6 +4332,12 @@
     },
     "Public Recipe": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffentliches Rezept"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3036,6 +4354,12 @@
     },
     "Qty": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menge"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3052,6 +4376,12 @@
     },
     "Quantity: %@": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menge: %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3069,6 +4399,12 @@
     "Random": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zufällig"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3086,6 +4422,12 @@
     "Rating": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bewertung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3104,6 +4446,12 @@
       "comment": "API Error",
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ungültige Antwort vom Server erhalten."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3120,6 +4468,12 @@
     },
     "Recipe not found anymore.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezept nicht mehr gefunden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3136,6 +4490,12 @@
     },
     "Recipes": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezepte"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3152,6 +4512,12 @@
     },
     "Reschedule": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neu planen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3168,6 +4534,12 @@
     },
     "Reschedule Meal": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mahlzeit verschieben"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3184,6 +4556,12 @@
     },
     "Save": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speichern"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3200,6 +4578,12 @@
     },
     "Scheme": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schema"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3216,6 +4600,12 @@
     },
     "Search for a food": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche nach einem Lebensmittel"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3232,6 +4622,12 @@
     },
     "Search for a recipe...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nach einem Rezept suchen..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3248,6 +4644,12 @@
     },
     "Search results": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suchergebnisse"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3265,6 +4667,12 @@
     "Select Date": {
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datum auswählen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3281,6 +4689,12 @@
     },
     "Select Date Range": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datumsbereich auswählen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3297,6 +4711,12 @@
     },
     "Select dates to import": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importdaten auswählen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3313,6 +4733,12 @@
     },
     "Select List to Import To": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zielliste auswählen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3329,6 +4755,12 @@
     },
     "Select meal type": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mahlzeittyp wählen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3345,6 +4777,12 @@
     },
     "Server Logs": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serverlogs"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3359,10 +4797,32 @@
         }
       }
     },
+    "Server URL": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server-URL"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server URL"
+          }
+        }
+      }
+    },
     "Session expired and token refresh failed. Please log in again.": {
       "comment": "API Error",
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sitzung abgelaufen, Token-Aktualisierung fehlgeschlagen. Bitte erneut anmelden."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3379,6 +4839,12 @@
     },
     "Settings": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3397,6 +4863,12 @@
       "comment": "The title of the \"About\" section in the settings.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3415,6 +4887,12 @@
       "comment": "A label for a button that opens a GitHub issue.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Problem melden"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3433,6 +4911,12 @@
       "comment": "A button that opens the App Store to review the app.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bewertung abgeben"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3451,6 +4935,12 @@
       "comment": "A button that shares Pocket for Mealie.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App teilen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3468,6 +4958,12 @@
     "settings.about.title": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3485,6 +4981,12 @@
     "settings.application.language": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sprache"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3502,6 +5004,12 @@
     "settings.application.theme": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Darstellung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3519,6 +5027,12 @@
     "settings.application.title": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applikation"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3536,6 +5050,12 @@
     "settings.language.english": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Englisch"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3553,6 +5073,12 @@
     "settings.language.french": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Französisch"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3567,9 +5093,38 @@
         }
       }
     },
+    "settings.language.german": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deutsch"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "German"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allemand"
+          }
+        }
+      }
+    },
     "settings.language.system": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3587,6 +5142,12 @@
     "settings.server.nav": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3604,6 +5165,12 @@
     "settings.theme.dark": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dunkel"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3621,6 +5188,12 @@
     "settings.theme.light": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hell"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3638,6 +5211,12 @@
     "settings.theme.system": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3654,6 +5233,12 @@
     },
     "Shopping Lists": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einkaufslisten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3670,6 +5255,12 @@
     },
     "Show Assets": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anhänge anzeigen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3686,6 +5277,12 @@
     },
     "Show Nutrition": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nährwerte anzeigen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3703,6 +5300,12 @@
     "Side": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beilage"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3720,6 +5323,12 @@
     "Snack": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snack"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3736,6 +5345,12 @@
     },
     "Sort": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sortieren"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3752,6 +5367,12 @@
     },
     "Sort By": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sortieren nach"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3768,6 +5389,12 @@
     },
     "Start Date": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startdatum"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3784,6 +5411,12 @@
     },
     "Statistics": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistiken"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3800,6 +5433,12 @@
     },
     "Status": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3817,6 +5456,12 @@
     "tab.home": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3834,6 +5479,12 @@
     "tab.lists": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3851,6 +5502,12 @@
     "tab.planner": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3868,6 +5525,12 @@
     "tab.recipes": {
       "extractionState": "manual",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezepte"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3884,6 +5547,12 @@
     },
     "Tags": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tags"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3902,6 +5571,12 @@
       "comment": "API Error",
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anfrage zeitüberschritten. Server arbeitet im Hintergrund weiter."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3918,6 +5593,12 @@
     },
     "These statistics apply to your current household.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Statistiken gelten für deinen aktuellen Haushalt."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3934,6 +5615,12 @@
     },
     "This week": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Woche"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3950,6 +5637,12 @@
     },
     "Times": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeiten"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3966,6 +5659,12 @@
     },
     "Tools": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werkzeuge"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3982,6 +5681,12 @@
     },
     "Total": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesamt"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3998,6 +5703,12 @@
     },
     "Total Recipes": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rezepte gesamt"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4014,6 +5725,12 @@
     },
     "Total Time (e.g., 1h 30m)": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gesamtzeit (z. B. 1h 30m)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4030,6 +5747,12 @@
     },
     "Type to search...": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Suchen eingeben..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4048,6 +5771,12 @@
       "comment": "API Error",
       "extractionState": "stale",
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht autorisiert. Zugangsdaten prüfen."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4064,6 +5793,12 @@
     },
     "Unit": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einheit"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4080,6 +5815,12 @@
     },
     "Updated %@": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisiert %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4096,6 +5837,12 @@
     },
     "Username": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benutzername"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4112,6 +5859,12 @@
     },
     "Users": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benutzer"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4128,6 +5881,12 @@
     },
     "View mode": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ansichtsmodus"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4144,6 +5903,12 @@
     },
     "View more": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mehr anzeigen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4160,6 +5925,12 @@
     },
     "View Server Reports": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serverberichte anzeigen"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4178,6 +5949,12 @@
       "comment": "A welcome message displayed at the top of the login screen.",
       "isCommentAutoGenerated": true,
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Willkommen bei Pocket for Mealie"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4192,8 +5969,30 @@
         }
       }
     },
+    "Yes": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ja"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        }
+      }
+    },
     "Yield (e.g., 4 servings)": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Portionsangabe (z. B. 4 Portionen)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4210,6 +6009,12 @@
     },
     "Your favorite recipes will appear here.": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Lieblingsrezepte werden hier angezeigt."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4226,6 +6031,12 @@
     },
     "Your rating": {
       "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Bewertung"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",

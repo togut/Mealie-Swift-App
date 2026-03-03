@@ -31,7 +31,7 @@ It lets you browse recipes, manage meal plans, and keep shopping lists in sync w
 - [x] **Meal Planning**: Add recipes to specific dates and meal types.
 - [x] **Shopping Lists**: Create lists, add items, and import items from meal plans.
 - [x] **Admin Tools**: View reports, logs, backups, and maintenance actions when available.
-- [x] **Localization**: English and French UI support.
+- [x] **Localization**: English, French, and German UI support.
 
 ## Roadmap
 

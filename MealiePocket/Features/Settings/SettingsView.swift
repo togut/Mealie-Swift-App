@@ -107,8 +107,9 @@ struct ApplicationSettingsView: View {
             Section("settings.application.language") {
                 Picker(selection: $settings.languageCode) {
                     Text("settings.language.system").tag("system")
-                    Text("settings.language.english").tag("en")
-                    Text("settings.language.french").tag("fr")
+                    Text(verbatim: "Deutsch").tag("de")
+                    Text(verbatim: "English").tag("en")
+                    Text(verbatim: "Français").tag("fr")
                 } label: {
                     Label("settings.application.language", systemImage: "globe")
                         .foregroundStyle(.primary)
@@ -264,14 +265,14 @@ struct UserProfileView: View {
         List {
             Section("Identity") {
                 ServerInfoRow(title: "ID", value: user.id)
-                ServerInfoRow(title: "Full Name", value: user.fullName ?? "N/A")
+                ServerInfoRow(title: "Full Name", value: user.fullName ?? String(localized: "N/A"))
                 ServerInfoRow(title: "Email", value: user.email)
             }
 
             Section("Permissions") {
                 ServerInfoRow(title: "Group", value: user.group)
                 ServerInfoRow(title: "Household", value: user.household)
-                ServerInfoRow(title: "Admin Access", value: user.admin ? "Yes" : "No")
+                ServerInfoRow(title: "Admin Access", value: user.admin ? String(localized: "Yes") : String(localized: "No"))
             }
         }
         .navigationTitle("Profile")
@@ -290,19 +291,19 @@ struct ServerInfoView: View {
             Section("Connection") {
                 ServerInfoRow(
                     title: "Server URL",
-                    value: appState.apiClient?.baseURL.absoluteString ?? "N/A",
+                    value: appState.apiClient?.baseURL.absoluteString ?? String(localized: "N/A"),
                     onCopy: { copyToClipboard(appState.apiClient?.baseURL.absoluteString) }
                 )
-                ServerInfoRow(title: "Auth Method", value: appState.authMethod?.rawValue.capitalized ?? "N/A")
-                ServerInfoRow(title: "Last Login", value: appState.loginTime?.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)) ?? "N/A")
+                ServerInfoRow(title: "Auth Method", value: appState.authMethod?.rawValue.capitalized ?? String(localized: "N/A"))
+                ServerInfoRow(title: "Last Login", value: appState.loginTime?.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)) ?? String(localized: "N/A"))
             }
 
             if let appInfo = viewModel.appInfo {
                 Section("Application Details") {
                     ServerInfoRow(title: "Mealie Version", value: appInfo.version)
-                    ServerInfoRow(title: "Demo Mode", value: appInfo.demoStatus ? "Yes" : "No")
-                    ServerInfoRow(title: "Open Signups", value: appInfo.allowSignup ? "Allowed" : "Closed")
-                    ServerInfoRow(title: "OpenAI Enabled", value: appInfo.enableOpenai ? "Yes" : "No")
+                    ServerInfoRow(title: "Demo Mode", value: appInfo.demoStatus ? String(localized: "Yes") : String(localized: "No"))
+                    ServerInfoRow(title: "Open Signups", value: appInfo.allowSignup ? String(localized: "Allowed") : String(localized: "Closed"))
+                    ServerInfoRow(title: "OpenAI Enabled", value: appInfo.enableOpenai ? String(localized: "Yes") : String(localized: "No"))
                 }
             }
         }
@@ -428,11 +429,11 @@ struct AdminDashboardView: View {
 }
 
 struct ServerInfoRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let onCopy: (() -> Void)?
 
-    init(title: String, value: String, onCopy: (() -> Void)? = nil) {
+    init(title: LocalizedStringKey, value: String, onCopy: (() -> Void)? = nil) {
         self.title = title
         self.value = value
         self.onCopy = onCopy
