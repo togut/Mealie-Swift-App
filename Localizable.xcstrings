@@ -2590,7 +2590,22 @@
         }
       }
     },
-    "Pin": {},
+    "Pin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Épingler"
+          }
+        }
+      }
+    },
     "Planner": {},
     "planner.errorDateNotSelected": {
       "extractionState": "manual",
@@ -4362,7 +4377,22 @@
         }
       }
     },
-    "Unpin": {},
+    "Unpin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpin"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dépingler"
+          }
+        }
+      }
+    },
     "Updated %@": {
       "localizations": {
         "en": {
@@ -6318,6 +6348,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yes"
+          }
+        }
+      }
+    },
+    "Pinned Lists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinned Lists"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listes épinglées"
           }
         }
       }

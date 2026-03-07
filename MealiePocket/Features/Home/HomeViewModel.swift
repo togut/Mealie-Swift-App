@@ -286,4 +286,40 @@ class HomeViewModel {
             await MainActor.run { isLoadingWeeklyMeals = false }
         }
     }
+
+    @MainActor
+    func loadPinnedShoppingLists(apiClient: MealieAPIClient?) async {
+        guard let apiClient else {
+            pinnedShoppingListsErrorMessage = "error.apiClientUnavailable"
+            return
+        }
+
+        let pinnedIds = UserPreferences.getPinnedShoppingListIds()
+        guard !pinnedIds.isEmpty else {
+            pinnedShoppingLists = []
+            return
+        }
+
+        isLoadingPinnedShoppingLists = true
+        pinnedShoppingListsErrorMessage = nil
+
+        do {
+            let allLists = try await apiClient.fetchShoppingLists(page: 1, perPage: 1000)
+            let filtered = allLists.items.filter { list in
+                pinnedIds.contains(list.id)
+            }
+
+            self.pinnedShoppingLists = filtered.sorted { a, b in
+                guard let aIndex = pinnedIds.firstIndex(of: a.id),
+                      let bIndex = pinnedIds.firstIndex(of: b.id) else {
+                    return false
+                }
+                return aIndex < bIndex
+            }
+        } catch {
+            self.pinnedShoppingListsErrorMessage = "Failed to load pinned lists: \(error.localizedDescription)"
+        }
+
+        isLoadingPinnedShoppingLists = false
+    }
 }
