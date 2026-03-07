@@ -101,6 +101,7 @@ class RecipeListViewModel {
                 } else {
                     self.recipes = updatedRecipes
                     self.currentPage = 1
+                    self.lastFetchTime = Date()
                 }
                 self.totalPages = response.totalPages
                 self.lastFetchTime = Date()
@@ -140,6 +141,23 @@ class RecipeListViewModel {
 
     func loadMoreRecipes(apiClient: MealieAPIClient?, userID: String?) async {
         await performSearchOrLoad(apiClient: apiClient, userID: userID, isSearching: !searchText.isEmpty, loadMore: true)
+    }
+    
+    func refreshIfStale(apiClient: MealieAPIClient?, userID: String?) async {
+        guard let lastFetch = lastFetchTime else {
+            await loadInitialOrRefreshRecipes(apiClient: apiClient, userID: userID)
+            return
+        }
+        
+        let timeSinceLastFetch = Date().timeIntervalSince(lastFetch)
+        if timeSinceLastFetch > cacheMaxAge {
+            await loadInitialOrRefreshRecipes(apiClient: apiClient, userID: userID)
+        }
+    }
+    
+    func clearCache() {
+        recipes = []
+        lastFetchTime = nil
     }
 
     func refreshIfStale(apiClient: MealieAPIClient?, userID: String?) async {

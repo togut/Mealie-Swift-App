@@ -4,7 +4,7 @@ struct RecipeListView: View {
     @State private var viewModel = RecipeListViewModel()
     @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
-    @State private var scrollPosition: ScrollPosition = .init(edge: .top)
+    @State private var scrollPosition: ScrollPosition = .init(idType: UUID.self)
     @State private var selectedRecipe: RecipeSummary?
 
     var body: some View {
@@ -113,7 +113,6 @@ struct RecipeListView: View {
             Image(systemName: "arrow.up.arrow.down.circle")
         }
         .onChange(of: viewModel.sortOption) { _, _ in
-             viewModel.setSortOption(viewModel.sortOption)
              Task { await viewModel.applySort(apiClient: appState.apiClient, userID: appState.currentUserID) }
          }
          .onChange(of: viewModel.sortDirection) { _, _ in
