@@ -49,6 +49,13 @@ struct RecipeDetailView: View {
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 Button {
+                    viewModel.showingAddToListSheet = true
+                } label: {
+                    Image(systemName: "list.bullet.clipboard")
+                }
+                .disabled(viewModel.recipeDetail == nil)
+                
+                Button {
                     viewModel.showingAddToPlanSheet = true
                 } label: {
                     Image(systemName: "calendar.badge.plus")
@@ -85,6 +92,61 @@ struct RecipeDetailView: View {
                 AddToMealPlanView(viewModel: viewModel, apiClient: client)
             }
         }
+        .sheet(isPresented: $viewModel.showingAddToListSheet) {
+            if let client = appState.apiClient, let detail = viewModel.recipeDetail {
+                AddIngredientsToListView(
+                    ingredients: detail.recipeIngredient,
+                    scaleFactor: viewModel.scaleFactor,
+                    apiClient: client
+                ) { listId, selectedIngredients in
+                    Task {
+                        await viewModel.addIngredientsToList(
+                            listId: listId,
+                            ingredients: selectedIngredients,
+                            apiClient: appState.apiClient
+                        )
+                    }
+                }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if viewModel.addToListStatus == .success {
+                Label("addToList.success", systemImage: "checkmark.circle.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.green, in: Capsule())
+                    .padding(.bottom, 32)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if viewModel.addToListStatus == .failed {
+                HStack(spacing: 12) {
+                    Label("error.addingIngredientsToList", systemImage: "exclamationmark.triangle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                    Button {
+                        Task { await viewModel.retryAddToList(apiClient: appState.apiClient) }
+                    } label: {
+                        Text("Retry")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(.white)
+                    }
+                    Button {
+                        viewModel.dismissAddToListStatus()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(.red, in: Capsule())
+                .padding(.bottom, 32)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: viewModel.addToListStatus)
         .task {
             if viewModel.recipeDetail == nil || viewModel.needsRefresh {
                 await viewModel.loadRecipeDetail(slug: recipeSummary.slug, apiClient: appState.apiClient, userID: appState.currentUserID)
