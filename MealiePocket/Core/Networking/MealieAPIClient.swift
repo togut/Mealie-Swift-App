@@ -783,9 +783,13 @@ class MealieAPIClient {
         let _: NoReply = try await performRequest(for: request)
     }
     
-    func addRecipesToShoppingListBulk(listId: UUID, recipeIds: [UUID]) async throws -> ShoppingListDetail {
+    func addRecipesToShoppingListBulk(
+        listId: UUID,
+        recipeIds: [UUID],
+        scale: Double = 1.0,
+        ingredients: [RecipeIngredient]? = nil
+    ) async throws -> ShoppingListDetail {
         guard !recipeIds.isEmpty else {
-            
             throw APIError.invalidURL
         }
         
@@ -794,7 +798,13 @@ class MealieAPIClient {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let payload = recipeIds.map { ShoppingListAddRecipeParamsBulkPayload(recipeId: $0.uuidString.lowercased()) }
+        let payload = recipeIds.map {
+            ShoppingListAddRecipeParamsBulkPayload(
+                recipeId: $0.uuidString.lowercased(),
+                recipeIncrementQuantity: scale,
+                recipeIngredients: ingredients
+            )
+        }
         
         do {
             request.httpBody = try JSONEncoder().encode(payload)

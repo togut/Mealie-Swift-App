@@ -8,6 +8,7 @@ class RecipeDetailViewModel {
     var isLoading = false
     var errorMessage: String?
     var showingAddToPlanSheet = false
+    var showingAddToListSheet = false
     var showingEditSheet = false
     var needsRefresh = false
     
@@ -169,28 +170,65 @@ class RecipeDetailViewModel {
     }
     
     func scaledDisplayText(for ingredient: RecipeIngredient) -> String {
-        let scale = scaleFactor
-        guard scale != 1.0, let originalQty = ingredient.quantity, originalQty > 0 else {
-            return ingredient.display
-        }
-        
-        let scaledQty = originalQty * scale
-        let formattedQty = IngredientScaler.formatQuantity(scaledQty)
-        
-        var parts: [String] = [formattedQty]
-        if let unit = ingredient.unit {
-            parts.append(unit.name)
-        }
-        if let food = ingredient.food {
-            parts.append(food.name)
-        }
-        if !ingredient.note.isEmpty {
-            parts.append(ingredient.note)
-        }
-        
-        return parts.joined(separator: " ")
+        IngredientScaler.displayText(for: ingredient, scaleFactor: scaleFactor)
     }
     
+    // MARK: - Add to Shopping List
+
+    enum AddToListStatus: Equatable {
+        case idle
+        case success
+        case failed
+    }
+
+    var addToListStatus: AddToListStatus = .idle
+    private var lastAddToListParams: (listId: UUID, ingredients: [RecipeIngredient]?)? = nil
+    private var toastDismissTask: Task<Void, Never>? = nil
+
+    func addIngredientsToList(listId: UUID, ingredients: [RecipeIngredient]?, apiClient: MealieAPIClient?) async {
+        guard let apiClient = apiClient, let detail = recipeDetail else { return }
+
+        lastAddToListParams = (listId, ingredients)
+
+        do {
+            _ = try await apiClient.addRecipesToShoppingListBulk(
+                listId: listId,
+                recipeIds: [detail.id],
+                scale: scaleFactor,
+                ingredients: ingredients
+            )
+            await MainActor.run {
+                withAnimation { addToListStatus = .success }
+                scheduleToastDismiss()
+            }
+        } catch APIError.unauthorized {
+            // Handled globally
+        } catch {
+            await MainActor.run {
+                withAnimation { addToListStatus = .failed }
+            }
+        }
+    }
+
+    func retryAddToList(apiClient: MealieAPIClient?) async {
+        guard let params = lastAddToListParams else { return }
+        await addIngredientsToList(listId: params.listId, ingredients: params.ingredients, apiClient: apiClient)
+    }
+
+    @MainActor
+    func dismissAddToListStatus() {
+        withAnimation { addToListStatus = .idle }
+    }
+
+    private func scheduleToastDismiss() {
+        toastDismissTask?.cancel()
+        toastDismissTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            self?.dismissAddToListStatus()
+        }
+    }
+
     @MainActor
     func markForRefresh() {
         needsRefresh = true

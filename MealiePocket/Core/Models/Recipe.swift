@@ -311,10 +311,6 @@ struct CreateIngredientFood: Codable, Hashable {
 
 struct ShoppingListAddRecipeParamsBulkPayload: Codable {
     var recipeId: String
-    var scale: Double = 1.0
-    
-    enum CodingKeys: String, CodingKey {
-        case recipeId = "recipeId"
-        case scale
-    }
+    var recipeIncrementQuantity: Double = 1.0
+    var recipeIngredients: [RecipeIngredient]? = nil
 }

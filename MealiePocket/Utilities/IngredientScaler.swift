@@ -72,4 +72,21 @@ enum IngredientScaler {
         }
         return nil
     }
+
+    // MARK: - Scaled Display Text
+
+    /// Builds a display string for an ingredient at the given scale factor.
+    /// Returns the original `display` when scale is 1 or the ingredient has no quantity.
+    static func displayText(for ingredient: RecipeIngredient, scaleFactor: Double) -> String {
+        guard scaleFactor != 1.0, let qty = ingredient.quantity, qty > 0 else {
+            return ingredient.display
+        }
+        let scaledQty = qty * scaleFactor
+        let formatted = formatQuantity(scaledQty)
+        var parts: [String] = [formatted]
+        if let unit = ingredient.unit { parts.append(unit.name) }
+        if let food = ingredient.food { parts.append(food.name) }
+        if !ingredient.note.isEmpty { parts.append(ingredient.note) }
+        return parts.joined(separator: " ")
+    }
 }
