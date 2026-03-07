@@ -1,7 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "": {},
     "...": {
       "localizations": {
         "en": {
@@ -68,7 +67,28 @@
         }
       }
     },
-    "Add Entry": {},
+    "Add Entry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Entry"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eintrag hinzufügen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter une entrée"
+          }
+        }
+      }
+    },
     "Add Ingredient": {
       "localizations": {
         "en": {
@@ -135,8 +155,50 @@
         }
       }
     },
-    "Add Multiple Items": {},
-    "Add next": {},
+    "Add Multiple Items": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Multiple Items"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mehrere Elemente hinzufügen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter plusieurs éléments"
+          }
+        }
+      }
+    },
+    "Add next": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add next"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächstes hinzufügen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter le suivant"
+          }
+        }
+      }
+    },
     "Add to %@": {
       "localizations": {
         "en": {
@@ -802,7 +864,28 @@
         }
       }
     },
-    "Default View": {},
+    "Default View": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default View"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standardansicht"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vue par défaut"
+          }
+        }
+      }
+    },
     "Delete": {
       "localizations": {
         "en": {
@@ -1004,8 +1087,50 @@
         }
       }
     },
-    "Edit Entry": {},
-    "Edit Item": {},
+    "Edit Entry": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Entry"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eintrag bearbeiten"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'entrée"
+          }
+        }
+      }
+    },
+    "Edit Item": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Item"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Element bearbeiten"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modifier l'élément"
+          }
+        }
+      }
+    },
     "Edit List": {
       "localizations": {
         "en": {
@@ -1390,7 +1515,28 @@
         }
       }
     },
-    "Food": {},
+    "Food": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Food"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lebensmittel"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aliment"
+          }
+        }
+      }
+    },
     "Home": {
       "localizations": {
         "en": {
@@ -1679,7 +1825,28 @@
         }
       }
     },
-    "Just note": {},
+    "Just note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just note"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur Notiz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juste une note"
+          }
+        }
+      }
+    },
     "Landscape View": {
       "localizations": {
         "en": {
@@ -2235,7 +2402,28 @@
         }
       }
     },
-    "No foods found": {},
+    "No foods found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No foods found"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Lebensmittel gefunden"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun aliment trouvé"
+          }
+        }
+      }
+    },
     "No items in this list yet.": {
       "localizations": {
         "en": {
@@ -2456,8 +2644,50 @@
         }
       }
     },
-    "None": {},
-    "Note": {},
+    "None": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun"
+          }
+        }
+      }
+    },
+    "Note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notiz"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
     "Nothing planned": {
       "localizations": {
         "en": {
@@ -2603,10 +2833,37 @@
             "state": "translated",
             "value": "Épingler"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anheften"
+          }
         }
       }
     },
-    "Planner": {},
+    "Planner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planner"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planificateur"
+          }
+        }
+      }
+    },
     "planner.errorDateNotSelected": {
       "extractionState": "manual",
       "localizations": {
@@ -2968,7 +3225,28 @@
         }
       }
     },
-    "Quantity": {},
+    "Quantity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantity"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menge"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quantité"
+          }
+        }
+      }
+    },
     "Quantity: %@": {
       "extractionState": "stale",
       "localizations": {
@@ -2992,7 +3270,28 @@
         }
       }
     },
-    "Quick Shopping Lists": {},
+    "Quick Shopping Lists": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Shopping Lists"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schnelle Einkaufslisten"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listes d'achat rapides"
+          }
+        }
+      }
+    },
     "Random": {
       "extractionState": "manual",
       "localizations": {
@@ -3107,9 +3406,72 @@
         }
       }
     },
-    "Remove": {},
-    "Remove Checked Items": {},
-    "Remove checked items?": {},
+    "Remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entfernen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer"
+          }
+        }
+      }
+    },
+    "Remove Checked Items": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Checked Items"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markierte Elemente entfernen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer les éléments cochés"
+          }
+        }
+      }
+    },
+    "Remove checked items?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove checked items?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markierte Elemente entfernen?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Supprimer les éléments cochés ?"
+          }
+        }
+      }
+    },
     "Reschedule": {
       "localizations": {
         "en": {
@@ -3198,7 +3560,28 @@
         }
       }
     },
-    "Search food": {},
+    "Search food": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search food"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lebensmittel durchsuchen"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher un aliment"
+          }
+        }
+      }
+    },
     "Search for a food": {
       "localizations": {
         "en": {
@@ -4175,7 +4558,28 @@
         }
       }
     },
-    "This removes all checked items from this list.": {},
+    "This removes all checked items from this list.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This removes all checked items from this list."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dies entfernt alle markierten Elemente von dieser Liste."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cela supprime tous les éléments cochés de cette liste."
+          }
+        }
+      }
+    },
     "This week": {
       "localizations": {
         "en": {
@@ -4220,7 +4624,28 @@
         }
       }
     },
-    "Title": {},
+    "Title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titel"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titre"
+          }
+        }
+      }
+    },
     "Tools": {
       "localizations": {
         "en": {
@@ -4389,6 +4814,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dépingler"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loslösen"
           }
         }
       }
@@ -4619,8 +5050,20 @@
       "localizations": {
         "en": {
           "stringUnit": {
-            "state": "new",
-            "value": "%1$lld / %2$lld"
+            "state": "translated",
+            "value": "%lld / %lld"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld"
           }
         }
       }
@@ -4631,13 +5074,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Create a shopping list in Mealie first."
+            "value": "Create a new shopping list first"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Créez d'abord une liste de courses dans Mealie."
+            "value": "Créez d'abord une nouvelle liste d'achat"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellen Sie zunächst eine neue Einkaufsliste"
           }
         }
       }
@@ -4656,6 +5105,12 @@
             "state": "translated",
             "value": "Tout désélectionner"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles abwählen"
+          }
         }
       }
     },
@@ -4665,13 +5120,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Loading lists…"
+            "value": "Loading lists..."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chargement des listes…"
+            "value": "Chargement des listes..."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listen werden geladen..."
           }
         }
       }
@@ -4682,13 +5143,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No Shopping Lists"
+            "value": "No shopping lists found"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aucune liste de courses"
+            "value": "Aucune liste d'achat trouvée"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Einkaufslisten gefunden"
           }
         }
       }
@@ -4699,13 +5166,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quantities are scaled"
+            "value": "Scaled"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quantités mises à l'échelle"
+            "value": "Échelonné"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skaliert"
           }
         }
       }
@@ -4724,6 +5197,12 @@
             "state": "translated",
             "value": "Tout sélectionner"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles auswählen"
+          }
         }
       }
     },
@@ -4741,6 +5220,12 @@
             "state": "translated",
             "value": "Sélectionner les ingrédients"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zutaten auswählen"
+          }
         }
       }
     },
@@ -4750,13 +5235,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose a List"
+            "value": "Select List"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choisir une liste"
+            "value": "Sélectionner la liste"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liste auswählen"
           }
         }
       }
@@ -4767,13 +5258,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Added to list"
+            "value": "Added to shopping list"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajouté à la liste"
+            "value": "Ajouté à la liste d'achat"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zur Einkaufsliste hinzugefügt"
           }
         }
       }
@@ -4790,7 +5287,13 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajouter à la liste de courses"
+            "value": "Ajouter à la liste d'achat"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zur Einkaufsliste hinzufügen"
           }
         }
       }
@@ -5015,6 +5518,12 @@
             "state": "translated",
             "value": "Retour"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurück"
+          }
         }
       }
     },
@@ -5024,13 +5533,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed to add ingredients"
+            "value": "Error adding ingredients to list"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Échec de l'ajout des ingrédients"
+            "value": "Erreur lors de l'ajout d'ingrédients à la liste"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehler beim Hinzufügen von Zutaten zur Liste"
           }
         }
       }
@@ -6063,6 +6578,12 @@
             "state": "translated",
             "value": "Réessayer"
           }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut versuchen"
+          }
         }
       }
     },
@@ -6078,7 +6599,13 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Réglages"
+            "value": "Paramètres"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen"
           }
         }
       }
@@ -6088,13 +6615,19 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Adminzugriff"
+            "value": "Administratorzugriff"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Admin Access"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès administrateur"
           }
         }
       }
@@ -6112,6 +6645,12 @@
             "state": "translated",
             "value": "Allowed"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorisé"
+          }
         }
       }
     },
@@ -6120,13 +6659,19 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anmeldemethode"
+            "value": "Authentifizierungsmethode"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Auth Method"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Méthode d'authentification"
           }
         }
       }
@@ -6144,6 +6689,12 @@
             "state": "translated",
             "value": "Closed"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fermé"
+          }
         }
       }
     },
@@ -6160,10 +6711,37 @@
             "state": "translated",
             "value": "Demo Mode"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode démo"
+          }
         }
       }
     },
-    "Email": {},
+    "Email": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Email"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-Mail"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-mail"
+          }
+        }
+      }
+    },
     "Full Name": {
       "localizations": {
         "de": {
@@ -6177,6 +6755,12 @@
             "state": "translated",
             "value": "Full Name"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nom complet"
+          }
         }
       }
     },
@@ -6186,6 +6770,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gruppe"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groupe"
           }
         }
       }
@@ -6197,10 +6793,43 @@
             "state": "translated",
             "value": "Haushalt"
           }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Household"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foyer"
+          }
         }
       }
     },
-    "ID": {},
+    "ID": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ID"
+          }
+        }
+      }
+    },
     "Last Login": {
       "localizations": {
         "de": {
@@ -6213,6 +6842,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Last Login"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dernière connexion"
           }
         }
       }
@@ -6230,6 +6865,12 @@
             "state": "translated",
             "value": "Mealie Version"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version Mealie"
+          }
         }
       }
     },
@@ -6238,13 +6879,19 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "k. A."
+            "value": "Nicht zutreffend"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "N/A"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S/O"
           }
         }
       }
@@ -6262,6 +6909,12 @@
             "state": "translated",
             "value": "No"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non"
+          }
         }
       }
     },
@@ -6270,13 +6923,19 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Offene Registrierung"
+            "value": "Offene Registrierungen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Open Signups"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inscriptions ouvertes"
           }
         }
       }
@@ -6294,6 +6953,12 @@
             "state": "translated",
             "value": "OpenAI Enabled"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenAI activé"
+          }
         }
       }
     },
@@ -6309,6 +6974,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Server URL"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL du serveur"
           }
         }
       }
@@ -6349,6 +7020,12 @@
             "state": "translated",
             "value": "Yes"
           }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oui"
+          }
         }
       }
     },
@@ -6364,6 +7041,34 @@
           "stringUnit": {
             "state": "translated",
             "value": "Listes épinglées"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angeheftete Listen"
+          }
+        }
+      }
+    },
+    "User Role": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User Role"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benutzerrolle"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rôle de l'utilisateur"
           }
         }
       }
