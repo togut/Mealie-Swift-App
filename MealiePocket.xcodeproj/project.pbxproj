@@ -36,11 +36,6 @@
 			path = MealiePocket;
 			sourceTree = "<group>";
 		};
-		87C130682F20FD7B0042B975 /* FastlaneSnapshot */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FastlaneSnapshot;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +54,6 @@
 			children = (
 				87C437372ED5F33C0014DEDE /* Localizable.xcstrings */,
 				87226E0B2EA6C90E00FBF5C7 /* MealiePocket */,
-				87C130682F20FD7B0042B975 /* FastlaneSnapshot */,
 				87226E0A2EA6C90E00FBF5C7 /* Products */,
 				87C436712ED5EF560014DEDE /* MealiePocket.icon */,
 			);
@@ -286,7 +280,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = MealiePocket;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SVB5TM46RX;
 				ENABLE_APP_SANDBOX = YES;
@@ -312,8 +306,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nohitdev.MealiePocket-dev-tob";
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -336,7 +330,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = MealiePocket;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = SVB5TM46RX;
 				ENABLE_APP_SANDBOX = YES;
@@ -362,8 +356,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.nohitdev.MealiePocket-dev-tob";
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;

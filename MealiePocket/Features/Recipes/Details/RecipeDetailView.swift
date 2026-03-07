@@ -34,7 +34,7 @@ struct RecipeDetailView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .resizable().scaledToFit().frame(width: 50, height: 50).foregroundColor(.orange)
                         Text("Error").font(.title2).fontWeight(.bold)
-                        Text(errorMessage).font(.callout).multilineTextAlignment(.center).foregroundColor(.secondary).padding(.horizontal)
+                        Text(LocalizedStringKey(errorMessage)).font(.callout).multilineTextAlignment(.center).foregroundColor(.secondary).padding(.horizontal)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 50)
@@ -117,7 +117,7 @@ struct RecipeDetailView: View {
                     }
                     .lineLimit(1)
                     
-                    let servingsValue: Double? = detail.recipeServings
+                    let servingsValue: Double? = viewModel.currentServings
                     let isSingular: Bool = servingsValue == 1.0
 
                     let servingsLabel: LocalizedStringKey = isSingular ? "Portion" : "Portions"
@@ -195,13 +195,75 @@ struct RecipeDetailView: View {
     private func ingredientsSection(ingredients: [RecipeIngredient]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Ingredients").font(.title2.weight(.semibold)).padding(.horizontal)
+            
+            if let servings = viewModel.originalServings, servings > 0 {
+                servingsAdjuster()
+                    .padding(.horizontal)
+            }
+            
             LazyVStack(alignment: .leading, spacing: 10) {
                 ForEach(ingredients) { ingredient in
-                    IngredientRow(text: ingredient.display)
+                    IngredientRow(text: viewModel.scaledDisplayText(for: ingredient))
                 }
             }
             .padding(.horizontal)
         }
+    }
+    
+    private func servingsAdjuster() -> some View {
+        HStack(spacing: 16) {
+            Button {
+                hapticImpact(style: .light)
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.decrementServings()
+                }
+            } label: {
+                Image(systemName: "minus.circle.fill")
+                    .font(.title2)
+                    .foregroundColor((viewModel.currentServings ?? 1) <= 1 ? .gray : .accentColor)
+            }
+            .disabled((viewModel.currentServings ?? 1) <= 1)
+            
+            VStack(spacing: 2) {
+                Text(IngredientScaler.formatQuantity(viewModel.currentServings ?? 0))
+                    .font(.title3.weight(.bold))
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                Text((viewModel.currentServings ?? 0) == 1 ? "Portion" : "Portions")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(minWidth: 60)
+            
+            Button {
+                hapticImpact(style: .light)
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.incrementServings()
+                }
+            } label: {
+                Image(systemName: "plus.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(.accentColor)
+            }
+            
+            if viewModel.isScaled {
+                Button {
+                    hapticImpact(style: .light)
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.resetServings()
+                    }
+                } label: {
+                    Image(systemName: "arrow.counterclockwise.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.orange)
+                }
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 20)
+        .background(.thinMaterial)
+        .cornerRadius(12)
     }
     
     private func instructionsSection(instructions: [RecipeInstruction]) -> some View {
@@ -544,8 +606,7 @@ struct AddToMealPlanView: View {
     var apiClient: MealieAPIClient?
     
     @State private var selectedDate = Date()
-    @State private var selectedMealType = "Dinner"
-    let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side"]
+    @State private var selectedMealType: MealType = .dinner
     
     @Environment(\.dismiss) var dismiss
     
@@ -555,8 +616,8 @@ struct AddToMealPlanView: View {
                 DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                 
                 Picker("Meal Type", selection: $selectedMealType) {
-                    ForEach(mealTypes, id: \.self) { type in
-                        Text(LocalizedStringKey(type)).tag(type)
+                    ForEach(MealType.allCases) { type in
+                        Text(LocalizedStringKey(type.displayName)).tag(type)
                     }
                 }
             }

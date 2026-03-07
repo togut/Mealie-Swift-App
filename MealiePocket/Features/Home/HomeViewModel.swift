@@ -28,7 +28,7 @@ class HomeViewModel {
 
     func loadFavorites(apiClient: MealieAPIClient?, userID: String?) async {
         guard let apiClient, let userID else {
-            errorMessage = "API client or User ID not available."
+            errorMessage = "error.apiClientOrIDUnavailable"
             return
         }
         
@@ -68,7 +68,7 @@ class HomeViewModel {
              await MainActor.run { isLoading = false }
         } catch {
             await MainActor.run {
-                errorMessage = "Failed to load favorite recipes: \(error.localizedDescription)"
+                errorMessage = "error.loadingFavorites"
             }
         }
         
@@ -135,7 +135,7 @@ class HomeViewModel {
 
     func loadWeeklyMeals(apiClient: MealieAPIClient?) async {
         guard let apiClient = apiClient else {
-            await MainActor.run { weeklyMealsErrorMessage = "API client not available." }
+            await MainActor.run { weeklyMealsErrorMessage = "error.apiClientUnavailable" }
             return
         }
         
@@ -148,7 +148,7 @@ class HomeViewModel {
         guard let firstDay = daysOfWeek.first, let lastDay = daysOfWeek.last else {
             await MainActor.run {
                 isLoadingWeeklyMeals = false
-                weeklyMealsErrorMessage = "Impossible de calculer les dates de la semaine."
+                weeklyMealsErrorMessage = "error.weekIntervalUnavailable"
             }
             return
         }
@@ -164,7 +164,7 @@ class HomeViewModel {
         guard let dayAfterLast = Calendar.current.date(byAdding: .day, value: 1, to: lastDay) else {
             await MainActor.run {
                 isLoadingWeeklyMeals = false
-                weeklyMealsErrorMessage = "Impossible de calculer la date de fin pour l'API."
+                weeklyMealsErrorMessage = "error.weekIntervalUnavailable"
             }
             return
         }
@@ -188,7 +188,7 @@ class HomeViewModel {
         } catch APIError.unauthorized {
         } catch {
             await MainActor.run {
-                weeklyMealsErrorMessage = "Failed to load weekly meals: \(error.localizedDescription)"
+                weeklyMealsErrorMessage = "error.loadingWeeklyMeals"
             }
         }
         
@@ -269,11 +269,8 @@ class HomeViewModel {
         await searchRecipesForSelection(apiClient: apiClient, loadMore: true)
     }
 
-    func addSelectedRecipeToPlan(recipe: RecipeSummary, mealType: String, apiClient: MealieAPIClient?) async {
-        guard let date = dateForAddingRecipe, let apiClient = apiClient else {
-            print("Erreur: Date ou client API manquant pour ajout depuis Home.")
-            return
-        }
+    func addSelectedRecipeToPlan(recipe: RecipeSummary, mealType: MealType, apiClient: MealieAPIClient?) async {
+        guard let date = dateForAddingRecipe, let apiClient = apiClient else { return }
 
         await MainActor.run { isLoadingWeeklyMeals = true }
         
@@ -286,10 +283,7 @@ class HomeViewModel {
                 isLoadingWeeklyMeals = false
             }
         } catch {
-            await MainActor.run {
-                print("Erreur lors de l'ajout au planning depuis Home: \(error.localizedDescription)")
-                isLoadingWeeklyMeals = false
-            }
+            await MainActor.run { isLoadingWeeklyMeals = false }
         }
     }
 }

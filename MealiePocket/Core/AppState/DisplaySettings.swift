@@ -37,7 +37,10 @@ enum PlannerDefaultView: String, CaseIterable, Identifiable {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: "selectedTheme") }
     }
     var languageCode: String {
-        didSet { UserDefaults.standard.set(languageCode, forKey: "selectedLanguage") }
+        didSet {
+            UserDefaults.standard.set(languageCode, forKey: "selectedLanguage")
+            AppLocale.update(languageCode: languageCode)
+        }
     }
     var plannerDefaultView: PlannerDefaultView {
         didSet { UserDefaults.standard.set(plannerDefaultView.rawValue, forKey: "plannerDefaultView") }
@@ -50,5 +53,6 @@ enum PlannerDefaultView: String, CaseIterable, Identifiable {
         languageCode = UserDefaults.standard.string(forKey: "selectedLanguage") ?? "system"
         let plannerViewRaw = UserDefaults.standard.string(forKey: "plannerDefaultView") ?? "month"
         plannerDefaultView = PlannerDefaultView(rawValue: plannerViewRaw) ?? .month
+        AppLocale.update(languageCode: languageCode)
     }
 }

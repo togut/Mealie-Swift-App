@@ -20,7 +20,7 @@ class RecipeDetailViewModel {
     
     func loadRecipeDetail(slug: String, apiClient: MealieAPIClient?, userID: String?) async {
         guard let apiClient = apiClient, let userID = userID else {
-            errorMessage = "API client or User ID not available."
+            errorMessage = "error.apiClientOrIDUnavailable"
             isLoading = false
             return
         }
@@ -54,11 +54,7 @@ class RecipeDetailViewModel {
             await MainActor.run { isLoading = false }
         } catch {
             await MainActor.run {
-                if self.recipeDetail == nil {
-                    self.errorMessage = "Failed to load recipe details: \(error.localizedDescription)"
-                } else {
-                    self.errorMessage = "Failed to refresh details: \(error.localizedDescription)"
-                }
+                self.errorMessage = "error.loadingRecipeDetails"
                 self.isLoading = false
                 self.needsRefresh = false
             }
@@ -67,7 +63,7 @@ class RecipeDetailViewModel {
     
     func setRating(_ rating: Double, slug: String, apiClient: MealieAPIClient?, userID: String?) async {
         guard let apiClient = apiClient, let userID = userID else {
-            errorMessage = "API client or User ID not available."
+            errorMessage = "error.apiClientOrIDUnavailable"
             return
         }
         
@@ -84,14 +80,14 @@ class RecipeDetailViewModel {
         } catch {
             await MainActor.run {
                 self.recipeDetail?.userRating = previousRating
-                self.errorMessage = "Failed to set rating: \(error.localizedDescription)"
+                self.errorMessage = "error.settingRating"
             }
         }
     }
     
     func toggleFavorite(apiClient: MealieAPIClient?, userID: String?) async {
         guard let apiClient = apiClient, let userID = userID, let detail = recipeDetail else {
-            errorMessage = "Cannot toggle favorite: Missing data."
+            errorMessage = "error.toggleFavoriteMissingData"
             return
         }
         
@@ -113,29 +109,86 @@ class RecipeDetailViewModel {
         } catch {
             await MainActor.run {
                 isFavorite = originalFavoriteStatus
-                errorMessage = "Failed to update favorite status: \(error.localizedDescription)"
+                errorMessage = "error.updatingFavorite"
             }
         }
     }
     
-    func addToMealPlan(date: Date, mealType: String, apiClient: MealieAPIClient?) async {
+    func addToMealPlan(date: Date, mealType: MealType, apiClient: MealieAPIClient?) async {
         guard let apiClient = apiClient, let detail = recipeDetail else {
-            errorMessage = "Cannot add to plan: Missing data."
+            errorMessage = "error.addToPlanMissingData"
             return
         }
         
         do {
             try await apiClient.addMealPlanEntry(date: date, recipeId: detail.id, entryType: mealType)
-            print("Recette ajoutée au planning pour le \(date) - \(mealType)")
             await MainActor.run {
                 showingAddToPlanSheet = false
             }
         } catch APIError.unauthorized {
         } catch {
             await MainActor.run {
-                errorMessage = "Failed to add to meal plan: \(error.localizedDescription)"
+                errorMessage = "error.addingToMealPlan"
             }
         }
+    }
+    
+    // MARK: - Recipe Scaling
+    
+    var targetServings: Double? = nil
+    
+    var originalServings: Double? {
+        recipeDetail?.recipeServings
+    }
+    
+    var scaleFactor: Double {
+        IngredientScaler.scaleFactor(originalServings: originalServings, targetServings: targetServings)
+    }
+    
+    var isScaled: Bool {
+        guard let target = targetServings, let original = originalServings else { return false }
+        return abs(target - original) > 0.01
+    }
+    
+    var currentServings: Double? {
+        targetServings ?? originalServings
+    }
+    
+    func incrementServings() {
+        guard let current = currentServings else { return }
+        targetServings = current + 1
+    }
+    
+    func decrementServings() {
+        guard let current = currentServings, current > 1 else { return }
+        targetServings = current - 1
+    }
+    
+    func resetServings() {
+        targetServings = nil
+    }
+    
+    func scaledDisplayText(for ingredient: RecipeIngredient) -> String {
+        let scale = scaleFactor
+        guard scale != 1.0, let originalQty = ingredient.quantity, originalQty > 0 else {
+            return ingredient.display
+        }
+        
+        let scaledQty = originalQty * scale
+        let formattedQty = IngredientScaler.formatQuantity(scaledQty)
+        
+        var parts: [String] = [formattedQty]
+        if let unit = ingredient.unit {
+            parts.append(unit.name)
+        }
+        if let food = ingredient.food {
+            parts.append(food.name)
+        }
+        if !ingredient.note.isEmpty {
+            parts.append(ingredient.note)
+        }
+        
+        return parts.joined(separator: " ")
     }
     
     @MainActor
