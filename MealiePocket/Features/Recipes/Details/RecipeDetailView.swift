@@ -52,6 +52,7 @@ struct RecipeDetailView: View {
                     viewModel.showingAddToListSheet = true
                 } label: {
                     Image(systemName: "list.bullet.clipboard")
+                        .offset(y: -3)
                 }
                 .disabled(viewModel.recipeDetail == nil)
                 

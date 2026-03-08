@@ -10,29 +10,29 @@ struct MainTabView: View {
                 .ignoresSafeArea()
 
             TabView(selection: $selectedTab) {
-                Tab(String(localized: "tab.home"), systemImage: "house.fill", value: 0) {
+                Tab("tab.home", systemImage: "house.fill", value: 0) {
                     NavigationStack() {
                         HomeView(selectedTab: $selectedTab)
                             .environment(mealPlannerViewModel)
                     }
                 }
-                Tab(String(localized: "tab.recipes"), systemImage: "book.fill", value: 1) {
+                Tab("tab.recipes", systemImage: "book.fill", value: 1) {
                     NavigationStack {
                         RecipeListView()
                     }
                 }
-                Tab(String(localized: "tab.planner"), systemImage: "calendar", value: 2) {
+                Tab("tab.planner", systemImage: "calendar", value: 2) {
                     NavigationStack {
                         MealPlannerView()
                             .environment(mealPlannerViewModel)
                     }
                 }
-                Tab(String(localized: "tab.lists"), systemImage: "list.bullet", value: 3) {
+                Tab("tab.lists", systemImage: "list.bullet", value: 3) {
                     NavigationStack {
                         ShoppingListView()
                     }
                 }
-                Tab(String(localized: "tab.settings"), systemImage: "gearshape.fill", value: 4) {
+                Tab("Settings", systemImage: "gearshape.fill", value: 4) {
                     NavigationStack {
                         SettingsView()
                     }

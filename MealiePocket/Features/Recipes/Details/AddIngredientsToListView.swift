@@ -1,12 +1,9 @@
 import SwiftUI
 
-/// A sheet that lets the user optionally deselect ingredients, then pick a shopping list.
-/// Dismisses immediately on selection; the parent handles the API call and feedback.
 struct AddIngredientsToListView: View {
     let ingredients: [RecipeIngredient]
     let scaleFactor: Double
     let apiClient: MealieAPIClient
-    /// Called with (listId, selectedIngredients?) when the user picks a list.
     let onAdd: (UUID, [RecipeIngredient]?) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -72,8 +69,6 @@ struct AddIngredientsToListView: View {
         }
     }
 
-    // MARK: - Step 1: Ingredient Selection
-
     private var ingredientSelectionView: some View {
         VStack(spacing: 0) {
             List {
@@ -133,8 +128,6 @@ struct AddIngredientsToListView: View {
         .navigationTitle("addToList.title")
     }
 
-    // MARK: - Step 2: List Selection
-
     private var listSelectionView: some View {
         VStack {
             if isLoadingLists {
@@ -162,7 +155,11 @@ struct AddIngredientsToListView: View {
                         dismiss()
                     } label: {
                         HStack {
-                            Text(list.name ?? "Untitled List")
+                            if let name = list.name, !name.isEmpty {
+                                Text(name)
+                            } else {
+                                Text("Untitled List")
+                            }
                             Spacer()
                         }
                     }
@@ -175,8 +172,6 @@ struct AddIngredientsToListView: View {
             if shoppingLists.isEmpty { await loadShoppingLists() }
         }
     }
-
-    // MARK: - Helpers
 
     private func toggleIngredient(_ id: UUID) {
         if selectedIDs.contains(id) {

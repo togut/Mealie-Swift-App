@@ -1,13 +1,7 @@
 import Foundation
 
-/// Reusable utility for scaling recipe ingredients and formatting quantities.
-/// Display formatting lives here; actual shopping-list scaling is handled server-side
-/// via the Mealie API `scale` parameter.
 enum IngredientScaler {
-    
-    // MARK: - Scaling
-    
-    /// Calculates the scale factor from original to target servings.
+
     static func scaleFactor(originalServings: Double?, targetServings: Double?) -> Double {
         guard let original = originalServings, original > 0,
               let target = targetServings, target > 0 else {
@@ -16,11 +10,6 @@ enum IngredientScaler {
         return target / original
     }
     
-    // MARK: - Display Formatting
-    
-    /// Formats a numeric quantity for display. Whole numbers are shown as integers,
-    /// common fractions are rendered as unicode fraction characters,
-    /// and other values use up to 2 decimal places.
     private static let quantityFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = 0
@@ -44,8 +33,6 @@ enum IngredientScaler {
         return quantityFormatter.string(from: NSNumber(value: value)) ?? String(format: "%.2g", value)
     }
     
-    /// Maps a fractional value (0..1) to a Unicode fraction character if it is
-    /// within the given tolerance of a known fraction.
     static func vulgarFraction(for fractional: Double, tolerance: Double = 0.05) -> String? {
         let fractions: [(threshold: Double, symbol: String)] = [
             (1.0 / 8.0, "\u{215B}"),
@@ -73,10 +60,6 @@ enum IngredientScaler {
         return nil
     }
 
-    // MARK: - Scaled Display Text
-
-    /// Builds a display string for an ingredient at the given scale factor.
-    /// Returns the original `display` when scale is 1 or the ingredient has no quantity.
     static func displayText(for ingredient: RecipeIngredient, scaleFactor: Double) -> String {
         guard scaleFactor != 1.0, let qty = ingredient.quantity, qty > 0 else {
             return ingredient.display
