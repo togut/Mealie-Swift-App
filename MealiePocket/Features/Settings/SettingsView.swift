@@ -265,14 +265,14 @@ struct UserProfileView: View {
         List {
             Section("Identity") {
                 ServerInfoRow(title: "ID", value: user.id)
-                ServerInfoRow(title: "Full Name", value: user.fullName ?? String(localized: "N/A"))
+                ServerInfoRow(title: "Full Name", optionalValue: user.fullName)
                 ServerInfoRow(title: "Email", value: user.email)
             }
 
             Section("Permissions") {
                 ServerInfoRow(title: "Group", value: user.group)
                 ServerInfoRow(title: "Household", value: user.household)
-                ServerInfoRow(title: "Admin Access", value: user.admin ? String(localized: "Yes") : String(localized: "No"))
+                ServerInfoRow(title: "Admin Access", valueKey: user.admin ? "Yes" : "No")
             }
         }
         .navigationTitle("Profile")
@@ -291,19 +291,19 @@ struct ServerInfoView: View {
             Section("Connection") {
                 ServerInfoRow(
                     title: "Server URL",
-                    value: appState.apiClient?.baseURL.absoluteString ?? String(localized: "N/A"),
+                    optionalValue: appState.apiClient?.baseURL.absoluteString,
                     onCopy: { copyToClipboard(appState.apiClient?.baseURL.absoluteString) }
                 )
-                ServerInfoRow(title: "Auth Method", value: appState.authMethod?.rawValue.capitalized ?? String(localized: "N/A"))
-                ServerInfoRow(title: "Last Login", value: appState.loginTime?.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)) ?? String(localized: "N/A"))
+                ServerInfoRow(title: "Auth Method", optionalValue: appState.authMethod?.rawValue.capitalized)
+                ServerInfoRow(title: "Last Login", optionalValue: appState.loginTime?.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale)))
             }
 
             if let appInfo = viewModel.appInfo {
                 Section("Application Details") {
                     ServerInfoRow(title: "Mealie Version", value: appInfo.version)
-                    ServerInfoRow(title: "Demo Mode", value: appInfo.demoStatus ? String(localized: "Yes") : String(localized: "No"))
-                    ServerInfoRow(title: "Open Signups", value: appInfo.allowSignup ? String(localized: "Allowed") : String(localized: "Closed"))
-                    ServerInfoRow(title: "OpenAI Enabled", value: appInfo.enableOpenai ? String(localized: "Yes") : String(localized: "No"))
+                    ServerInfoRow(title: "Demo Mode", valueKey: appInfo.demoStatus ? "Yes" : "No")
+                    ServerInfoRow(title: "Open Signups", valueKey: appInfo.allowSignup ? "Allowed" : "Closed")
+                    ServerInfoRow(title: "OpenAI Enabled", valueKey: appInfo.enableOpenai ? "Yes" : "No")
                 }
             }
         }
@@ -430,12 +430,28 @@ struct AdminDashboardView: View {
 
 struct ServerInfoRow: View {
     let title: LocalizedStringKey
-    let value: String
+    let value: Text
     let onCopy: (() -> Void)?
 
     init(title: LocalizedStringKey, value: String, onCopy: (() -> Void)? = nil) {
         self.title = title
-        self.value = value
+        self.value = Text(value)
+        self.onCopy = onCopy
+    }
+
+    init(title: LocalizedStringKey, optionalValue: String?, fallback: LocalizedStringKey = "N/A", onCopy: (() -> Void)? = nil) {
+        self.title = title
+        if let optionalValue, !optionalValue.isEmpty {
+            self.value = Text(optionalValue)
+        } else {
+            self.value = Text(fallback)
+        }
+        self.onCopy = onCopy
+    }
+
+    init(title: LocalizedStringKey, valueKey: LocalizedStringKey, onCopy: (() -> Void)? = nil) {
+        self.title = title
+        self.value = Text(valueKey)
         self.onCopy = onCopy
     }
 
@@ -444,7 +460,7 @@ struct ServerInfoRow: View {
             Text(title)
                 .foregroundStyle(.primary)
             Spacer()
-            Text(value)
+            value
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
