@@ -20,7 +20,7 @@ struct HomeView: View {
                         ContentUnavailableView(
                             "Error",
                             systemImage: "exclamationmark.triangle",
-                            description: Text(pinnedError)
+                            description: Text(LocalizedStringKey(pinnedError))
                         )
                         .padding(.vertical, 40)
                     }

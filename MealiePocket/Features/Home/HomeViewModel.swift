@@ -279,7 +279,7 @@ class HomeViewModel {
                 return aIndex < bIndex
             }
         } catch {
-            self.pinnedShoppingListsErrorMessage = "Failed to load pinned lists: \(error.localizedDescription)"
+            self.pinnedShoppingListsErrorMessage = "error.loadingPinnedShoppingLists"
         }
 
         isLoadingPinnedShoppingLists = false

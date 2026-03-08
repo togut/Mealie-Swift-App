@@ -1421,6 +1421,23 @@
         }
       }
     },
+    "error.loadingPinnedShoppingLists": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed to load pinned shopping lists."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de charger les listes de courses épinglées."
+          }
+        }
+      }
+    },
     "error.loadingWeeklyMeals": {
       "extractionState": "manual",
       "localizations": {
