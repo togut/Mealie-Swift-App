@@ -86,7 +86,7 @@ enum IngredientScaler {
         var parts: [String] = [formatted]
         if let unit = ingredient.unit { parts.append(unit.name) }
         if let food = ingredient.food { parts.append(food.name) }
-        if !ingredient.note.isEmpty { parts.append(ingredient.note) }
+        if let note = ingredient.note, !note.isEmpty { parts.append(note) }
         return parts.joined(separator: " ")
     }
 }

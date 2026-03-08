@@ -76,7 +76,7 @@ struct SelectRecipeForDayView: View {
                     onConfirm: {
                         if let recipe = selectedRecipe {
                             Task {
-                                await viewModel.addSelectedRecipeToPlan(recipe: recipe, mealType: selectedMealType, apiClient: apiClient)
+                                await viewModel.addSelectedRecipeToPlan(recipe: recipe, mealType: selectedMealType.rawValue, apiClient: apiClient)
                             }
                         }
                         showingMealTypeSelection = false

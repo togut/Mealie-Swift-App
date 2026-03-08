@@ -122,7 +122,7 @@ class RecipeDetailViewModel {
         }
         
         do {
-            try await apiClient.addMealPlanEntry(date: date, recipeId: detail.id, entryType: mealType)
+            try await apiClient.addMealPlanEntry(date: date, recipeId: detail.id, entryType: mealType.rawValue)
             await MainActor.run {
                 showingAddToPlanSheet = false
             }

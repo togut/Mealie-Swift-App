@@ -88,44 +88,6 @@ class HomeViewModel {
         return dates
     }
 
-    func loadPinnedShoppingLists(apiClient: MealieAPIClient?) async {
-        guard let apiClient = apiClient else {
-            pinnedShoppingListsErrorMessage = "API client not available."
-            return
-        }
-        
-        await MainActor.run {
-            isLoadingPinnedShoppingLists = true
-            pinnedShoppingListsErrorMessage = nil
-        }
-        
-        do {
-            let allLists = try await apiClient.fetchShoppingLists(page: 1, perPage: 1000)
-            let pinnedIds = UserPreferences.getPinnedShoppingListIds()
-            let filtered = allLists.items.filter { list in
-                pinnedIds.contains(list.id)
-            }
-            
-            await MainActor.run {
-                self.pinnedShoppingLists = filtered.sorted { a, b in
-                    guard let aIndex = pinnedIds.firstIndex(of: a.id),
-                          let bIndex = pinnedIds.firstIndex(of: b.id) else {
-                        return false
-                    }
-                    return aIndex < bIndex
-                }
-            }
-        } catch APIError.unauthorized {
-            await MainActor.run { isLoadingPinnedShoppingLists = false }
-        } catch {
-            await MainActor.run {
-                pinnedShoppingListsErrorMessage = "Failed to load pinned lists: \(error.localizedDescription)"
-            }
-        }
-        
-        await MainActor.run { isLoadingPinnedShoppingLists = false }
-    }
-
     func loadHomeData(apiClient: MealieAPIClient?, userID: String?) async {
         async let favoritesTask: () = loadFavorites(apiClient: apiClient, userID: userID)
         async let weeklyMealsTask: () = loadWeeklyMeals(apiClient: apiClient)
@@ -275,7 +237,7 @@ class HomeViewModel {
         await MainActor.run { isLoadingWeeklyMeals = true }
         
         do {
-            try await apiClient.addMealPlanEntry(date: date, recipeId: recipe.id, entryType: mealType)
+            try await apiClient.addMealPlanEntry(date: date, recipeId: recipe.id, entryType: mealType.rawValue)
 
             await loadWeeklyMeals(apiClient: apiClient)
             await MainActor.run {

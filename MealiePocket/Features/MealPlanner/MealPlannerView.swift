@@ -22,7 +22,7 @@ struct MealPlannerView: View {
     }
     
     @State private var showingMealTypeSelection = false
-    @State private var selectedMealType = "Dinner"
+    @State private var selectedMealType: MealType = .dinner
     let mealTypes = ["Breakfast", "Lunch", "Dinner", "Side", "Drink", "Dessert", "Snack"]
     
     @Environment(\.locale) private var locale
@@ -36,30 +36,122 @@ struct MealPlannerView: View {
             contentView
         }
     }
-    
-    private var contentView: some View {
-        Group {
-            if viewModel.isLoadingPast { ProgressView().progressViewStyle(.circular) }
-            
-            if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
-                ProgressView()
-                Spacer()
-            } else if let errorMessage = viewModel.errorMessage {
-                ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
-            } else {
-                calendarContent
+
+    private var viewModeBinding: Binding<MealPlannerViewModel.ViewMode> {
+        Binding(
+            get: { viewModel.viewMode },
+            set: { viewModel.viewMode = $0 }
+        )
+    }
+
+    @ViewBuilder
+    private var statusContent: some View {
+        if viewModel.isLoadingPast {
+            ProgressView().progressViewStyle(.circular)
+        }
+
+        if viewModel.isLoading && viewModel.mealPlanEntries.isEmpty {
+            ProgressView()
+            Spacer()
+        } else if let errorMessage = viewModel.errorMessage {
+            ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(errorMessage))
+        } else {
+            calendarContent
+        }
+
+        if viewModel.isLoadingFuture {
+            ProgressView().progressViewStyle(.circular)
+        }
+    }
+
+    @ViewBuilder
+    private var bottomActionBar: some View {
+        HStack {
+            Button("planner.today") {
+                viewModel.goToToday(apiClient: appState.apiClient)
             }
-            
-            if viewModel.isLoadingFuture { ProgressView().progressViewStyle(.circular) }
+            .font(.headline)
+            .foregroundStyle(Color.primary)
+            .padding()
+            .glassEffect(.regular.tint(.clear).interactive())
+
+            Spacer()
+
+            if viewModel.viewMode == .day {
+                GlassEffectContainer(spacing: 5) {
+                    HStack {
+                        Button {
+                            hapticImpact(style: .light)
+                            viewModel.presentAddEntrySheet(for: viewModel.selectedDate)
+                        } label: {
+                            Image(systemName: "text.badge.plus")
+                                .font(.title3)
+                                .foregroundStyle(Color.primary)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+
+                        Button {
+                            hapticImpact(style: .light)
+                            viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
+                        } label: {
+                            Image(systemName: "dice")
+                                .font(.title3)
+                                .foregroundStyle(Color.primary)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+
+                        Button {
+                            hapticImpact(style: .light)
+                            viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title3)
+                                .foregroundStyle(Color.accentColor)
+                                .padding()
+                        }
+                        .glassEffect(.regular.tint(.clear).interactive())
+                        .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
+                    }
+                }
+            } else if viewModel.viewMode == .week {
+                Button {
+                    viewModel.addWeek(apiClient: appState.apiClient)
+                } label: {
+                    Image(systemName: "text.badge.plus")
+                        .font(.title3)
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive(), in: .circle)
+            } else {
+                Button {
+                    viewModel.addRange()
+                } label: {
+                    Image(systemName: "text.badge.plus")
+                        .font(.title3)
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                }
+                .glassEffect(.regular.tint(.clear).interactive(), in: .circle)
+            }
+        }
+        .padding(.bottom, 10)
+        .padding(.horizontal, 20)
+    }
+    
+    private var contentScaffold: some View {
+        Group {
+            statusContent
         }
         .navigationTitle("planner.navigationTitle")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .principal) {
-                Picker("View mode", selection: Binding(
-                    get: { viewModel.viewMode },
-                    set: { viewModel.viewMode = $0 }
-                )) {
+                Picker("View mode", selection: viewModeBinding) {
                     ForEach(MealPlannerViewModel.ViewMode.allCases) { mode in
                         Text(mode.label).tag(mode)
                     }
@@ -68,81 +160,7 @@ struct MealPlannerView: View {
             }
         }
         .overlay(alignment: .bottom) {
-            HStack {
-                Button("planner.today") {
-                    viewModel.goToToday(apiClient: appState.apiClient)
-                }
-                .font(.headline)
-                .foregroundStyle(Color.primary)
-                .padding()
-                .glassEffect(.regular.tint(.clear).interactive())
-                
-                Spacer()
-                
-                if viewModel.viewMode == .day {
-                    GlassEffectContainer(spacing: 5) {
-                        HStack {
-                            Button {
-                                hapticImpact(style: .light)
-                                viewModel.presentAddEntrySheet(for: viewModel.selectedDate)
-                            } label: {
-                                Image(systemName: "text.badge.plus")
-                                    .font(.title3)
-                                    .foregroundStyle(Color.primary)
-                                    .padding()
-                            }
-                            .glassEffect(.regular.tint(.clear).interactive())
-                            .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
-                            
-                            Button {
-                                hapticImpact(style: .light)
-                                viewModel.presentRandomMealTypeSheet(for: viewModel.selectedDate)
-                            } label: {
-                                Image(systemName: "dice")
-                                    .font(.title3)
-                                    .foregroundStyle(Color.primary)
-                                    .padding()
-                            }
-                            .glassEffect(.regular.tint(.clear).interactive())
-                            .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
-                            
-                            Button {
-                                hapticImpact(style: .light)
-                                viewModel.presentAddRecipeSheet(for: viewModel.selectedDate)
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(.title3)
-                                    .foregroundStyle(Color.accentColor)
-                                    .padding()
-                            }
-                            .glassEffect(.regular.tint(.clear).interactive())
-                            .glassEffectUnion(id: "add-buttons", namespace: unionNamespace)
-                        }
-                    }
-                } else if viewModel.viewMode == .week {
-                    Button {
-                        viewModel.addWeek(apiClient: appState.apiClient)
-                    } label: {
-                        Image(systemName: "text.badge.plus")
-                            .font(.title3)
-                            .foregroundStyle(Color.primary)
-                            .padding()
-                    }
-                    .glassEffect(.regular.tint(.clear).interactive(), in: .circle)
-                } else {
-                    Button {
-                        viewModel.addRange()
-                    } label: {
-                        Image(systemName: "text.badge.plus")
-                            .font(.title3)
-                            .foregroundStyle(Color.primary)
-                            .padding()
-                    }
-                    .glassEffect(.regular.tint(.clear).interactive(), in: .circle)
-                }
-            }
-            .padding(.bottom, 10)
-            .padding(.horizontal, 20)
+            bottomActionBar
         }
         .task {
             switch displaySettings.plannerDefaultView {
@@ -170,6 +188,10 @@ struct MealPlannerView: View {
         .navigationDestination(for: RecipeSummary.self) { recipe in
             RecipeDetailView(recipeSummary: recipe)
         }
+    }
+
+    private var contentWithSheets: some View {
+        contentScaffold
         .sheet(isPresented: Binding(
             get: { viewModel.showingAddRecipeSheet },
             set: { viewModel.showingAddRecipeSheet = $0 }
@@ -187,10 +209,9 @@ struct MealPlannerView: View {
             if let date = viewModel.dateForAddingRecipe {
                 MealTypeSelectionView(
                     selectedMealType: $selectedMealType,
-                    mealTypes: mealTypes,
                     onConfirm: {
                         Task {
-                            await viewModel.addRandomMeal(date: date, mealType: selectedMealType)
+                            await viewModel.addRandomMeal(date: date, mealType: selectedMealType.rawValue)
                         }
                         viewModel.showingMealTypeSelection = false
                     },
@@ -323,6 +344,10 @@ struct MealPlannerView: View {
         .onChange(of: viewModel.searchQueryForSelection) { _, _ in
             Task { await viewModel.searchRecipesForSelection(apiClient: appState.apiClient) }
         }
+    }
+
+    private var contentView: some View {
+        contentWithSheets
     }
     
     private var header: some View {

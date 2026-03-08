@@ -160,23 +160,6 @@ class RecipeListViewModel {
         lastFetchTime = nil
     }
 
-    func refreshIfStale(apiClient: MealieAPIClient?, userID: String?) async {
-        guard let lastFetch = lastFetchTime else {
-            await loadInitialOrRefreshRecipes(apiClient: apiClient, userID: userID)
-            return
-        }
-
-        let timeSinceLastFetch = Date().timeIntervalSince(lastFetch)
-        if timeSinceLastFetch > cacheMaxAge {
-            await loadInitialOrRefreshRecipes(apiClient: apiClient, userID: userID)
-        }
-    }
-
-    func clearCache() {
-        recipes = []
-        lastFetchTime = nil
-    }
-
     func toggleFavorite(for recipeId: UUID, userID: String?, apiClient: MealieAPIClient?) async {
         guard let apiClient, let userID else { return }
         
